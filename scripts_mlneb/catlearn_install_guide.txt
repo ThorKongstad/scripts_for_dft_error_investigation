@@ -1,0 +1,27 @@
+How to install ML-NEB:
+
+(1) In your home folder, do ”git clone https://github.com/SUNCAT-Center/CatLearn”
+
+(2) In ~/Catlearn, run setup.py
+
+(3) Add these lines to your .bashrc:
+
+export PYTHONPATH=/groups/kemi/christen/CatLearn:$PYTHONPATH
+
+ALTERNATIVELY
+
+$ pip install catlearn
+
+remember to have the correct conda env activated.
+
+install dir at ~/miniconda3/envs/gpaw228/lib/python3.11/site-packages/catlearn/
+
+(4) From my CatLearn folder, copy the following files and use them to overwrite the old files in your CatLearn folder. This contains updated scripts correcting errors when using them with newer versions of GPAW, along with quality-of-life adjustments for ML-NEB:
+
+/groups/kemi/christen/CatLearn/catlearn/optimize/io.py
+
+/groups/kemi/christen/CatLearn/catlearn/optimize/mlmin.py
+
+/groups/kemi/christen/CatLearn/catlearn/optimize/mlneb.py
+
+(5) Look at example scripts in /groups/kemi/christen/gpaw_scripts/neb_and_mlneb

@@ -4,7 +4,7 @@ import ase.db as db
 from ase.db.row import AtomsRow
 import numpy as np
 from dataclasses import dataclass, field
-from typing import NoReturn, Sequence, Optional
+from typing import NoReturn, Sequence, Optional, Tuple
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -24,7 +24,7 @@ class reaction_step:
     lower: float | int = field(init=False)
 
     def __post_init__(self):
-        def get_add_energy(ad_rows: AtomsRow | Sequence[AtomsRow]):
+        def get_add_energy(ad_rows: AtomsRow | Sequence[AtomsRow]) -> Tuple[float, Sequence[float]]:
             ad_rows = (ad_rows,) if isinstance(ad_rows,AtomsRow) else ad_rows
             names = [row.get('name') for row in ad_rows]
             if all('C(=O)=O' in name for name in names):
@@ -86,7 +86,7 @@ def rmsd_at_rows(at_row_1: AtomsRow, at_row_2: AtomsRow):
     ))
 
 
-def reactionplot_plotly(images:Sequence[reaction_step], name: Optional[str] = None):
+def reaction_plot_plotly(images:Sequence[reaction_step], name: Optional[str] = None):
     panda = pd.DataFrame(images)
 
     plot = go.Figure()
@@ -145,13 +145,13 @@ def main(image_db: str, slab_db: str, ad_db: Sequence[str], show_bool: bool = Fa
             step_seq = [reaction_step(i, rmsd_at_rows(stepRow, structure_rows[0]), stepRow, slab_obj.get(1), (ad_1_obj.get(1),ad_2_obj.get(1))) for i, stepRow in enumerate(structure_rows)]
 
     name = os.path.basename(image_db).split('.')[0]+'_plot.html'
-    reactionplot_plotly(step_seq,name if not show_bool else None)
+    reaction_plot_plotly(step_seq, name if not show_bool else None)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('image_db', type=str, help='path to the neb image database, a reading order currently have to be modified for the file in main')
     parser.add_argument('slab_db', type=str,help='path to the slab database, will only read the first line.')
-    parser.add_argument('adsorbate_db', type=str, nargs='+', help='path to the slab database, specific method for caluclating the adsorbate energy ')
+    parser.add_argument('adsorbate_db', type=str, nargs='+', help='path to the slab database, specific method for calculating the adsorbate energy ')
     parser.add_argument('-show', '--show', action='store_true', help='a bool to denote whether the script should show the html object or save it.')
     args = parser.parse_args()
 

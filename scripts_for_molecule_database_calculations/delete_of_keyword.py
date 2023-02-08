@@ -4,7 +4,7 @@ from typing import NoReturn
 
 def main(key:str):
 
-    raise 'not implemented'
+    raise 'deletion is not fully implemented in ase only as a placeholder....'
     with db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db') as db_obj:
         row_iter = db_obj.select(key)
         list_ids = []

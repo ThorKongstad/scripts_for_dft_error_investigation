@@ -7,13 +7,15 @@ from ase.constraints import FixAtoms
 import ase.db as db
 from typing import NoReturn, Sequence, Optional, Tuple
 
+
 def read_inputs(atoms_fil: str) -> Atoms:
-    if any(file_type in atoms_fil for file_type in ('.traj','.txt')):
+    if any(file_type in atoms_fil for file_type in ('.traj', '.txt')):
         return read(atoms_fil)
     elif '.db' in atoms_fil:
         with db.connect(atoms_fil) as db_obj:
             return db_obj.get('id=1').to_atoms()
     else: raise Exception('could not discern file type')
+
 
 def fix_buttom(at: Atoms) -> NoReturn:
     bot_at = []
@@ -51,6 +53,7 @@ def main(initial_file: str, finale_file: str, nr_images: int = 6, path_file_name
         path_file_name = f'{path_file_name}_path.traj'
 
     write(ends_with(path_file_name, '.traj'), images)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

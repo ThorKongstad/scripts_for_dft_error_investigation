@@ -7,7 +7,7 @@ from ase.constraints import FixAtoms
 import ase.db as db
 from typing import NoReturn, Sequence, Optional, Tuple
 
-def get_atoms(atoms_fil: str) -> Atoms:
+def read_inputs(atoms_fil: str) -> Atoms:
     if any(file_type in atoms_fil for file_type in ('.traj','.txt')):
         return read(atoms_fil)
     elif '.db' in atoms_fil:
@@ -28,7 +28,7 @@ def ends_with(string: str, end_str: str) -> str: return string + end_str * (end_
 
 def main(initial_file: str, finale_file: str, nr_images: int = 6, path_file_name: Optional[str] = None, idpp: bool = False):
 
-    initial, finale = get_atoms(initial_file), get_atoms(finale_file)
+    initial, finale = read_inputs(initial_file), read_inputs(finale_file)
 
     fix_buttom(initial)
     fix_buttom(finale)
@@ -56,8 +56,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('initial', help='Path to the initial state, if file is a database the script will take the first row.')
     parser.add_argument('finale', help='Path to the finale state, if file is a database the script will take the first row.')
-    parser.add_argument('--images', '-n', default=6, type=int, help='Number of images in the path.')
-    parser.add_argument('--idpp', '-idpp', action='store_true', help='A bool indicating the use of idpp for interpolating')
+    parser.add_argument('-n', '--images', default=6, type=int, help='Number of images in the path.')
+    parser.add_argument('-idpp', '--idpp', action='store_true', help='A bool indicating the use of idpp for interpolating')
     parser.add_argument('-o', '--path_name', type=str, help='Name for the path traj file.')
     args = parser.parse_args()
 

@@ -49,6 +49,7 @@ def main(calc_name:str,structures:Sequence[str], db_name: str|None = None, opt_b
     for image_name in structures:
         image = read(image_name)
         calc = GPAW(mode=PW(500),
+                    kpts=(4, 4, 1),
                     xc='RPBE',
                     basis='dzp',
                     txt=f'{folder}/BEE_{os.path.basename(image_name)}.txt',

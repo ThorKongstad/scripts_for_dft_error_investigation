@@ -1,0 +1,93 @@
+#!/bin/bash
+
+IN=$1
+IN2=$2
+
+args=("$@")
+
+# get the filename without the extension
+JOB=$(basename ${IN%.*})
+PWD_old=`pwd`
+JOB_PWD=$(dirname $IN)
+
+if grep -iq "#nprocshared=" $IN; then
+  NCPUS=$(grep -i "#nprocshared=" $IN | cut -f2 -d'=' | sort -k1 | tail -n1);
+else NCPUS=16;
+fi
+
+if grep -iq "#mem=" $IN; then
+  mem=$(grep -i "#mem=" $IN| cut -f2 -d'=' | sort -k1 | tail -n1);
+else mem=2; mem=${mem}GB;
+fi
+
+if grep -iq "#partition=" $IN; then
+  PARTITION=$(grep -i "#partition=" $IN| cut -f2 -d'=' | sort -k1 | tail -n1);
+else PARTITION=katla;
+fi
+
+if grep -iq "#constrain=" $IN; then
+  constrain=$(grep -i "#constrain=" $IN| cut -f2 -d'=' | sort -k1 | tail -n1);
+else constrain='[v1|v2|v3]';
+fi
+
+if grep -iq "#nodes=" $IN; then
+  node_n=$(grep -i "#nodes=" $IN| cut -f2 -d'=' | sort -k1 | tail -n1);
+else node_n='1';
+fi
+
+cd $JOB_PWD
+
+SUBMIT=$(mktemp XXXXX.tmp)
+
+if [ ! -d 'logs' ]; then
+    mkdir logs
+fi
+
+
+cat > $SUBMIT <<!EOF
+#!/bin/sh
+#SBATCH --job-name=${JOB}_$IN2
+#SBATCH --partition=$PARTITION
+#SBATCH --error=$JOB_PWD/logs/$JOB\_%j.err
+#SBATCH --output=$JOB_PWD/logs/$JOB\_%j.out
+#SBATCH --nodes=$node_n
+#SBATCH --ntasks=$NCPUS
+#SBATCH --ntasks-per-core=2
+#SBATCH --mem-per-cpu=$mem
+#SBATCH --constrain=$constrain
+
+module purge
+. "/groups/kemi/thorkong/miniconda3/etc/profile.d/conda.sh"
+conda activate gpaw228
+
+expand_node () {
+$(echo ' eval echo $(echo $1 | sed "s|\([[:digit:]]\{3\}\)-\([[:digit:]]\{3\}\)|{\1..\2}|g;s|\[|\{|g;s|\]|,\}|g") | sed "s/ node$//g;s/ /|/g"')
+}
+
+$(echo 'v5_nodes=$(expand_node node[024-030])')
+$(echo 'used_nodes=$(expand_node $SLURM_NODELIST)')
+
+
+if [[ ! $(echo '$used_nodes') =~ \| || $(echo '$used_nodes') =~ $(echo '$v5_nodes') ]]; then
+ export OMPI_MCA_pml="^ucx"
+ export OMPI_MCA_osc="^ucx"
+
+ if [[ ! $(echo '$used_nodes') =~ \| && $(echo '$used_nodes') =~ $(echo '$v5_nodes') ]]; then
+  export OMPI_MCA_btl_openib_rroce_enable=1
+ fi
+
+ mpirun gpaw python $(basename $IN) -- $(echo "${@:2}")
+
+else
+ mpirun gpaw python $(basename $IN) -- $(echo "${@:2}")
+fi
+
+!EOF
+
+Task_id_line=$(sbatch $SUBMIT)
+echo $Task_id_line
+job_id=$(sed 's|[^0-9]||g' <(echo $Task_id_line))
+
+mv $SUBMIT logs/${JOB}_submit_${job_id}.txt
+
+cd $PWD_old

@@ -5,7 +5,7 @@
 
 import argparse
 import os
-from typing import Tuple, Sequence, NoReturn
+from typing import Tuple, Sequence, NoReturn, Optional, Callable
 from ase.data import reference_states,chemical_symbols
 from ase.build import bulk#, fcc100, bcc100,hcp0001
 import ase.db as db
@@ -35,7 +35,7 @@ def get_kpts(atoms_obj):
     return kpts_dat['cords']
 
 
-def secant_method(func, guess_minus, guess_current, maxs_iter = 300, con_cri = 10**(-10)):
+def secant_method(func: Callable[[float | int], float | int], guess_minus: float | int, guess_current: float | int, maxs_iter: int = 300, con_cri: float | int = 10**(-10)):
     func_eval_minus = func(guess_minus)
     nr_iter = 1
 
@@ -51,7 +51,6 @@ def secant_method(func, guess_minus, guess_current, maxs_iter = 300, con_cri = 1
 #        nr_iter += 1
 #    return guess_current, nr_iter
 
-
     while abs(func_eval_current := func(guess_current)) >= con_cri and nr_iter < maxs_iter:
         guess_current_temp = guess_current
         guess_current -= (func_eval_current * (guess_current - guess_minus)) / (func_eval_current - func_eval_minus)
@@ -61,7 +60,7 @@ def secant_method(func, guess_minus, guess_current, maxs_iter = 300, con_cri = 1
     return guess_current, nr_iter
 
 
-def calculate_pE_of_latt(lattice:float,metal:str,slab_type:str,functional:str,functional_folder:str,grid_spacing:float) -> float:
+def calculate_pE_of_latt(lattice: float, metal: str, slab_type:str, functional: str, functional_folder: str, grid_spacing: float) -> float:
     bulk_con = bulk(name=metal, crystalstructure=slab_type, a=lattice)
 
     calc = GPAW(mode=PW(500),
@@ -84,7 +83,8 @@ def calculate_pE_of_latt(lattice:float,metal:str,slab_type:str,functional:str,fu
     del bulk_con
     return potential_energy
 
-def main(metal:str,functional:str,slab_type:str,guess_lattice:float|None=None, grid_spacing:float=0.16):
+
+def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[float] = None, grid_spacing: float = 0.16):
 
     at_number = chemical_symbols.index(metal)
     functional_folder = sanitize(functional)
@@ -97,7 +97,7 @@ def main(metal:str,functional:str,slab_type:str,guess_lattice:float|None=None, g
 
     parprint(f'lattice optimisation for {metal} with {functional}, guess latice is at {guess_lattice}')
 
-    opt_step_func = lambda lat: calculate_pE_of_latt(lat,metal,slab_type,functional,functional_folder,grid_spacing) # this is to make a function which is only dependent on a single variable lat
+    opt_step_func = lambda lat: calculate_pE_of_latt(lat, metal, slab_type, functional, functional_folder, grid_spacing) # this is to make a function which is only dependent on a single variable lat
 
 
     optimised_lat,final_itr = secant_method(opt_step_func,guess_minus= guess_lattice*0.9, guess_current=guess_lattice,maxs_iter=30)

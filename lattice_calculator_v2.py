@@ -6,7 +6,6 @@
 import argparse
 import os
 from typing import Tuple, Sequence, NoReturn, Optional, Callable
-
 import numpy as np
 from ase.data import reference_states,chemical_symbols
 from ase.build import bulk#, fcc100, bcc100,hcp0001

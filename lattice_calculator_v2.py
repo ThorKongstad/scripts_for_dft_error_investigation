@@ -15,8 +15,8 @@ from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
 #from collections import namedtuple
 from scipy.optimize import curve_fit, minimize, OptimizeResult
-from kplib import get_kpoints
-from pymatgen.io.ase import AseAtomAdaptor
+#from kplib import get_kpoints
+#from pymatgen.io.ase import AseAtomAdaptor
 
 
 def folder_exist(folder_name: str) -> NoReturn:
@@ -29,10 +29,10 @@ def sanitize(unclean_str: str) -> str:
     return unclean_str
 
 
-def get_kpts(atoms_obj):
-    structure = AseAtomAdaptor.get_structure(atoms_obj)
-    kpts_dat = get_kpoints(structure, minDistance = 30, include_gamma = False)
-    return kpts_dat['cords']
+#def get_kpts(atoms_obj):
+#    structure = AseAtomAdaptor.get_structure(atoms_obj)
+#    kpts_dat = get_kpoints(structure, minDistance = 30, include_gamma = False)
+#    return kpts_dat['cords']
 
 
 def secant_method(func: Callable[[float | int], float | int], guess_minus: float | int, guess_current: float | int, maxs_iter: int = 300, con_cri: float | int = 10**(-10)):
@@ -66,7 +66,7 @@ def calculate_pE_of_latt(lattice: float, metal: str, slab_type:str, functional: 
     calc = GPAW(mode=PW(500),
                 xc=functional,
                 basis='dzp',
-                kpts=get_kpts(bulk_con),
+                kpts=(10,10,10),
                 txt=f'{functional_folder}/{metal}_latt_fit/lat-opt_{metal}_{slab_type}_a-{lattice}.txt',
                 gpts=h2gpts(grid_spacing, bulk_con.get_cell(), idiv=4),
                 parallel={'augment_grids': True, 'sl_auto': True},
@@ -84,7 +84,7 @@ def calculate_pE_of_latt(lattice: float, metal: str, slab_type:str, functional: 
     return potential_energy
 
 
-def report(res: OptimizeResult):
+def report(res: OptimizeResult) -> NoReturn:
     parprint(f'optimisation: {"succesfull" if res.success else "unsuccesfull"}')
     parprint(f'finale lattice: {res.x}')
 

@@ -14,7 +14,7 @@ from ase.parallel import parprint, world
 from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
 #from collections import namedtuple
-from scipy.optimize import curve_fit
+from scipy.optimize import curve_fit, minimize, OptimizeResult
 from kplib import get_kpoints
 from pymatgen.io.ase import AseAtomAdaptor
 
@@ -84,6 +84,11 @@ def calculate_pE_of_latt(lattice: float, metal: str, slab_type:str, functional: 
     return potential_energy
 
 
+def report(res: OptimizeResult):
+    parprint(f'optimisation: {"succesfull" if res.success else "unsuccesfull"}')
+    parprint(f'finale lattice: {res.x}')
+
+
 def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[float] = None, grid_spacing: float = 0.16):
 
     at_number = chemical_symbols.index(metal)
@@ -99,8 +104,11 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
 
     opt_step_func = lambda lat: calculate_pE_of_latt(lat, metal, slab_type, functional, functional_folder, grid_spacing) # this is to make a function which is only dependent on a single variable lat
 
+#    optimised_lat,final_itr = secant_method(opt_step_func,guess_minus= guess_lattice*0.9, guess_current=guess_lattice,maxs_iter=30)
+    opt_res = minimize(opt_step_func, x0=guess_lattice, method='BFGS')
 
-    optimised_lat,final_itr = secant_method(opt_step_func,guess_minus= guess_lattice*0.9, guess_current=guess_lattice,maxs_iter=30)
+    report(opt_res)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

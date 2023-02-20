@@ -16,6 +16,7 @@ from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
 #from collections import namedtuple
 from scipy.optimize import curve_fit, minimize, OptimizeResult
+import csv
 #from kplib import get_kpoints
 #from pymatgen.io.ase import AseAtomAdaptor
 
@@ -112,6 +113,18 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
     opt_res = minimize(opt_step_func, x0=guess_lattice, method='BFGS')
 
     report(opt_res)
+
+    if opt_res.succes:
+        with open('lattice_calc.csv','a') as csv_file:
+            fields = ['metal','functional','lattice']
+            writer_obj = csv.DictWriter(csv_file,fieldnames=fields)
+            writer_obj.writerow(
+                dict(
+                    metal=metal,
+                    functional=functional,
+                    lattice=opt_res.x
+                )
+            )
 
 
 if __name__ == '__main__':

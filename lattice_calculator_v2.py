@@ -62,6 +62,8 @@ def secant_method(func: Callable[[float | int], float | int], guess_minus: float
 
 
 def calculate_pE_of_latt(lattice: float, metal: str, slab_type:str, functional: str, functional_folder: str, grid_spacing: float) -> float:
+    if (isinstance(lattice,list) or isinstance(lattice,tuple)) and len(lattice) == 1: lattice = lattice[0]
+
     bulk_con = bulk(name=metal, crystalstructure=slab_type, a=lattice)
 
     calc = GPAW(mode=PW(500),

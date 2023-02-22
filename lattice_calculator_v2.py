@@ -99,8 +99,9 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
 
     at_number = chemical_symbols.index(metal)
     functional_folder = sanitize(functional)
-    folder_exist(functional_folder)
-    folder_exist(f'{functional_folder}/{metal}_latt_fit')
+    if world.rank == 0:
+        folder_exist(functional_folder)
+        folder_exist(f'{functional_folder}/{metal}_latt_fit')
 
     if guess_lattice is None:
         if slab_type != reference_states[at_number].get('symmetry'): raise ValueError('the given slab type does not match the saved type for ase guess lattice')

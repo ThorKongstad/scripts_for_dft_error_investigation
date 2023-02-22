@@ -41,8 +41,9 @@ def ends_with(string: str, end_str: str) -> str:
 def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[float] = None, grid_spacing: float = 0.16, vdw_calc: str = 'vdw'):
     at_number = chemical_symbols.index(metal)
     functional_folder = sanitize(functional)
-    folder_exist(functional_folder)
-    folder_exist(f'{functional_folder}/{metal}_latt_fit')
+    if world.rank == 0:
+        folder_exist(functional_folder)
+        folder_exist(f'{functional_folder}/{metal}_latt_fit')
 
     if guess_lattice is None:
         if slab_type != reference_states[at_number].get('symmetry'): raise ValueError(

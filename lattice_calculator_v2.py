@@ -117,7 +117,7 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
 
     if world.rank == 1:
         if 'lattice_calc.csv' not in os.listdir(): pathlib.Path('lattice_calc.csv').touch()
-        if opt_res.succes:
+        if opt_res.success:
             with open('lattice_calc.csv','a') as csv_file:
                 fields = ['metal','functional','lattice']
                 writer_obj = csv.DictWriter(csv_file,fieldnames=fields)

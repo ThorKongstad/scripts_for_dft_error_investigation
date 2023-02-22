@@ -25,7 +25,8 @@ def fix_buttom(at: Atoms) -> NoReturn:
     at.set_constraint(FixAtoms(bot_at))
 
 
-def ends_with(string: str, end_str: str) -> str: return string + end_str * (end_str == string[-len(end_str)])
+def ends_with(string: str, end_str: str) -> str:
+    return string + end_str * (end_str == string[-len(end_str):-1])
 
 
 def main(initial_file: str, finale_file: str, nr_images: int = 6, path_file_name: Optional[str] = None, idpp: bool = False):
@@ -51,6 +52,7 @@ def main(initial_file: str, finale_file: str, nr_images: int = 6, path_file_name
     if path_file_name is None:
         path_file_name = os.path.basename(initial_file).split('.')[0]
         path_file_name = f'{path_file_name}_path.traj'
+
 
     write(ends_with(path_file_name, '.traj'), images)
 

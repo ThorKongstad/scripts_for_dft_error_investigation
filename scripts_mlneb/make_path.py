@@ -13,7 +13,7 @@ def read_inputs(atoms_fil: str) -> Atoms:
         return read(atoms_fil)
     elif '.db' in atoms_fil:
         with db.connect(atoms_fil) as db_obj:
-            return db_obj.get('id=1').to_atoms()
+            return db_obj.get('id=1').toatoms()
     else: raise Exception('could not discern file type')
 
 

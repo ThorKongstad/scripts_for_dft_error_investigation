@@ -38,7 +38,7 @@ def ends_with(string: str, end_str: str) -> str:
     return string + end_str * (end_str != string[-len(end_str):0])
 
 
-def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[float] = None, grid_spacing: float = 0.16, vdw_calc: str = 'vdw'):
+def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[float] = None, grid_spacing: float = 0.16, vdw_calc: Optional[str] = None):
     at_number = chemical_symbols.index(metal)
     functional_folder = sanitize(functional)
     if world.rank == 0:
@@ -50,7 +50,7 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
             'the given slab type does not match the saved type for ase guess lattice')
         guess_lattice = reference_states[at_number].get('a')
 
-    parprint(f'lattice optimisation for {metal} with {functional}, guess latice is at {guess_lattice}')
+    parprint(f'lattice optimisation for {metal} with {functional}, guess lattice is at {guess_lattice}')
 
     bulk_con = bulk(name=metal, crystalstructure=slab_type, a=guess_lattice)
 
@@ -58,7 +58,7 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
                 xc=functional,
                 basis='dzp',
                 kpts=(10,10,10),
-                txt=f'{functional_folder}/{metal}_latt_fit/lat-opt_{metal}_{slab_type}_a-{lattice}.txt',
+                txt=f'{functional_folder}/{metal}_latt_fit/lat-opt_{metal}_{slab_type}_strainFilter.txt',
                 gpts=h2gpts(grid_spacing, bulk_con.get_cell(), idiv=4),
                 parallel={'augment_grids': True, 'sl_auto': True},
                 convergence={'eigenstates': 0.000001},
@@ -69,7 +69,7 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
 
     if vdw_calc == 'D4':
         bulk_con.calc = SumCalculator([DFTD4(method=functional), calc])
-    elif vdw_calc == 'vdw':
+    elif vdw_calc is None:
         bulk_con.calc = vdWTkatchenko09prl(HirshfeldPartitioning(calc), vdWradii(bulk_con.get_chemical_symbols(), functional))
 
     CellFilter = ExpCellFilter(bulk_con)
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     parser.add_argument('metal',type=str)
     parser.add_argument('surface_type',type=str,choices=('fcc','bcc','hcp'))
     parser.add_argument('func',type=str)
-    parser.add_argument('-vdw','--vdw_calculator',choices=('D4','vdw'),default='vdw')
+    parser.add_argument('-vdw','--vdw_calculator',choices=('D4',))
     parser.add_argument('--lattice','-a',type=float)
     args = parser.parse_args()
 

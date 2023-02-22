@@ -19,6 +19,7 @@ from scipy.optimize import curve_fit, minimize, OptimizeResult
 import csv
 #from kplib import get_kpoints
 #from pymatgen.io.ase import AseAtomAdaptor
+import pathlib
 
 
 def folder_exist(folder_name: str) -> NoReturn:
@@ -114,17 +115,19 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
 
     report(opt_res)
 
-    if opt_res.succes:
-        with open('lattice_calc.csv','a') as csv_file:
-            fields = ['metal','functional','lattice']
-            writer_obj = csv.DictWriter(csv_file,fieldnames=fields)
-            writer_obj.writerow(
-                dict(
-                    metal=metal,
-                    functional=functional,
-                    lattice=opt_res.x
+    if world.rank == 1:
+        if 'lattice_calc.csv' not in os.listdir(): pathlib.Path('lattice_calc.csv').touch()
+        if opt_res.succes:
+            with open('lattice_calc.csv','a') as csv_file:
+                fields = ['metal','functional','lattice']
+                writer_obj = csv.DictWriter(csv_file,fieldnames=fields)
+                writer_obj.writerow(
+                    dict(
+                        metal=metal,
+                        functional=functional,
+                        lattice=opt_res.x
+                    )
                 )
-            )
 
 
 if __name__ == '__main__':

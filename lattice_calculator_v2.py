@@ -115,7 +115,7 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
 
     report(opt_res)
 
-    if world.rank == 1:
+    if world.rank == 0:
         if 'lattice_calc.csv' not in os.listdir(): pathlib.Path('lattice_calc.csv').touch()
         if opt_res.success:
             with open('lattice_calc.csv','a') as csv_file:

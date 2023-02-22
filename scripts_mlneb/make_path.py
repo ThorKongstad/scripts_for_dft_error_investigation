@@ -26,7 +26,7 @@ def fix_buttom(at: Atoms) -> NoReturn:
 
 
 def ends_with(string: str, end_str: str) -> str:
-    return string + end_str * (end_str == string[-len(end_str):-1])
+    return string + end_str * (end_str != string[-len(end_str):0])
 
 
 def main(initial_file: str, finale_file: str, nr_images: int = 6, path_file_name: Optional[str] = None, idpp: bool = False):

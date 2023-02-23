@@ -18,9 +18,9 @@ def main(path_file: str, restart_file: Optional[str] = None, out_prefix: Optiona
 #    path = path_atoms[1:-1]
 #    final = path_atoms[-1]
 
-    initial = read(f'{path_file}.traj', index='0')
-    path = read(f'{path_file}.traj', index='1:-1')
-    final = read(f'{path_file}.traj', index='-1')
+    initial = read(f'{path_file}', index='0')
+    path = read(f'{path_file}', index='1:-1')
+    final = read(f'{path_file}', index='-1')
 
     nimages = len(path)
 

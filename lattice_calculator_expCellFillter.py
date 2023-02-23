@@ -76,7 +76,7 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
     Optimizer = QuasiNewton(CellFilter)
     traj_obj = Trajectory(f'{ends_with(functional_folder,"/")}{metal}_{slab_type}_{functional}_{vdw_calc}.traj', 'w', bulk_con)
     Optimizer.attach(traj_obj)
-    Optimizer.run(fmax=0.001)
+    Optimizer.run(fmax=0.01)
 
     optimal_lattice = np.linalg.norm(bulk_con.cell[0]) * 2 ** 0.5
 

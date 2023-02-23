@@ -112,7 +112,7 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
     opt_step_func = lambda lat: calculate_pE_of_latt(lat, metal, slab_type, functional, functional_folder, grid_spacing) # this is to make a function which is only dependent on a single variable lat
 
 #    optimised_lat,final_itr = secant_method(opt_step_func,guess_minus= guess_lattice*0.9, guess_current=guess_lattice,maxs_iter=30)
-    opt_res = minimize(opt_step_func, x0=guess_lattice, method='Powell', tol=0.01, options=dict(disp=True), bounds=(2.7, 7))
+    opt_res = minimize(opt_step_func, x0=guess_lattice, method='Powell', tol=0.01, options=dict(disp=True), bounds=((2.7, 7),))
 
     report(opt_res)
 

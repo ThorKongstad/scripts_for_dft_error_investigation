@@ -119,11 +119,12 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
     if world.rank == 0 and opt_res.success:
         if 'lattice_calc.csv' not in os.listdir(): pathlib.Path('lattice_calc.csv').touch()
         with open('lattice_calc.csv','a') as csv_file:
-            fields = ['metal','functional','lattice']
+            fields = ['metal', 'type', 'functional','lattice']
             writer_obj = csv.DictWriter(csv_file,fieldnames=fields)
             writer_obj.writerow(
                 dict(
                     metal=metal,
+                    type=slab_type,
                     functional=functional,
                     lattice=opt_res.x
                 )

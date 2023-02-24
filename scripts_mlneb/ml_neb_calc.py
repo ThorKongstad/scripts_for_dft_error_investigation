@@ -28,14 +28,21 @@ def main(path_file: str, restart_file: Optional[str] = None, out_prefix: Optiona
 
     restart_dic = {'restart': True, 'prev_calculations': restart_file} if restart_file is not None else {}
 
+    calc_args = dict(mode=PW(600),
+                     kpts=(4,4,1),
+                     basis='dzp',
+                     xc="RPBE",
+                     txt=f'{prefix}_ml-NEB.txt',
+                     parallel={'augment_grids':True,'sl_auto':True}
+    )
+
+    initial.set_calculator(GPAW(**calc_args))
+    path.set_calculator(GPAW(**calc_args))
+    final.set_calculator(GPAW(**calc_args))
+
     neb_catlearn = MLNEB(start=initial,  # Initial end-point.
                          end=final,  # Final end-point.
-                         ase_calc=GPAW(mode=PW(600),
-                                       kpts=(4,4,1),
-                                       basis='dzp',
-                                       xc="RPBE",
-                                       txt=f'{prefix}_ml-NEB.txt',
-                                       parallel={'augment_grids':True,'sl_auto':True}),
+                         ase_calc=GPAW(**calc_args),
                          # Calculator, it must be the same as the one used for the optimizations.
                          n_images=nimages,  # Number of images (interger or float, see above).
                          interpolation=path, #'idpp',

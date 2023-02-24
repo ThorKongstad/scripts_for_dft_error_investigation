@@ -1,5 +1,5 @@
 #partition=katla
-#nprocshared=32
+#nprocshared=64
 #mem=2000MB
 #constrain='[v4|v5]'
 #nodes=1

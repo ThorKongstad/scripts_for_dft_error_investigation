@@ -37,7 +37,7 @@ def main(path_file: str, restart_file: Optional[str] = None, out_prefix: Optiona
     )
 
     initial.set_calculator(GPAW(**calc_args))
-    path.set_calculator(GPAW(**calc_args))
+    for im in path: im.set_calculator(GPAW(**calc_args))
     final.set_calculator(GPAW(**calc_args))
 
     neb_catlearn = MLNEB(start=initial,  # Initial end-point.

@@ -40,17 +40,19 @@ def ends_with(string: str, end_str: str) -> str:
 
 def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[float] = None, grid_spacing: float = 0.16, vdw_calc: Optional[str] = None):
     at_number = chemical_symbols.index(metal)
+
+    if guess_lattice is None:
+        if slab_type != reference_states[at_number].get('symmetry'):
+            raise ValueError(
+                'the given slab type does not match the saved type for ase guess lattice')
+        guess_lattice = reference_states[at_number].get('a')
+
+    parprint(f'lattice optimisation for {metal} with {functional}, guess lattice is at {guess_lattice}')
+
     functional_folder = sanitize(functional)
     if world.rank == 0:
         folder_exist(functional_folder)
         folder_exist(f'{functional_folder}/{metal}_latt_fit')
-
-    if guess_lattice is None:
-        if slab_type != reference_states[at_number].get('symmetry'): raise ValueError(
-            'the given slab type does not match the saved type for ase guess lattice')
-        guess_lattice = reference_states[at_number].get('a')
-
-    parprint(f'lattice optimisation for {metal} with {functional}, guess lattice is at {guess_lattice}')
 
     bulk_con = bulk(name=metal, crystalstructure=slab_type, a=guess_lattice)
 

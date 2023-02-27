@@ -38,9 +38,11 @@ def main(path_file: str, restart_file: Optional[str] = None, out_prefix: Optiona
 
     initial.set_calculator(GPAW(**calc_args))
     initial.get_potential_energy()
+    initial.get_forces()
     for im in path: im.set_calculator(GPAW(**calc_args))
     final.set_calculator(GPAW(**calc_args))
     final.get_potential_energy()
+    final.get_forces()
 
     neb_catlearn = MLNEB(start=initial,  # Initial end-point.
                          end=final,  # Final end-point.

@@ -92,7 +92,7 @@ def reaction_plot_plotly(images:Sequence[reaction_step], name: Optional[str] = N
     plot = go.Figure()
 
     plot.add_trace(go.Scatter(
-        x=panda.get('order').tolist() + panda.get('order').tolist()[::-1],
+        x=panda.get('rmsd_div').tolist() + panda.get('rmsd_div').tolist()[::-1],
         y=panda.get('upper').tolist() + panda.get('lower').tolist()[::-1],
         fill='toself',
         fillcolor='red',
@@ -106,7 +106,7 @@ def reaction_plot_plotly(images:Sequence[reaction_step], name: Optional[str] = N
         ensemple_energies = row.get('ensamble_Es')
         plot.add_trace(go.Violin(
             y=ensemple_energies,
-            x0=index, #list(row.get('order'))*len(ensemple_energies),
+            x0=row.get('rmsd_div'), #list(row.get('order'))*len(ensemple_energies),
             opacity=0.4,
             line_color='black',
             fillcolor='grey',
@@ -115,7 +115,7 @@ def reaction_plot_plotly(images:Sequence[reaction_step], name: Optional[str] = N
         ))
 
     plot.add_trace(px.line(data_frame =panda,
-                   x='order',
+                   x='rmsd_div',
                    y='rpbe_E',
                    markers=True,
                    error_y='ensamble_sd'

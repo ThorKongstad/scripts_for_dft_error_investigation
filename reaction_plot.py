@@ -129,7 +129,7 @@ def reaction_plot_plotly(images:Sequence[reaction_step], name: Optional[str] = N
     else: plot.show()
 
 
-def main(image_db: str, slab_db: str, ad_db: Sequence[str], show_bool: bool = False):
+def main(image_db: str, slab_db: str, ad_db: Sequence[str], show_bool: bool = False, name_tag: Optional[str] = None):
     if any(at in image_db.lower() for at in ['pd','pt']): neb_order = ['initial.traj', 'neb1.traj', 'neb2.traj', 'neb3.traj', 'neb4.traj', 'neb5.traj', 'final.traj']
     elif 'ag' in image_db.lower(): neb_order = ['Ag_top_fcc_IS.traj', 'neb1.traj', 'neb2.traj', 'neb3.traj', 'neb4.traj', 'neb5.traj', 'Ag_top_fcc_FS.traj']
     else: raise ValueError('could not find recognise the file and so could not determine order.')
@@ -144,7 +144,7 @@ def main(image_db: str, slab_db: str, ad_db: Sequence[str], show_bool: bool = Fa
             structure_rows = [neb_obj.get(f'name={name}') for name in neb_order]
             step_seq = [reaction_step(i, rmsd_at_rows(stepRow, structure_rows[0]), stepRow, slab_obj.get(1), (ad_1_obj.get(1),ad_2_obj.get(1))) for i, stepRow in enumerate(structure_rows)]
 
-    name = os.path.basename(image_db).split('.')[0]+'_plot.html'
+    name = os.path.basename(image_db).split('.')[0]+(name_tag if name_tag else '') + '_plot.html'
     reaction_plot_plotly(step_seq, name if not show_bool else None)
 
 if __name__ == '__main__':
@@ -152,7 +152,8 @@ if __name__ == '__main__':
     parser.add_argument('image_db', type=str, help='path to the neb image database, a reading order currently have to be modified for the file in main')
     parser.add_argument('slab_db', type=str,help='path to the slab database, will only read the first line.')
     parser.add_argument('adsorbate_db', type=str, nargs='+', help='path to the slab database, specific method for calculating the adsorbate energy ')
+    parser.add_argument('-tag', '--tag', help='tag to be added to the save file.')
     parser.add_argument('-show', '--show', action='store_true', help='a bool to denote whether the script should show the html object or save it.')
     args = parser.parse_args()
 
-    main(args.image_db, args.slab_db, args.adsorbate_db, args.show)
+    main(args.image_db, args.slab_db, args.adsorbate_db, args.show, args.tag)

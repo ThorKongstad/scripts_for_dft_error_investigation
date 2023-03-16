@@ -20,6 +20,8 @@ import csv
 #from kplib import get_kpoints
 #from pymatgen.io.ase import AseAtomAdaptor
 import pathlib
+from time import sleep
+from random import randint
 
 
 def folder_exist(folder_name: str) -> NoReturn:
@@ -99,9 +101,14 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
 
     at_number = chemical_symbols.index(metal)
     functional_folder = sanitize(functional)
+
+    script_overlab_protection_time = randint(0, 60)
     if world.rank == 0:
+        sleep(script_overlab_protection_time)
         folder_exist(functional_folder)
         folder_exist(f'{functional_folder}/{metal}_latt_fit')
+    else:
+        sleep(script_overlab_protection_time)
 
     if guess_lattice is None:
         if slab_type != reference_states[at_number].get('symmetry'): raise ValueError('the given slab type does not match the saved type for ase guess lattice')
@@ -126,7 +133,7 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
                     metal=metal,
                     type=slab_type,
                     functional=functional,
-                    lattice=opt_res.x
+                    lattice=opt_res.x if not isinstance(opt_res.x, list) else opt_res.x[0]
                 )
             )
 

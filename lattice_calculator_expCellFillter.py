@@ -21,6 +21,8 @@ from gpaw.utilities import h2gpts
 from gpaw.analyse.hirshfeld import HirshfeldPartitioning
 from gpaw.analyse.vdwradii import vdWradii
 from dftd4.ase import DFTD4
+from time import sleep
+from random import randint
 
 
 
@@ -50,9 +52,13 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
     parprint(f'lattice optimisation for {metal} with {functional}, guess lattice is at {guess_lattice}')
 
     functional_folder = sanitize(functional)
+
+    script_overlab_protection_time = randint(0,60)
     if world.rank == 0:
+        sleep(script_overlab_protection_time)
         folder_exist(functional_folder)
         folder_exist(f'{functional_folder}/{metal}_latt_fit')
+    else: sleep(script_overlab_protection_time)
 
     bulk_con = bulk(name=metal, crystalstructure=slab_type, a=guess_lattice)
 

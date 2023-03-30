@@ -54,4 +54,4 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--name', type=str, help='prefix for the files created by ml neb')
     args = parser.parse_args()
 
-    main(args.path, args.name)
+    main(path_file=args.path, out_prefix=args.name)

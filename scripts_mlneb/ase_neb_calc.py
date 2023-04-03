@@ -44,7 +44,7 @@ def main(path_file: str, restart_file: Optional[str] = None, out_prefix: Optiona
 
     neb = NEB(images, parallel=True, climb=True)
 
-    qn = FIRE(neb, logfile='qn.log', trajectory=f'{prefix}_fire_neb.traj')
+    qn = FIRE(neb, logfile=f'{prefix}_fire_neb.log', trajectory=f'{prefix}_fire_neb.traj')
     qn.run(fmax=0.03)
 
 if __name__ == '__main__':

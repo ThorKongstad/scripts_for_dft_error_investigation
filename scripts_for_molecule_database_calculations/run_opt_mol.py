@@ -15,8 +15,10 @@ from ase.parallel import parprint, world
 
 
 def folder_exist(folder_name: str) -> NoReturn:
-    if not folder_name in os.listdir(): os.mkdir(folder_name)
-
+    try:
+        if not folder_name in os.listdir(): os.mkdir(folder_name)
+    except:
+        folder_exist(folder_name)
 
 def sanitize(unclean_str: str) -> str:
     for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'.',',']: unclean_str = unclean_str.replace(ch, '')

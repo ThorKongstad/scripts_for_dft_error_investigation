@@ -28,7 +28,7 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     # read from  database
     #atoms = read(f'/groups/kemi/thorkong/errors_investigation/molreact.db@id={db_id}')
 
-    if not os.path.basename(db_dir) in os.listdir(os.path.dirname(db_dir)): raise FileNotFoundError("Can't find database")
+    if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir))>0 else '.'): raise FileNotFoundError("Can't find database")
 
     with db.connect(db_dir) as db_obj:
         row = db_obj.get(selection=f'id={db_id}')

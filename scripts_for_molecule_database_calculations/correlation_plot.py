@@ -90,7 +90,7 @@ def correlation_plot(reaction_1:reaction,reaction_2:reaction,dbo,functional_list
 
 
 def main(reaction_index_1:int,reaction_index_2:int,db_dir: str = 'molreact.db'):
-    if not os.path.basename(db_dir) in os.listdir(os.path.dirname(db_dir)): raise FileNotFoundError("Can't find database")
+    if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir))>0 else '.'): raise FileNotFoundError("Can't find database")
     db_obj = db.connect(db_dir)
     functionals = ('PBE', 'RPBE', 'BEEF-vdW', "{'name':'BEEF-vdW','backend':'libvdwxc'}")
 

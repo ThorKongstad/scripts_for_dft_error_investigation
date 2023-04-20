@@ -14,7 +14,7 @@ def multi_filter_and(row:AtomsRow,funcs:Sequence[Callable[[AtomsRow],bool]]) -> 
 
 
 def main(key: str, python_scibt: str, filter: Optional[str] = None, db_dir: str = 'molreact.db'):
-    if not os.path.basename(db_dir) in os.listdir(os.path.dirname(db_dir)): raise FileNotFoundError("Can't find database")
+    if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir))>0 else '.'): raise FileNotFoundError("Can't find database")
     func_list = []
     if filter is not None:
         for fil in filter.split(','):

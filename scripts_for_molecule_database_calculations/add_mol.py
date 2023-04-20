@@ -22,7 +22,7 @@ def sanitize(unclean_str: str) -> str:
     return unclean_str
 
 
-def main(smile: str, functional: str, db_dir: str = 'molreact.db', setup_path: str | False = False, grid_spacing: float = 0.16) -> NoReturn:
+def main(smile: str, functional: str, db_dir: str = 'molreact.db', setup_path: str | bool = False, grid_spacing: float = 0.16) -> NoReturn:
     # create ase mol
     if smile == '[HH]': atoms = Cluster(molecule('H2'))  # pubchem search hates hydrogen, it hates its name, it hates its cid and most of all it hates its weird smile and dont you dare confuse HH for hydrogen
     elif 'cid' in smile: atoms = Cluster(pubchem_atoms_search(cid=int(smile.replace('cid',''))))

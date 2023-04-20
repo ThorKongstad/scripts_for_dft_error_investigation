@@ -42,7 +42,7 @@ if __name__ == '__main__':
     parser.add_argument('functional',help='str denoting what fucntional to calculate with')
     parser.add_argument('-db','--database',help='name or directory for the database, if not stated will make a molreact.db in pwd.', default='molreact.db')
     parser.add_argument('--setup', '-s')
-    parser.add_argument('--grid_spacing', '-g')
+    parser.add_argument('--grid_spacing', '-g', default=0.16)
     args = parser.parse_args()
 
     main(smile=args.smiles_str, functional=args.functional, setup_path=args.setup, grid_spacing=args.grid_spacing, db_dir=args.database)

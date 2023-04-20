@@ -2,7 +2,7 @@ import argparse
 import ase.db as db
 from ase.db.row import AtomsRow
 import os
-from typing import Sequence, Callable
+from typing import Sequence, Callable, Optional
 
 def isgga(row: AtomsRow) -> bool: return row.get('xc') in ('PBE','RPBE','BEEF-vdW',"{'name':'BEEF-vdW','backend':'libvdwxc'}")
 def ismgga(row: AtomsRow) -> bool: return row.get('xc') in ('MGGA_X_REVM06_L+MGGA_C_REVM06_L','MGGA_X_TPSS+MGGA_C_TPSS','MGGA_X_R2SCAN+MGGA_C_R2SCAN','MGGA_X_R4SCAN+MGGA_C_R2SCAN')
@@ -13,7 +13,8 @@ def multi_filter_or(row:AtomsRow,funcs:Sequence[Callable[[AtomsRow],bool]]) -> b
 def multi_filter_and(row:AtomsRow,funcs:Sequence[Callable[[AtomsRow],bool]]) -> bool: return all(func(row) for func in funcs)
 
 
-def main(key: str, python_scibt: str, filter:str|None = None):
+def main(key: str, python_scibt: str, filter: Optional[str] = None, db_dir: str = 'molreact.db'):
+    if not os.path.basename(db_dir) in os.listdir(os.path.dirname(db_dir)): raise FileNotFoundError("Can't find database")
     func_list = []
     if filter is not None:
         for fil in filter.split(','):
@@ -29,18 +30,19 @@ def main(key: str, python_scibt: str, filter:str|None = None):
     else: filter={}
 
 
-    with db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db') as db_obj:
+    with db.connect(db_dir) as db_obj:
         row_iter = db_obj.select(selection=key,**filter)
 
     for row in row_iter:
-        os.system(f'/groups/kemi/thorkong/errors_investigation/submit_katla_omp {python_scibt} {row.get("id")}')
+        os.system(f'/groups/kemi/thorkong/katla_submission/submit_katla_GP228_static {python_scibt} {row.get("id")} -db {db_dir}')
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('keyword', help='must match keywords used in db selection')
     parser.add_argument('python_scipt')
+    parser.add_argument('-db','--database',help='directory to the database, if not stated will look for molreact.db in pwd.', default='molreact.db')
     parser.add_argument('--filter','-f', help='current implemented filters are isgga, ismgga and collNotExist="COLLOM" t. a "," denotes an or and "&&" denotes an and')
     args = parser.parse_args()
 
-    main(args.keyword, args.python_scipt,args.filter)
+    main(args.keyword, args.python_scipt,args.filter, args.database)

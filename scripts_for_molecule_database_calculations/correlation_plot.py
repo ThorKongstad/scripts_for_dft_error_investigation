@@ -89,8 +89,9 @@ def correlation_plot(reaction_1:reaction,reaction_2:reaction,dbo,functional_list
     else: fig.savefig('reaction_plots/correlation_plot.png')
 
 
-def main(reaction_index_1:int,reaction_index_2:int):
-    db_obj = db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db')
+def main(reaction_index_1:int,reaction_index_2:int,db_dir: str = 'molreact.db'):
+    if not os.path.basename(db_dir) in os.listdir(os.path.dirname(db_dir)): raise FileNotFoundError("Can't find database")
+    db_obj = db.connect(db_dir)
     functionals = ('PBE', 'RPBE', 'BEEF-vdW', "{'name':'BEEF-vdW','backend':'libvdwxc'}")
 
     reactions = [
@@ -144,7 +145,8 @@ if __name__ == '__mmain__':
     parser = argparse.ArgumentParser()
     parser.add_argument('reaction_1',type=int)
     parser.add_argument('reaction_2',type=int)
+    parser.add_argument('-db','--database',help='directory to the database, if not stated will look for molreact.db in pwd.', default='molreact.db')
     args = parser.parse_args()
 
-    main(args.reaction_1,args.reaction_2)
+    main(args.reaction_1, args.reaction_2, args.database)
 

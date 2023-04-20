@@ -2,6 +2,7 @@
 #nprocshared=1
 #mem=4000MB
 #constrain='[v1|v2|v3|v4|v5]'
+import argparse
 
 import ase.db as db
 import os
@@ -92,9 +93,11 @@ def get_dat(reactions,functionals,dbo):
     for func in functionals:
         print(f'{func} mean error:  {sum(fabs(reaction_enthalpy(reac, func, dbo) - reac.experimental_ref) for reac in reactions) / len(reactions)}')
 
-def main():
+def main(db_dir: str = 'molreact.db'):
 
-    db_obj = db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db')
+    if not os.path.basename(db_dir) in os.listdir(os.path.dirname(db_dir)): raise FileNotFoundError("Can't find database")
+
+    db_obj = db.connect(db_dir)
     functionals = ('PBE','RPBE','BEEF-vdW',"{'name':'BEEF-vdW','backend':'libvdwxc'}")
 
 #    {'CCC', 'O', 'C=CC=C', 'C', 'cid281', 'CC(C)O', 'C1CCCCC1', 'O=CO', 'OO', 'COC', 'C1=CC=C(C=C1)O', 'CCO', 'C(=O)=O', 'O=O', 'COC=O', 'CCCC', 'C1=CC=CC=C1', 'CC(O)=O', 'C=C', 'CC', '[HH]', 'CO'}
@@ -150,4 +153,8 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-db','--database',help='directory to the database, if not stated will look for molreact.db in pwd.', default='molreact.db')
+    args = parser.parse_args()
+
+    main(args.database)

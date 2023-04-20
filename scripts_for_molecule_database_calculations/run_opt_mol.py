@@ -26,12 +26,12 @@ def sanitize(unclean_str: str) -> str:
     for ch in ['=', '+', ':']: unclean_str = unclean_str.replace(ch, '-')
     return unclean_str
 
-def main(db_id:int):
+def main(db_id:int, db_dir: str = 'molreact.db'):
 
     # read from  database
     #atoms = read(f'/groups/kemi/thorkong/errors_investigation/molreact.db@id={db_id}')
-
-    with db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db') as db_obj:
+    if not os.path.basename(db_dir) in os.listdir(os.path.dirname(db_dir)): raise FileNotFoundError("Can't find database")
+    with db.connect(db_dir) as db_obj:
         row = db_obj.get(selection=f'id={db_id}')
         functional = row.get('xc')
         atoms = row.toatoms()
@@ -72,12 +72,13 @@ def main(db_id:int):
     # run relaxation to a maximum force of 0.03 eV / Angstroms
     dyn.run(fmax=0.03)
     if world.rank == 0:
-        with db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db') as db_obj:
+        with db.connect(db_dir) as db_obj:
             db_obj.update(db_id, atoms=atoms, relaxed=True, vibration=False, vib_en=None)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('data_base_id',type=int)
+    parser.add_argument('-db','--database',help='directory to the database, if not stated will look for molreact.db in pwd.', default='molreact.db')
     args = parser.parse_args()
 
-    main(args.data_base_id)
+    main(args.data_base_id, args.database)

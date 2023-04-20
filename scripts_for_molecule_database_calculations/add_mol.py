@@ -22,7 +22,7 @@ def sanitize(unclean_str: str) -> str:
     return unclean_str
 
 
-def main(smile: str, functional: str, setup_path: str | None = None, grid_spacing: float = 0.16) -> NoReturn:
+def main(smile: str, functional: str, db_dir: str = 'molreact.db', setup_path: str | None = None, grid_spacing: float = 0.16) -> NoReturn:
     # create ase mol
     if smile == '[HH]': atoms = Cluster(molecule('H2'))  # pubchem search hates hydrogen, it hates its name, it hates its cid and most of all it hates its weird smile and dont you dare confuse HH for hydrogen
     elif 'cid' in smile: atoms = Cluster(pubchem_atoms_search(cid=int(smile.replace('cid',''))))
@@ -31,7 +31,7 @@ def main(smile: str, functional: str, setup_path: str | None = None, grid_spacin
 
     # connect to db
 
-    with db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db') as db_obj:
+    with db.connect(db_dir) as db_obj:
         # db_id = db_obj.reserve(xc = functional, smiles=smile)
         db_obj.write(atoms=atoms, xc=functional, smiles=smile, relaxed=False, vibration=False, grid_spacing=grid_spacing, setup=setup_path)
 
@@ -40,8 +40,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('smiles_str')
     parser.add_argument('functional',help='str denoting what fucntional to calculate with')
+    parser.add_argument('-db','--database',help='name or directory for the database, if not stated will make a molreact.db in pwd.', default='molreact.db')
     parser.add_argument('--setup', '-s')
     parser.add_argument('--grid_spacing', '-g')
     args = parser.parse_args()
 
-    main(smile=args.smiles_str, functional=args.functional, setup_path=args.setup, grid_spacing=args.grid_spacing)
+    main(smile=args.smiles_str, functional=args.functional, setup_path=args.setup, grid_spacing=args.grid_spacing, db_dir=args.database)

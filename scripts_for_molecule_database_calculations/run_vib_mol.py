@@ -43,10 +43,10 @@ def clean_old_files(db_id,smile,functional_folder):
         os.system(f'mv -f "{ends_with(functional_folder,"/")}{old_folder}" {file_nexist(old_folder,f"{functional_folder}/old_vibs",rm_flags="-r",return_path=True)}')
         os.wait()
 
-def main(db_id:int, clean_old:bool=True):
+def main(db_id:int, clean_old:bool=True, db_dir: str = 'molreact.db'):
     # read from  database
-
-    with db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db') as db_obj:
+    if not os.path.basename(db_dir) in os.listdir(os.path.dirname(db_dir)): raise FileNotFoundError("Can't find database")
+    with db.connect(db_dir) as db_obj:
         row = db_obj.get(selection=f'id={db_id}')
         if row.get('relaxed'): atoms = row.toatoms()
         else: raise f"atoms at row id: {db_id} haven't been relaxed."
@@ -93,12 +93,13 @@ def main(db_id:int, clean_old:bool=True):
             energy_string = fil.read()
 
         # saving vib data
-        with db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db') as db_obj:
+        with db.connect(db_dir) as db_obj:
             db_obj.update(db_id, vibration=True, vib_en=energy_string)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('data_base_id',type=int)
+    parser.add_argument('-db','--database',help='directory to the database, if not stated will look for molreact.db in pwd.', default='molreact.db')
     args = parser.parse_args()
 
-    main(args.data_base_id)
+    main(args.data_base_id, db_dir=args.database)

@@ -73,7 +73,7 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     dyn.run(fmax=0.03)
     if world.rank == 0:
         with db.connect(db_dir) as db_obj:
-            db_obj.update(db_id, atoms=atoms, relaxed=True, vibration=False, vib_en=None)
+            db_obj.update(db_id, atoms=atoms, relaxed=True, vibration=False, vib_en=False)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

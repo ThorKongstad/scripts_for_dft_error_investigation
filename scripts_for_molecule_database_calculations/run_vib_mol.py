@@ -20,7 +20,7 @@ def folder_exist(folder_name: str, path: str = '.') -> NoReturn:
 
 def file_dont_exist(file_name: str, path: str = '.', rm_flags='', return_path: bool = False) -> NoReturn | str:
     if file_name in os.listdir(path):
-        call(f'rm {rm_flags} "{ends_with(path,"/")}{file_name}"')
+        call(['rm', f'{rm_flags}', f"'{ends_with(path,'/')}{file_name}'"])
     if return_path: return f'{ends_with(path,"/")}{file_name}'
 
 
@@ -38,12 +38,11 @@ def sanitize(unclean_str: str) -> str:
 def clean_old_files(functional_folder, file_name):
     os.getcwd()
     if file_name in os.listdir(functional_folder):
-        folder_exist(f'old_vibs',path=functional_folder)
-        call(f'mv -f "{ends_with(functional_folder,"/")}{file_name}" "{file_dont_exist(file_name, f"{functional_folder}/old_vibs", return_path=True)}"')
+        folder_exist(f'old_vibs', path=functional_folder)
+        call(['mv','-f',f"'{ends_with(functional_folder,'/')}{file_name}'",f"'{file_dont_exist(file_name, f'{functional_folder}/old_vibs', return_path=True)}'"])
     if (old_folder := file_name.replace('.txt','')) in os.listdir(functional_folder):
-        folder_exist(f'old_vibs',path=functional_folder)
-        call(f'mv -f "{ends_with(functional_folder,"/")}{old_folder}" {file_dont_exist(old_folder, f"{functional_folder}/old_vibs", rm_flags="-r", return_path=True)}')
-
+        folder_exist(f'old_vibs', path=functional_folder)
+        call(['mv','-f',f"'{ends_with(functional_folder,'/')}{old_folder}'",f"'{file_dont_exist(old_folder, f'{functional_folder}/old_vibs', rm_flags='-r', return_path=True)}'"])
 
 def main(db_id: int, clean_old: bool = True, db_dir: str = 'molreact.db'):
     # read from  database
@@ -63,7 +62,7 @@ def main(db_id: int, clean_old: bool = True, db_dir: str = 'molreact.db'):
         parprint('grid spacing could not be found in the database entry and was set to 0.16')
 
     functional_folder = sanitize(functional)
-    folder_exist(functional_folder)
+    if world.rank == 0: folder_exist(functional_folder)
     file_name = f'vib_{smile}_{db_id}.txt'
 
     if world.rank == 0 and clean_old: clean_old_files(functional_folder, file_name)

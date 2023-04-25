@@ -88,7 +88,7 @@ def main(db_id: int, clean_old: bool = True, db_dir: str = 'molreact.db'):
     #vib_dat = vib.get_vibrations()
 
     if world.rank == 0:
-        vib.summary(log=f'{functional_folder}/{file_name}')
+        vib.summary(log=f'{functional_folder}/{file_name.replace("vib","vib_en")}')
 
         with open(f'{functional_folder}/{file_name.replace("vib","vib_en") }', 'r') as fil:
             energy_string = fil.read()

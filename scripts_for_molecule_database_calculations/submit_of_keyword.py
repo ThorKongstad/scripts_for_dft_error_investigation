@@ -2,6 +2,7 @@ import argparse
 import ase.db as db
 from ase.db.row import AtomsRow
 import os
+from subprocess import call
 from typing import Sequence, Callable, Optional
 
 def isgga(row: AtomsRow) -> bool: return row.get('xc') in ('PBE','RPBE','BEEF-vdW',"{'name':'BEEF-vdW','backend':'libvdwxc'}")
@@ -34,7 +35,7 @@ def main(key: str, python_scibt: str, filter: Optional[str] = None, db_dir: str 
         row_iter = db_obj.select(selection=key,**filter)
 
     for row in row_iter:
-        os.system(f'/groups/kemi/thorkong/katla_submission/submit_katla_GP228_static {python_scibt} {row.get("id")} -db {db_dir}')
+        call([f'/groups/kemi/thorkong/katla_submission/submit_katla_GP228_static',python_scibt,row.get("id"),'-db',db_dir])
 
 
 if __name__ == '__main__':

@@ -35,7 +35,7 @@ def main(key: str, python_scibt: str, filter: Optional[str] = None, db_dir: str 
         row_iter = db_obj.select(selection=key,**filter)
 
     for row in row_iter:
-        call([f'/groups/kemi/thorkong/katla_submission/submit_katla_GP228_static',python_scibt,row.get("id"),'-db',db_dir])
+        call([f'/groups/kemi/thorkong/katla_submission/submit_katla_GP228_static',python_scibt,str(row.get("id")),'-db',db_dir])
 
 
 if __name__ == '__main__':

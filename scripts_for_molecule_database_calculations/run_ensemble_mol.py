@@ -11,10 +11,20 @@ from gpaw.utilities import h2gpts
 from typing import NoReturn
 from ase.parallel import parprint, world
 from ase.dft.bee import BEEFEnsemble
+import time
 
 
-def folder_exist(folder_name: str) -> NoReturn:
-    if not folder_name in os.listdir(): os.mkdir(folder_name)
+def folder_exist(folder_name: str, path: str = '.', tries: int = 10) -> NoReturn:
+    try:
+        tries -= 1
+        if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/')+folder_name)
+    except FileExistsError:
+        time.sleep(2)
+        if tries > 0: folder_exist(folder_name, path=path, tries=tries)
+
+
+def ends_with(string: str, end_str: str) -> str:
+    return string + end_str * (end_str != string[-len(end_str):0])
 
 
 def sanitize(unclean_str: str) -> str:
@@ -49,7 +59,7 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
         parprint('grid spacing could not be found in the database entry and was set to 0.16')
 
     functional_folder = sanitize(functional)
-    folder_exist(functional_folder)
+    if world.rank == 0: folder_exist(functional_folder)
 
     if setup_path: setup_dic = {}
     else: setup_dic = {}

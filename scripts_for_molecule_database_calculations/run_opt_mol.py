@@ -5,6 +5,7 @@
 
 import argparse
 import os
+import time
 from ase.io import *
 from ase.optimize import QuasiNewton
 import ase.db as db
@@ -14,11 +15,19 @@ from typing import NoReturn
 from ase.parallel import parprint, world
 
 
-def folder_exist(folder_name: str) -> NoReturn:
+def folder_exist(folder_name: str, path: str = '.', tries: int = 10) -> NoReturn:
     try:
-        if not folder_name in os.listdir(): os.mkdir(folder_name)
-    except:
-        folder_exist(folder_name)
+        tries -= 1
+        if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/')+folder_name)
+    except FileExistsError:
+        if tries > 0:
+            time.sleep(2)
+            folder_exist(folder_name, path=path, tries=tries)
+
+
+def ends_with(string: str, end_str: str) -> str:
+    return string + end_str * (end_str != string[-len(end_str):0])
+
 
 def sanitize(unclean_str: str) -> str:
     for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'.',',']: unclean_str = unclean_str.replace(ch, '')

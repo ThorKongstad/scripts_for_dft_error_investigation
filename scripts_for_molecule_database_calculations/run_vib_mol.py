@@ -5,6 +5,7 @@
 
 import argparse
 import os
+import time
 from subprocess import call
 import ase.db as db
 from ase.vibrations import Vibrations
@@ -14,8 +15,13 @@ from typing import NoReturn
 from ase.parallel import parprint, world
 
 
-def folder_exist(folder_name: str, path: str = '.') -> NoReturn:
-    if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/')+folder_name)
+def folder_exist(folder_name: str, path: str = '.', tries: int = 10) -> NoReturn:
+    try:
+        tries -= 1
+        if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/')+folder_name)
+    except FileExistsError:
+        time.sleep(2)
+        if tries > 0: folder_exist(folder_name, path=path, tries=tries)
 
 
 def file_dont_exist(file_name: str, path: str = '.', rm_flags='', return_path: bool = False) -> NoReturn | str:

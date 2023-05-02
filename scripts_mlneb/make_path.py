@@ -65,7 +65,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--images', default=6, type=int, help='Number of images in the path.')
     parser.add_argument('-idpp', '--idpp', action='store_true', help='A bool indicating the use of idpp for interpolating')
     parser.add_argument('-o', '--path_name', type=str, help='Name for the path traj file.')
-    parser.add_argument('-con','--constrain', default=False, action='store_true',type=bool,help='if called will constrain the buttom')
+    parser.add_argument('-con','--constrain', default=False, action='store_true',help='if called will constrain the buttom')
     args = parser.parse_args()
 
     main(args.initial, args.finale, args.images, args.path_name, args.idpp, constrain_buttom=args.constrain)

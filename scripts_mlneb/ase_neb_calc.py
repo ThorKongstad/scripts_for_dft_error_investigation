@@ -37,7 +37,7 @@ def main(path_file: str, restart_file: Optional[str] = None, out_prefix: Optiona
                         xc = "RPBE",
                         communicator=ranks,
                         txt=f'{prefix}_ase-NEB.txt',
-                        parallel = {'augment_grids':True,'sl_auto':True})
+                        parallel = {'augment_grids': True, 'sl_auto': True})
              image.set_calculator(calc)
         images.append(image)
     images.append(final)
@@ -51,7 +51,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('path', type=str, help='Directory to path file.')
     #parser.add_argument('-res', '--restart_file', type=str, help='Directory to the restart file.')
-    parser.add_argument('-n', '--name', type=str, help='prefix for the files created by ml neb')
+    parser.add_argument('-n', '--name', type=str, help='prefix for the files created by ase neb')
     args = parser.parse_args()
 
     main(path_file=args.path, out_prefix=args.name)

@@ -29,12 +29,13 @@ def ends_with(string: str, end_str: str) -> str:
     return string + end_str * (end_str != string[-len(end_str):0])
 
 
-def main(initial_file: str, finale_file: str, nr_images: int = 6, path_file_name: Optional[str] = None, idpp: bool = False):
+def main(initial_file: str, finale_file: str, nr_images: int = 6, path_file_name: Optional[str] = None, idpp: bool = False, constrain_buttom: bool = True):
 
     initial, finale = read_inputs(initial_file), read_inputs(finale_file)
 
-    fix_buttom(initial)
-    fix_buttom(finale)
+    if constrain_buttom:
+        fix_buttom(initial)
+        fix_buttom(finale)
 
     images = [initial]
 
@@ -64,6 +65,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--images', default=6, type=int, help='Number of images in the path.')
     parser.add_argument('-idpp', '--idpp', action='store_true', help='A bool indicating the use of idpp for interpolating')
     parser.add_argument('-o', '--path_name', type=str, help='Name for the path traj file.')
+    parser.add_argument('-con','--constrain', default=False, action='store_true',type=bool,help='if called will constrain the buttom')
     args = parser.parse_args()
 
-    main(args.initial, args.finale, args.images, args.path_name, args.idpp)
+    main(args.initial, args.finale, args.images, args.path_name, args.idpp, constrain_buttom=args.constrain)

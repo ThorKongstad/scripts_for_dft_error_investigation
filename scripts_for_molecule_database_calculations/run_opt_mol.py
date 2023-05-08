@@ -30,9 +30,9 @@ def ends_with(string: str, end_str: str) -> str:
 
 
 def sanitize(unclean_str: str) -> str:
-    for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'.',',']: unclean_str = unclean_str.replace(ch, '')
+    for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'"','.']: unclean_str = unclean_str.replace(ch, '')
     for ch in ['/', '\\', '|',' ']: unclean_str = unclean_str.replace(ch, '_')
-    for ch in ['=', '+', ':']: unclean_str = unclean_str.replace(ch, '-')
+    for ch in ['=', '+', ':',',']: unclean_str = unclean_str.replace(ch, '-')
     return unclean_str
 
 def main(db_id:int, db_dir: str = 'molreact.db'):

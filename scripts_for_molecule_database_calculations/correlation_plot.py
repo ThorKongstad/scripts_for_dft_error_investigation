@@ -1,11 +1,17 @@
 import ase.db as db
+from ase.db.core import bytes_to_object
 import os
 import argparse
 from dataclasses import dataclass
-from typing import Sequence, NoReturn, Tuple
+from typing import Sequence, NoReturn, Tuple, Iterable, Optional
 from math import fabs
 import matplotlib.pyplot as plt
 import numpy as np
+import time
+import pandas as pd
+import plotly.express as px
+import plotly.graph_objects as go
+
 
 @dataclass
 class reaction:
@@ -16,64 +22,123 @@ class reaction:
     def toStr(self) -> str:
         return ' + '.join([f'{n}{smi if smi != "cid281" else "C|||O"}' for smi,n in self.reactants]) + ' ---> ' + ' + '.join([f'{n}{smi  if smi != "cid281" else "C|||O"}' for smi,n in self.products])
 
-def folder_exist(folder_name: str, path:str = '.') -> NoReturn:
-    if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/')+folder_name)
 
-def ends_with(st:str, end:str) -> str:
-    if st[-1] != end: return st+end
-    else: return st
+def folder_exist(folder_name: str, path: str = '.', tries: int = 10) -> NoReturn:
+    try:
+        tries -= 1
+        if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/')+folder_name)
+    except FileExistsError:
+        time.sleep(2)
+        if tries > 0: folder_exist(folder_name, path=path, tries=tries)
 
-def reaction_enthalpy(reac:reaction, functional:str, dbo=None,bee:bool = False) -> float|Tuple[float,float]:
-    if dbo == None:dbo = db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db')
+
+def ends_with(string: str, end_str: str) -> str:
+    return string + end_str * (end_str != string[-len(end_str):0])
+
+
+def reaction_enthalpy(reac: reaction, functional: str, dbo: db.core.Database | pd.DataFrame = None, bee: bool = False) -> float | Tuple[float, float]:
+    if dbo is None: dbo = db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db')
 
     # exception for the wrong 37 row
     # if dbo.get([('smiles','=',smile),('xc','=',functional)]).get('id') != 37 else -21.630*amount
 
-    reac_enthalpy = sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')*amount for smile,amount in reac.reactants)
-    prod_enthalpy = sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')*amount for smile,amount in reac.products)
+    if isinstance(dbo, db.core.Database):
+        reac_enthalpy = sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')*amount for smile,amount in reac.reactants)
+        prod_enthalpy = sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')*amount for smile,amount in reac.products)
 
-    if bee and functional in ('BEEF-vdW'):#,"{'name':'BEEF-vdW','backend':'libvdwxc'}"):
-        reac_ensamble_enthalpy = np.sum((np.array(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('data').get('ensemble_en')[:]+(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')-dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')))*amount for smile,amount in reac.reactants),axis=0)
-        prod_ensamble_enthalpy = np.sum((np.array(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('data').get('ensemble_en')[:]+(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')-dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')))*amount for smile,amount in reac.products),axis=0)
-        error_dev = (prod_ensamble_enthalpy-reac_ensamble_enthalpy).std()
-        return error_dev, prod_enthalpy - reac_enthalpy
-    return prod_enthalpy - reac_enthalpy
+        if bee and functional in ('BEEF-vdW',):  # ,"{'name':'BEEF-vdW','backend':'libvdwxc'}"):
+            reac_ensamble_enthalpy = np.sum((np.array(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('data').get('ensemble_en')[:]+(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')-dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')))*amount for smile,amount in reac.reactants),axis=0)
+            prod_ensamble_enthalpy = np.sum((np.array(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('data').get('ensemble_en')[:]+(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')-dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')))*amount for smile,amount in reac.products),axis=0)
+            error_dev = (prod_ensamble_enthalpy-reac_ensamble_enthalpy).std()
+            return error_dev, prod_enthalpy - reac_enthalpy
+        return prod_enthalpy - reac_enthalpy
 
-def BEE_reaction_enthalpy(reac:reaction, functional:str, dbo=None)-> np.ndarray:
+    elif isinstance(dbo, pd.DataFrame):
+        reac_enthalpy = sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('enthalpy')*amount for smile,amount in reac.reactants)
+        prod_enthalpy = sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('enthalpy')*amount for smile,amount in reac.products)
+
+        if bee and functional in ('BEEF-vdW',):
+            reac_ensamble_enthalpy = np.sum((np.array(bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('_data').iloc[0]).get('ensemble_en')[:]
+                                                      +(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('enthalpy')
+                                                        -dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('energy')))*amount for smile,amount in reac.reactants),axis=0)
+            prod_ensamble_enthalpy = np.sum((np.array(bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('_data').iloc[0]).get('ensemble_en')[:]
+                                                      +(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('enthalpy')
+                                                      - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('energy')))*amount for smile,amount in reac.products),axis=0)
+            error_dev = (prod_ensamble_enthalpy-reac_ensamble_enthalpy).std()
+            return error_dev, prod_enthalpy - reac_enthalpy
+        return prod_enthalpy - reac_enthalpy
+    raise ValueError('The type of database object was not recognised')
+
+
+
+def BEE_reaction_enthalpy(reac:reaction, functional:str, dbo: Optional[db.core.Database | pd.DataFrame] = None) -> np.ndarray:
     if dbo == None:dbo = db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db')
-    reac_ensamble_enthalpy = sum((np.array(
-        dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en')[:] + (
-                    dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('enthalpy') - dbo.get(
-                [('smiles', '=', smile), ('xc', '=', functional)]).get('energy'))) * amount for smile, amount in
-                                     reac.reactants))
-    prod_ensamble_enthalpy = sum((np.array(
-        dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en')[:] + (
-                    dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('enthalpy') - dbo.get(
-                [('smiles', '=', smile), ('xc', '=', functional)]).get('energy'))) * amount for smile, amount in
-                                     reac.products))
-    return reac_ensamble_enthalpy-prod_ensamble_enthalpy
+    if isinstance(dbo, db.core.Database):
+        reac_ensamble_enthalpy = np.sum((np.array(
+            dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en')[:] + (
+                        dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('enthalpy') - dbo.get(
+                    [('smiles', '=', smile), ('xc', '=', functional)]).get('energy'))) * amount for smile, amount in
+                                         reac.reactants), axis=0)
+        prod_ensamble_enthalpy = np.sum((np.array(
+            dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en')[:] + (
+                        dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('enthalpy') - dbo.get(
+                    [('smiles', '=', smile), ('xc', '=', functional)]).get('energy'))) * amount for smile, amount in
+                                         reac.products), axis=0)
+        return reac_ensamble_enthalpy - prod_ensamble_enthalpy
 
-def BEE_reaction_enthalpy_final_energy_correction(reac:reaction, functional:str, dbo=None)-> np.ndarray:
+    elif isinstance(dbo, pd.DataFrame):
+        reac_ensamble_enthalpy = np.sum((np.array(
+            bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('_data').iloc[0]).get('ensemble_en')[:]
+            + (dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('enthalpy')
+            - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('energy'))) * amount
+                                      for smile, amount in reac.reactants), axis=0)
+        prod_ensamble_enthalpy = np.sum((np.array(
+            bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('_data').iloc[0]).get('ensemble_en')[:] + (
+                        dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('enthalpy')
+                        - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('energy'))) * amount for smile, amount in reac.products), axis=0)
+        return reac_ensamble_enthalpy - prod_ensamble_enthalpy
+    raise ValueError('The type of database object was not recognised')
+
+
+def BEE_reaction_enthalpy_final_energy_correction(reac:reaction, functional:str, dbo: Optional[db.core.Database | pd.DataFrame] = None) -> np.ndarray:
     if dbo == None:dbo = db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db')
-    correction = reaction_enthalpy(reac, functional, dbo) \
-                 -(sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')*amount for smile,amount in reac.reactants)
-                 -sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')*amount for smile,amount in reac.products))
-    reac_ensamble_enthalpy = sum(np.array(
-        dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en'))[:] * amount for smile, amount in
-                                     reac.reactants)
-    prod_ensamble_enthalpy = sum(np.array(
-        dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en'))[:] * amount for smile, amount in
-                                     reac.products)
-    return reac_ensamble_enthalpy-prod_ensamble_enthalpy + correction
+    if isinstance(dbo, db.core.Database):
+        correction = reaction_enthalpy(reac, functional, dbo) \
+                     -(sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')*amount for smile,amount in reac.reactants)
+                     -sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')*amount for smile,amount in reac.products))
+        reac_ensamble_enthalpy = sum(np.array(
+            dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en'))[:] * amount for smile, amount in
+                                         reac.reactants)
+        prod_ensamble_enthalpy = sum(np.array(
+            dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en'))[:] * amount for smile, amount in
+                                         reac.products)
+        return reac_ensamble_enthalpy - prod_ensamble_enthalpy + correction
 
-def correlation_plot(reaction_1:reaction,reaction_2:reaction,dbo,functional_list:Sequence[str],reaction_indexes:Tuple[int,int]|None=None):
+    elif isinstance(dbo, pd.DataFrame):
+        correction = reaction_enthalpy(reac, functional, dbo) \
+                     -(sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('energy')*amount for smile,amount in reac.reactants)
+                     -sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('energy')*amount for smile,amount in reac.products))
+        reac_ensamble_enthalpy = sum(np.array(
+            bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('_data').iloc[0]).get('ensemble_en'))[:] * amount for smile, amount in reac.reactants)
+        prod_ensamble_enthalpy = sum(np.array(
+            bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy != NaN').get('_data').iloc[0]).get('ensemble_en'))[:] * amount for smile, amount in reac.products)
+        return reac_ensamble_enthalpy - prod_ensamble_enthalpy + correction
+
+    raise ValueError('The type of database object was not recognised')
+
+
+def correlation_plot(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame, reaction_indexes: Optional[Tuple[int,int]] = None):
     fig, ax = plt.subplots()
 
+    if isinstance(dbo, db.core.Database): functional_list = {row.get('xc') for row in dbo.select()}
+    elif isinstance(dbo, pd.DataFrame): functional_list = {xc for row in dbo.iterrows() if not pd.isna((xc := row.get('xc')))}
+    else: raise ValueError('The type of database object was not recognised')
+
     for c_nr, func in enumerate(functional_list):
-        ax.scatter(x=reaction_enthalpy(reaction_1,func,dbo),y=reaction_enthalpy(reaction_2,func,dbo),label= func)
+        ax.scatter(x=reaction_enthalpy(reaction_1, func, dbo), y=reaction_enthalpy(reaction_2, func, dbo), label=func)
         if func == 'BEEF-vdW':
             try:
-                ax.scatter(x=BEE_reaction_enthalpy(reaction_1,func,dbo).tolist(),y=BEE_reaction_enthalpy(reaction_2,func,dbo).tolist(),label=f'BEE for {func}',c='grey',alpha=0.2)
+                ax.scatter(x=BEE_reaction_enthalpy(reaction_1, func, dbo).tolist(), y=BEE_reaction_enthalpy(reaction_2, func, dbo).tolist(), label=f'BEE for {func}', c='grey', alpha=0.2)
             except: pass
     ax.scatter(x=reaction_1.experimental_ref,y=reaction_2.experimental_ref,label='experimental ref',marker='X',c='firebrick')
 
@@ -89,10 +154,44 @@ def correlation_plot(reaction_1:reaction,reaction_2:reaction,dbo,functional_list
     else: fig.savefig('reaction_plots/correlation_plot.png')
 
 
-def main(reaction_index_1:int,reaction_index_2:int,db_dir: str = 'molreact.db'):
-    if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir))>0 else '.'): raise FileNotFoundError("Can't find database")
-    db_obj = db.connect(db_dir)
-    functionals = ('PBE', 'RPBE', 'BEEF-vdW', "{'name':'BEEF-vdW','backend':'libvdwxc'}")
+def correlation_plotly(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame, reaction_indexes: Optional[Tuple[int,int]] = None):
+    fig = go.Figure()
+
+    functionals = {xc for func in dbo.iterrows() if not pd.isna((xc := func.get('xc')))}
+
+    for c_nr, func in enumerate(functionals):
+        try:
+            fig.add_trace(go.Scatter(
+             x=reaction_enthalpy(reaction_1, func, dbo),
+             y=reaction_enthalpy(reaction_2, func, dbo),
+             name=func,
+             mode='markers'))
+            if func == 'BEEF-vdW':
+                try:
+                    fig.add_trace(go.Scatter(
+                        x=BEE_reaction_enthalpy(reaction_1, func, dbo).tolist(),
+                        y=BEE_reaction_enthalpy(reaction_2, func, dbo).tolist(),
+                        name=f'BEE for {func}',
+                        mode='markers',
+                        marker=dict(color='Grey',opacity=0.5,)
+                    ))
+                except: pass
+        except: continue
+
+    fig.update_layout(
+        xaxis_title=reaction_1.toStr(),
+        yaxis_title=reaction_2.toStr()
+    )
+
+
+def main(reaction_index_1:int,reaction_index_2:int, db_dir: Sequence[str] = 'molreact.db'):
+    #if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir)) > 0 else '.'): raise FileNotFoundError("Can't find database")
+    #db_obj = db.connect(db_dir)
+    #functionals = {row.get('xc') for row in db_obj.select()}
+    #functionals = ('PBE', 'RPBE', 'BEEF-vdW', "{'name':'BEEF-vdW','backend':'libvdwxc'}")
+
+    db_list = [db.connect(work_db) for work_db in db_dir]
+    pd_dat = pd.DataFrame([row.__dict__ for work_db in db_list for row in work_db.select()])
 
     reactions = [
         reaction((('[HH]', 1), ('C(=O)=O', 1)), (('cid281', 1), ('O', 1)), 0.43),  # 0  a0
@@ -119,7 +218,7 @@ def main(reaction_index_1:int,reaction_index_2:int,db_dir: str = 'molreact.db'):
     ]
 
     varification_reactions = [
-        reaction((('[HH]',3),('C(=O)=O', 1)),(('COC',0.5),('O',4/3)),None) # a15
+        reaction((('[HH]', 3), ('C(=O)=O', 1)), (('COC', 0.5), ('O', 4/3)), None),  # a15
     ]
 
     combustion_reactions = [
@@ -139,13 +238,13 @@ def main(reaction_index_1:int,reaction_index_2:int,db_dir: str = 'molreact.db'):
 
     all_reactions = reactions + combustion_reactions
 
-    correlation_plot(all_reactions[reaction_index_1],all_reactions[reaction_index_2],db_obj,functionals,(reaction_index_1,reaction_index_2))
+    correlation_plot(all_reactions[reaction_index_1], all_reactions[reaction_index_2], pd_dat, (reaction_index_1, reaction_index_2))
 
 if __name__ == '__mmain__':
     parser = argparse.ArgumentParser()
     parser.add_argument('reaction_1',type=int)
     parser.add_argument('reaction_2',type=int)
-    parser.add_argument('-db','--database',help='directory to the database, if not stated will look for molreact.db in pwd.', default='molreact.db')
+    parser.add_argument('-db','--database',help='directory to the database, if not stated will look for molreact.db in pwd.', default='molreact.db', nargs='+')
     args = parser.parse_args()
 
     main(args.reaction_1, args.reaction_2, args.database)

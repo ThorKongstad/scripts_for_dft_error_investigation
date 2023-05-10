@@ -45,10 +45,10 @@ def clean_old_files(functional_folder, file_name):
     os.getcwd()
     if file_name in os.listdir(functional_folder):
         folder_exist(f'old_vibs', path=functional_folder)
-        call(['mv','-f',f"'{ends_with(functional_folder,'/')}{file_name}'",f"'{file_dont_exist(file_name, f'{functional_folder}/old_vibs', return_path=True)}'"])
+        call(['mv','-f',f"{ends_with(functional_folder,'/')}{file_name}",f"{file_dont_exist(file_name, f'{functional_folder}/old_vibs', return_path=True)}"])
     if (old_folder := file_name.replace('.txt','')) in os.listdir(functional_folder):
         folder_exist(f'old_vibs', path=functional_folder)
-        call(['mv','-f',f"'{ends_with(functional_folder,'/')}{old_folder}'",f"'{file_dont_exist(old_folder, f'{functional_folder}/old_vibs', rm_flags='-r', return_path=True)}'"])
+        call(['mv','-f',f"{ends_with(functional_folder,'/')}{old_folder}",f"{file_dont_exist(old_folder, f'{functional_folder}/old_vibs', rm_flags='-r', return_path=True)}"])
 
 def main(db_id: int, clean_old: bool = True, db_dir: str = 'molreact.db'):
     # read from  database

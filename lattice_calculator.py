@@ -1,4 +1,4 @@
-#partition=katla_test
+#partition=katla_day
 #nprocshared=8
 #mem=2300MB
 #constrain='[v5]'
@@ -50,7 +50,7 @@ def get_kpts(atoms_obj):
     kpts_dat = get_kpoints(structure, minDistance = 30, include_gamma = False)
     return kpts_dat['cords']
 
-def main(metal:str,functional:str,slab_type:str,guess_lattice:float|None=None, grid_spacing:float=0.16):
+def main(metal:str,functional:str,slab_type:str, data_base:str, guess_lattice:float|None=None, grid_spacing:float=0.16):
 
     at_number = chemical_symbols.index(metal)
     functional_folder = sanitize(functional)
@@ -161,7 +161,7 @@ def main(metal:str,functional:str,slab_type:str,guess_lattice:float|None=None, g
     # save to a database
 
     if world.rank == 0:
-        with db.connect('/groups/kemi/thorkong/errors_investigation/slab_calc/lattice_for_functionals.db') as db_obj:
+        with db.connect(data_base) as db_obj:
             db_obj.write(bulk_con, functional=functional, lattice=optimal_lattice, data={'lattice_test':{'a':lattices, 'energies':potential_energies, 'parabola':param, 'parabola_covariance':param_cov}})
 
 
@@ -172,8 +172,9 @@ if __name__ == '__main__':
     parser.add_argument('surface_type',type=str,choices=('fcc','bcc','hcp'))
     parser.add_argument('func',type=str)
     parser.add_argument('--lattice','-a',type=float)
+    parser.add_argument('-db','--database',help='directory to the database, if not stated will look for molreact.db in pwd.', default='slab_lattice_opt.db')
     args = parser.parse_args()
 
-    main(metal=args.metal,functional=args.func,slab_type=args.surface_type,guess_lattice=args.lattice)
+    main(metal=args.metal,functional=args.func,slab_type=args.surface_type,guess_lattice=args.lattice, data_base=args.database)
 
 

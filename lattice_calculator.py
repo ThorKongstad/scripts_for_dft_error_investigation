@@ -18,15 +18,24 @@ from gpaw.utilities import h2gpts
 from scipy.optimize import curve_fit
 from kplib import get_kpoints
 from pymatgen.io.ase import AseAtomAdaptor
+import time
 
 
-def folder_exist(folder_name: str) -> NoReturn:
-    if (os.path.basename(folder_name) if '/' in folder_name else folder_name) not in os.listdir(os.path.dirname(folder_name) if '/' in folder_name else './'): os.mkdir(folder_name)
+def folder_exist(folder_name: str, path: str = '.', tries: int = 10) -> NoReturn:
+    try:
+        tries -= 1
+        if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/')+folder_name)
+    except FileExistsError:
+        time.sleep(2)
+        if tries > 0: folder_exist(folder_name, path=path, tries=tries)
+
+def ends_with(string: str, end_str: str) -> str:
+    return string + end_str * (end_str != string[-len(end_str):0])
 
 def sanitize(unclean_str: str) -> str:
-    for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'.',',']: unclean_str = unclean_str.replace(ch, '')
+    for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'"','.']: unclean_str = unclean_str.replace(ch, '')
     for ch in ['/', '\\', '|',' ']: unclean_str = unclean_str.replace(ch, '_')
-    for ch in ['=', '+', ':']: unclean_str = unclean_str.replace(ch, '-')
+    for ch in ['=', '+', ':',',']: unclean_str = unclean_str.replace(ch, '-')
     return unclean_str
 
 def get_parable(points: Sequence[Tuple[float,float]]) -> Tuple[float,float,float]:
@@ -89,8 +98,9 @@ def main(metal:str,functional:str,slab_type:str,guess_lattice:float|None=None, g
     morse_potential = lambda x,D,a,r: D*(1-math.e**(-a*(x-r)))**2
     param,param_cov = curve_fit(morse_potential,lattices,potential_energies)
 
-    optimal_lattice = (-param[1])/(2*param[0]) # parable top point x = -b/2a
-    estimated_energy = parable(optimal_lattice,*param)
+    #optimal_lattice = (-param[1])/(2*param[0]) # parable top point x = -b/2a
+    optimal_lattice = param[-1]
+    estimated_energy = morse_potential(optimal_lattice,*param)
 
     #surface_builder = fcc100 if slab_type == 'fcc' else bcc100 if slab_type == 'bcc' else hcp0001 if slab_type == 'hcp' else None
     #bulk_con = surface_builder(symbol=metal, a=optimal_lattice, size=(1, 1, 4))

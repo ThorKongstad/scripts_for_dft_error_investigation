@@ -16,8 +16,8 @@ from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
 #from collections import namedtuple
 from scipy.optimize import curve_fit
-from kplib import get_kpoints
-from pymatgen.io.ase import AseAtomAdaptor
+#from kplib import get_kpoints
+#from pymatgen.io.ase import AseAtomAdaptor
 import time
 
 
@@ -45,10 +45,10 @@ def get_parable(points: Sequence[Tuple[float,float]]) -> Tuple[float,float,float
     c = ((points[1][0]**2)*(points[2][0]*points[0][1]-points[0][0]*points[2][1]) + (points[1][0])*((points[0][0]**2)*points[2][1]-(points[2][0]**2)*points[0][1])+points[0][0]*points[2][0]*points[1][1]*(points[2][0]-points[0][0]))/((points[0][0]-points[1][0])*(points[0][0]-points[2][0])*(points[1][0]-points[2][0]))
     return a,b,c
 
-def get_kpts(atoms_obj):
-    structure = AseAtomAdaptor.get_structure(atoms_obj)
-    kpts_dat = get_kpoints(structure, minDistance = 30, include_gamma = False)
-    return kpts_dat['cords']
+#def get_kpts(atoms_obj):
+#    structure = AseAtomAdaptor.get_structure(atoms_obj)
+#    kpts_dat = get_kpoints(structure, minDistance = 30, include_gamma = False)
+#    return kpts_dat['cords']
 
 def main(metal:str,functional:str,slab_type:str, data_base:str, guess_lattice:float|None=None, grid_spacing:float=0.16):
 
@@ -77,7 +77,7 @@ def main(metal:str,functional:str,slab_type:str, data_base:str, guess_lattice:fl
         calc = GPAW(mode=PW(500),
                     xc=functional,
                     basis='dzp',
-                    kpts = get_kpts(bulk_con),
+                    kpts = (10,10,10),#get_kpts(bulk_con),
                     txt=f'{functional_folder}/{metal}_latt_fit/lat-opt_{metal}_{slab_type}_a-{cur_lattice}.txt',
                     gpts=h2gpts(grid_spacing, bulk_con.get_cell(), idiv=4),
                     parallel={'augment_grids': True, 'sl_auto': True},

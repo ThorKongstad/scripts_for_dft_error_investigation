@@ -110,7 +110,7 @@ def main(metal:str,functional:str,slab_type:str, data_base:str, guess_lattice:fl
     calc = GPAW(mode=PW(500),
                 xc=functional,
                 basis='dzp',
-                kpts=get_kpts(bulk_con),
+                kpts=(10,10,10),#get_kpts(bulk_con),
                 txt=f'{functional_folder}/lat-opt_{metal}_{slab_type}_a-{optimal_lattice}.txt',
                 gpts=h2gpts(grid_spacing, bulk_con.get_cell(), idiv=4),
                 parallel={'augment_grids': True, 'sl_auto': True},

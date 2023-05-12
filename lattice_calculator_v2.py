@@ -22,17 +22,27 @@ import csv
 import pathlib
 from time import sleep
 from random import randint
+from dataclasses import field, make_dataclass
 
 
-def folder_exist(folder_name: str) -> NoReturn:
-    if (os.path.basename(folder_name) if '/' in folder_name else folder_name) not in os.listdir(os.path.dirname(folder_name) if '/' in folder_name else './'): os.mkdir(folder_name)
+def folder_exist(folder_name: str, path: str = '.', tries: int = 10) -> NoReturn:
+    try:
+        tries -= 1
+        if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/')+folder_name)
+    except FileExistsError:
+        sleep(2)
+        if tries > 0: folder_exist(folder_name, path=path, tries=tries)
+
+
+def ends_with(string: str, end_str: str) -> str:
+    return string + end_str * (end_str != string[-len(end_str):0])
+
 
 def sanitize(unclean_str: str) -> str:
-    for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'.',',']: unclean_str = unclean_str.replace(ch, '')
+    for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'"','.']: unclean_str = unclean_str.replace(ch, '')
     for ch in ['/', '\\', '|',' ']: unclean_str = unclean_str.replace(ch, '_')
-    for ch in ['=', '+', ':']: unclean_str = unclean_str.replace(ch, '-')
+    for ch in ['=', '+', ':',',']: unclean_str = unclean_str.replace(ch, '-')
     return unclean_str
-
 
 #def get_kpts(atoms_obj):
 #    structure = AseAtomAdaptor.get_structure(atoms_obj)
@@ -65,7 +75,7 @@ def secant_method(func: Callable[[float | int], float | int], guess_minus: float
     return guess_current, nr_iter
 
 
-def calculate_pE_of_latt(lattice: float, metal: str, slab_type:str, functional: str, functional_folder: str, grid_spacing: float) -> float:
+def calculate_pE_of_latt(lattice: float, metal: str, slab_type:str, functional: str, functional_folder: str, grid_spacing: float, step_obj: Optional['steps'] = None) -> float:
     if (isinstance(lattice,list) or isinstance(lattice,tuple)) and len(lattice) == 1: lattice = lattice[0]
     lattice = float(lattice)
 
@@ -89,12 +99,31 @@ def calculate_pE_of_latt(lattice: float, metal: str, slab_type:str, functional: 
     ### DELETE BULK AND CALC ###
     del calc
     del bulk_con
+
+    if world.rank == 0 and step_obj is not None:
+        step_obj.lattice.append(lattice)
+        step_obj.energy.append(potential_energy)
+
     return potential_energy
 
 
 def report(res: OptimizeResult) -> NoReturn:
     parprint(f'optimisation: {"succesfull" if res.success else "unsuccesfull"}')
     parprint(f'finale lattice: {res.x}')
+
+
+def plot_steps(steps: 'steps', save_name: Optional[str]) -> NoReturn:
+    import plotly.express as px
+
+    fig = px.scatter(x=steps.lattice,y=steps.energy)
+
+    fig.update_layout(
+        xaxis_title=f'lattice konstant',
+        yaxis_title='potential energy eV'
+    )
+
+    if save_name: fig.write_html(save_name)#, include_mathjax='cdn')
+    else: fig.show()
 
 
 def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[float] = None, grid_spacing: float = 0.16):
@@ -116,7 +145,13 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
 
     parprint(f'lattice optimisation for {metal} with {functional}, guess latice is at {guess_lattice}')
 
-    opt_step_func = lambda lat: calculate_pE_of_latt(lat, metal, slab_type, functional, functional_folder, grid_spacing) # this is to make a function which is only dependent on a single variable lat
+
+    opts_steps = make_dataclass('steps',
+                           [('lattice', list, field(default_factory=list)),
+                            ('energy', list, field(default_factory=list))]
+    )()  # this obj is made to save the optimisation steps without having to return the values.
+
+    opt_step_func = lambda lat: calculate_pE_of_latt(lat, metal, slab_type, functional, functional_folder, grid_spacing, step_obj=opts_steps) # this is to make a function which is only dependent on a single variable lat
 
 #    optimised_lat,final_itr = secant_method(opt_step_func,guess_minus= guess_lattice*0.9, guess_current=guess_lattice,maxs_iter=30)
     opt_res = minimize(opt_step_func, x0=guess_lattice, method='Powell', tol=0.01, options=dict(disp=True), bounds=((2.7, 7),))
@@ -137,6 +172,8 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
                 )
             )
 
+    parprint(opts_steps)
+    if world.rank == 0: plot_steps(opts_steps, f'opt_steps_{metal}.html')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

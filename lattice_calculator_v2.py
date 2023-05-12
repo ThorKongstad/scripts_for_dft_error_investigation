@@ -173,7 +173,7 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
             )
 
     parprint(opts_steps)
-    if world.rank == 0: plot_steps(opts_steps, f'opt_steps_{metal}.html')
+    if world.rank == 0: plot_steps(opts_steps, f'{functional_folder}/opt_steps_{metal}_{functional}.html')
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

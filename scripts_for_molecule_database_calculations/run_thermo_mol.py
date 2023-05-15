@@ -31,8 +31,8 @@ def main(db_id: int, db_dir: str = 'molreact.db'):
     if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir))>0 else '.'): raise FileNotFoundError("Can't find database")
     with db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db') as db_obj:
         row = db_obj.get(selection=f'id={db_id}')
-        if not row.get('relaxed'): raise f"atoms at row id: {db_id} haven't been relaxed."
-        if not row.get('vibration'): raise f"atoms at row id: {db_id} haven't been vibrated."
+        if not row.get('relaxed'): raise Exception(f"atoms at row id: {db_id} haven't been relaxed.")
+        if not row.get('vibration'): raise Exception(f"atoms at row id: {db_id} haven't been vibrated.")
         atoms = row.toatoms()
         smile = row.get('smiles')
         functional = row.get('xc')

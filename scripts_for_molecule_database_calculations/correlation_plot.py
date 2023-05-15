@@ -131,7 +131,7 @@ def correlation_plot(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Da
     fig, ax = plt.subplots()
 
     if isinstance(dbo, db.core.Database): functional_list = {row.get('xc') for row in dbo.select()}
-    elif isinstance(dbo, pd.DataFrame): functional_list = {xc for row in dbo.iterrows() if not pd.isna((xc := row.get('xc')))}
+    elif isinstance(dbo, pd.DataFrame): functional_list = {xc for _, row in dbo.iterrows() if not pd.isna((xc := row.get('xc')))}
     else: raise ValueError('The type of database object was not recognised')
 
     for c_nr, func in enumerate(functional_list):
@@ -157,7 +157,7 @@ def correlation_plot(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Da
 def correlation_plotly(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame, reaction_indexes: Optional[Tuple[int,int]] = None):
     fig = go.Figure()
 
-    functionals = {xc for func in dbo.iterrows() if not pd.isna((xc := func.get('xc')))}
+    functionals = {xc for _, func in dbo.iterrows() if not pd.isna((xc := func.get('xc')))}
 
     for c_nr, func in enumerate(functionals):
         try:
@@ -189,7 +189,7 @@ def correlation_plotly(reaction_1: reaction, reaction_2: reaction, dbo: db.core.
     fig.write_html(save_name, include_mathjax='cdn')
 
 
-def main(reaction_index_1:int,reaction_index_2:int, db_dir: Sequence[str] = 'molreact.db'):
+def main(reaction_index_1:int,reaction_index_2:int, db_dir: Sequence[str] = ('molreact.db',)):
     #if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir)) > 0 else '.'): raise FileNotFoundError("Can't find database")
     #db_obj = db.connect(db_dir)
     #functionals = {row.get('xc') for row in db_obj.select()}
@@ -245,11 +245,12 @@ def main(reaction_index_1:int,reaction_index_2:int, db_dir: Sequence[str] = 'mol
 
     correlation_plot(all_reactions[reaction_index_1], all_reactions[reaction_index_2], pd_dat, (reaction_index_1, reaction_index_2))
 
-if __name__ == '__mmain__':
+
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('reaction_1',type=int)
     parser.add_argument('reaction_2',type=int)
-    parser.add_argument('-db','--database',help='directory to the database, if not stated will look for molreact.db in pwd.', default='molreact.db', nargs='+')
+    parser.add_argument('-db','--database',help='directory to the database, if not stated will look for molreact.db in pwd.', default=('molreact.db',), nargs='+')
     args = parser.parse_args()
 
     main(args.reaction_1, args.reaction_2, args.database)

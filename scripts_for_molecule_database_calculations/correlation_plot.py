@@ -135,7 +135,8 @@ def correlation_plot(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Da
     else: raise ValueError('The type of database object was not recognised')
 
     for c_nr, func in enumerate(functional_list):
-        ax.scatter(x=reaction_enthalpy(reaction_1, func, dbo), y=reaction_enthalpy(reaction_2, func, dbo), label=func)
+        try: ax.scatter(x=reaction_enthalpy(reaction_1, func, dbo), y=reaction_enthalpy(reaction_2, func, dbo), label=func)
+        except: pass
         if func == 'BEEF-vdW':
             try:
                 ax.scatter(x=BEE_reaction_enthalpy(reaction_1, func, dbo).tolist(), y=BEE_reaction_enthalpy(reaction_2, func, dbo).tolist(), label=f'BEE for {func}', c='grey', alpha=0.2)

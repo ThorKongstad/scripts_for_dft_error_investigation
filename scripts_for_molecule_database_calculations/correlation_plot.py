@@ -183,6 +183,11 @@ def correlation_plotly(reaction_1: reaction, reaction_2: reaction, dbo: db.core.
         yaxis_title=reaction_2.toStr()
     )
 
+    folder_exist('reaction_plots')
+    if reaction_indexes: save_name = 'reaction_plots/' + f'correlation_plot_{"-".join([str(x) for x in reaction_indexes])}.html'
+    else: save_name = 'reaction_plots/correlation_plot.html'
+    fig.write_html(save_name, include_mathjax='cdn')
+
 
 def main(reaction_index_1:int,reaction_index_2:int, db_dir: Sequence[str] = 'molreact.db'):
     #if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir)) > 0 else '.'): raise FileNotFoundError("Can't find database")

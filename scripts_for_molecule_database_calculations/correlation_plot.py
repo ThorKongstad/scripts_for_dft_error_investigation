@@ -54,16 +54,16 @@ def reaction_enthalpy(reac: reaction, functional: str, dbo: db.core.Database | p
         return prod_enthalpy - reac_enthalpy
 
     elif isinstance(dbo, pd.DataFrame):
-        reac_enthalpy = sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy')*amount for smile,amount in reac.reactants)
-        prod_enthalpy = sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy')*amount for smile,amount in reac.products)
+        reac_enthalpy = sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy').iloc[0]*amount for smile,amount in reac.reactants)
+        prod_enthalpy = sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy').iloc[0]*amount for smile,amount in reac.products)
 
         if bee and functional in ('BEEF-vdW',):
             reac_ensamble_enthalpy = np.sum((np.array(bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en')[:]
-                                                      +(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy')
-                                                        -dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy')))*amount for smile,amount in reac.reactants),axis=0)
+                                                      +(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy').iloc[0]
+                                                        -dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]))*amount for smile,amount in reac.reactants),axis=0)
             prod_ensamble_enthalpy = np.sum((np.array(bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en')[:]
-                                                      +(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy')
-                                                      - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy')))*amount for smile,amount in reac.products),axis=0)
+                                                      +(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy').iloc[0]
+                                                      - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]))*amount for smile,amount in reac.products),axis=0)
             error_dev = (prod_ensamble_enthalpy-reac_ensamble_enthalpy).std()
             return error_dev, prod_enthalpy - reac_enthalpy
         return prod_enthalpy - reac_enthalpy
@@ -89,13 +89,13 @@ def BEE_reaction_enthalpy(reac:reaction, functional:str, dbo: Optional[db.core.D
     elif isinstance(dbo, pd.DataFrame):
         reac_ensamble_enthalpy = np.sum((np.array(
             bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en')[:]
-            + (dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy')
-            - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy'))) * amount
+            + (dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy').iloc[0]
+            - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0])) * amount
                                       for smile, amount in reac.reactants), axis=0)
         prod_ensamble_enthalpy = np.sum((np.array(
             bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en')[:] + (
-                        dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy')
-                        - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy'))) * amount for smile, amount in reac.products), axis=0)
+                        dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy').iloc[0]
+                        - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0])) * amount for smile, amount in reac.products), axis=0)
         return reac_ensamble_enthalpy - prod_ensamble_enthalpy
     raise ValueError('The type of database object was not recognised')
 
@@ -116,8 +116,8 @@ def BEE_reaction_enthalpy_final_energy_correction(reac:reaction, functional:str,
 
     elif isinstance(dbo, pd.DataFrame):
         correction = reaction_enthalpy(reac, functional, dbo) \
-                     -(sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy')*amount for smile,amount in reac.reactants)
-                     -sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy')*amount for smile,amount in reac.products))
+                     -(sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]*amount for smile,amount in reac.reactants)
+                     -sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]*amount for smile,amount in reac.products))
         reac_ensamble_enthalpy = sum(np.array(
             bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] * amount for smile, amount in reac.reactants)
         prod_ensamble_enthalpy = sum(np.array(

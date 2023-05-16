@@ -44,7 +44,7 @@ if __name__ == '__main__':
     parser.add_argument('python_scipt')
     parser.add_argument('-db','--database',help='directory to the database, if not stated will look for molreact.db in pwd.', default='molreact.db')
     parser.add_argument('--filter','-f', help='current implemented filters are isgga, ismgga and collNotExist="COLLOM" t. a "," denotes an or and "&&" denotes an and')
-    parser.add_argument('--local','-local')
+    parser.add_argument('--local','-local', action='store_true')
     args = parser.parse_args()
 
     main(args.keyword, args.python_scipt,args.filter, args.database, local=args.local)

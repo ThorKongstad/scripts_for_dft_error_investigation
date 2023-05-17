@@ -109,9 +109,9 @@ def BEE_reaction_enthalpy_final_energy_correction(reac: reaction, functional: st
         return reac_ensamble_enthalpy - prod_ensamble_enthalpy + correction
 
     elif isinstance(dbo, pd.DataFrame):
-        correction = reaction_enthalpy(reac, functional, dbo) \
+        correction = (reaction_enthalpy(reac, functional, dbo)
                      -(sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]*amount for smile,amount in reac.reactants)
-                     -sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]*amount for smile,amount in reac.products))
+                     -sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]*amount for smile,amount in reac.products)))
         reac_ensamble_enthalpy = sum(np.array(
             bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] * amount for smile, amount in reac.reactants)
         prod_ensamble_enthalpy = sum(np.array(
@@ -131,7 +131,7 @@ def correlation_plot(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Da
         try: ax.scatter(x=reaction_enthalpy(reaction_1, func, dbo), y=reaction_enthalpy(reaction_2, func, dbo), label=func)
         except: pass
         if func == 'BEEF-vdW':
-            try: ax.scatter(x=BEE_reaction_enthalpy(reaction_1, func, dbo).tolist(), y=BEE_reaction_enthalpy(reaction_2, func, dbo).tolist(), label=f'BEE for {func}', c='grey', alpha=0.2)
+            try: ax.scatter(x=BEE_reaction_enthalpy_final_energy_correction(reaction_1, func, dbo).tolist(), y=BEE_reaction_enthalpy_final_energy_correction(reaction_2, func, dbo).tolist(), label=f'BEE for {func}', c='grey', alpha=0.2)
             except: pass
     ax.scatter(x=reaction_1.experimental_ref,y=reaction_2.experimental_ref,label='experimental ref',marker='X',c='firebrick')
 
@@ -162,8 +162,8 @@ def correlation_plotly(reaction_1: reaction, reaction_2: reaction, dbo: db.core.
             if func == 'BEEF-vdW':
                 try:
                     fig.add_trace(go.Scatter(
-                        x=BEE_reaction_enthalpy(reaction_1, func, dbo).tolist(),
-                        y=BEE_reaction_enthalpy(reaction_2, func, dbo).tolist(),
+                        x=BEE_reaction_enthalpy_final_energy_correction(reaction_1, func, dbo).tolist(),
+                        y=BEE_reaction_enthalpy_final_energy_correction(reaction_2, func, dbo).tolist(),
                         name=f'BEE for {func}',
                         mode='markers',
                         marker=dict(color='Grey',opacity=0.5,)
@@ -194,7 +194,9 @@ def main(reaction_index_1: int, reaction_index_2: int, db_dir: Sequence[str] = (
     #functionals = ('PBE', 'RPBE', 'BEEF-vdW', "{'name':'BEEF-vdW','backend':'libvdwxc'}")
 
     db_list = [db.connect(work_db) for work_db in db_dir]
-    pd_dat = pd.DataFrame([row.__dict__ for work_db in db_list for row in work_db.select()])
+
+    if len(db_list) == 1: pd_dat = db_list[0]
+    else: pd_dat = pd.DataFrame([row.__dict__ for work_db in db_list for row in work_db.select()])
 
     reactions = [
         reaction((('[HH]', 1), ('C(=O)=O', 1)), (('cid281', 1), ('O', 1)), 0.43),  # 0  a0

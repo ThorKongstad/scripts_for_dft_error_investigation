@@ -4,19 +4,19 @@ import os
 import argparse
 from dataclasses import dataclass
 from typing import Sequence, NoReturn, Tuple, Iterable, Optional
-from math import fabs
+#from math import fabs
 import matplotlib.pyplot as plt
 import numpy as np
 import time
 import pandas as pd
-import plotly.express as px
+#import plotly.express as px
 import plotly.graph_objects as go
 
 
 @dataclass
 class reaction:
-    reactants: Sequence[Tuple[str,int|float]]
-    products: Sequence[Tuple[str,int|float]]
+    reactants: Sequence[Tuple[str, int | float]]
+    products: Sequence[Tuple[str, int | float]]
     experimental_ref: float
 
     def toStr(self) -> str:
@@ -36,12 +36,9 @@ def ends_with(string: str, end_str: str) -> str:
     return string + end_str * (end_str != string[-len(end_str):0])
 
 
-def reaction_enthalpy(reac: reaction, functional: str, dbo: db.core.Database | pd.DataFrame = None, bee: bool = False) -> float | Tuple[float, float]:
-    if dbo is None: dbo = db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db')
-
+def reaction_enthalpy(reac: reaction, functional: str, dbo: db.core.Database | pd.DataFrame, bee: bool = False) -> float | Tuple[float, float]:
     # exception for the wrong 37 row
     # if dbo.get([('smiles','=',smile),('xc','=',functional)]).get('id') != 37 else -21.630*amount
-
     if isinstance(dbo, db.core.Database):
         reac_enthalpy = sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')*amount for smile,amount in reac.reactants)
         prod_enthalpy = sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')*amount for smile,amount in reac.products)
@@ -70,9 +67,7 @@ def reaction_enthalpy(reac: reaction, functional: str, dbo: db.core.Database | p
     raise ValueError('The type of database object was not recognised')
 
 
-
-def BEE_reaction_enthalpy(reac:reaction, functional:str, dbo: Optional[db.core.Database | pd.DataFrame] = None) -> np.ndarray:
-    if dbo == None:dbo = db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db')
+def BEE_reaction_enthalpy(reac:reaction, functional: str, dbo: db.core.Database | pd.DataFrame) -> np.ndarray:
     if isinstance(dbo, db.core.Database):
         reac_ensamble_enthalpy = np.sum((np.array(
             dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en')[:] + (
@@ -100,8 +95,7 @@ def BEE_reaction_enthalpy(reac:reaction, functional:str, dbo: Optional[db.core.D
     raise ValueError('The type of database object was not recognised')
 
 
-def BEE_reaction_enthalpy_final_energy_correction(reac:reaction, functional:str, dbo: Optional[db.core.Database | pd.DataFrame] = None) -> np.ndarray:
-    if dbo == None:dbo = db.connect('/groups/kemi/thorkong/errors_investigation/molreact.db')
+def BEE_reaction_enthalpy_final_energy_correction(reac: reaction, functional: str, dbo: db.core.Database | pd.DataFrame) -> np.ndarray:
     if isinstance(dbo, db.core.Database):
         correction = reaction_enthalpy(reac, functional, dbo) \
                      -(sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')*amount for smile,amount in reac.reactants)
@@ -123,11 +117,10 @@ def BEE_reaction_enthalpy_final_energy_correction(reac:reaction, functional:str,
         prod_ensamble_enthalpy = sum(np.array(
             bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] * amount for smile, amount in reac.products)
         return reac_ensamble_enthalpy - prod_ensamble_enthalpy + correction
-
     raise ValueError('The type of database object was not recognised')
 
 
-def correlation_plot(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame, reaction_indexes: Optional[Tuple[int,int]] = None):
+def correlation_plot(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame, reaction_indexes: Optional[Tuple[int, int]] = None):
     fig, ax = plt.subplots()
 
     if isinstance(dbo, db.core.Database): functional_list = {row.get('xc') for row in dbo.select()}
@@ -138,8 +131,7 @@ def correlation_plot(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Da
         try: ax.scatter(x=reaction_enthalpy(reaction_1, func, dbo), y=reaction_enthalpy(reaction_2, func, dbo), label=func)
         except: pass
         if func == 'BEEF-vdW':
-            try:
-                ax.scatter(x=BEE_reaction_enthalpy(reaction_1, func, dbo).tolist(), y=BEE_reaction_enthalpy(reaction_2, func, dbo).tolist(), label=f'BEE for {func}', c='grey', alpha=0.2)
+            try: ax.scatter(x=BEE_reaction_enthalpy(reaction_1, func, dbo).tolist(), y=BEE_reaction_enthalpy(reaction_2, func, dbo).tolist(), label=f'BEE for {func}', c='grey', alpha=0.2)
             except: pass
     ax.scatter(x=reaction_1.experimental_ref,y=reaction_2.experimental_ref,label='experimental ref',marker='X',c='firebrick')
 
@@ -155,7 +147,7 @@ def correlation_plot(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Da
     else: fig.savefig('reaction_plots/correlation_plot.png')
 
 
-def correlation_plotly(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame, reaction_indexes: Optional[Tuple[int,int]] = None):
+def correlation_plotly(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame, reaction_indexes: Optional[Tuple[int, int]] = None):
     fig = go.Figure()
 
     functionals = {xc for _, func in dbo.iterrows() if not pd.isna((xc := func.get('xc')))}
@@ -190,12 +182,12 @@ def correlation_plotly(reaction_1: reaction, reaction_2: reaction, dbo: db.core.
     fig.write_html(save_name, include_mathjax='cdn')
 
 
-def sp(x): # silent print
+def sp(x):  # silent print
     print(x)
     return x
 
 
-def main(reaction_index_1:int,reaction_index_2:int, db_dir: Sequence[str] = ('molreact.db',)):
+def main(reaction_index_1: int, reaction_index_2: int, db_dir: Sequence[str] = ('molreact.db',)):
     #if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir)) > 0 else '.'): raise FileNotFoundError("Can't find database")
     #db_obj = db.connect(db_dir)
     #functionals = {row.get('xc') for row in db_obj.select()}

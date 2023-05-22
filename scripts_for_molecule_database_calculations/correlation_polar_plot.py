@@ -25,7 +25,8 @@ class reaction:
 @dataclass
 class functional:
     name: str
-    _correlation_vectors: Sequence[Tuple[float,float]] = field(default=None)
+    _correlation_vectors: Sequence[Tuple[float, float]] = field(default=None)
+    _correlation_vectors_str: Sequence[Tuple[str, str]] = field(default=None)
 
     @property
     def correlation_vectors(self):
@@ -39,13 +40,23 @@ class functional:
 #                if key in self._correlation_vectors.keys(): self._correlation_vectors[key] += val[key]
 #                else: self._correlation_vectors.update({key: val[key]})
 
+    @property
+    def correlation_vectors_str(self):
+        return self._correlation_vectors
+
+    @correlation_vectors_str.setter
+    def correlation_vectors_str(self, val: list[Tuple[str, str]]):
+        if self._correlation_vectors is None: self._correlation_vectors = val
+        else: self._correlation_vectors += val
+
     def calc_correlation_vector(self,reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame):
 
         reaction_1_val = reaction_enthalpy(reaction_1,self.name,dbo)
         reaction_2_val = reaction_enthalpy(reaction_2,self.name,dbo)
 
-        correlation_vector = vector_minus([reaction_1.experimental_ref, reaction_2.experimental_ref], [reaction_1_val, reaction_2_val])
+        correlation_vector = vector_minus([reaction_1_val, reaction_2_val], [reaction_1.experimental_ref, reaction_2.experimental_ref])
         self.correlation_vectors = [correlation_vector]
+        self.correlation_vectors_str = [(reaction_1.toStr(),reaction_2.toStr())]
 
 
     def plotly_polar_plot(self):
@@ -54,11 +65,12 @@ class functional:
 
             cart_points = [cart_to_polar(point) for point in self._correlation_vectors]
 
-            for cord in cart_points:
+            for i, cord in enumerate(cart_points):
                 fig.add_trace(go.Scatterpolar(
-                    r=cord[0],
-                    theta=cord[1],
-                    mode='markers'
+                    r=[cord[0]],
+                    theta=[cord[1]],
+                    mode='markers',
+                    hovertemplate= self.correlation_vectors_str[i][0] + self.correlation_vectors_str[i][1],
                 ))
 
             fig.update_layout(
@@ -108,7 +120,7 @@ def reaction_enthalpy(reac: reaction, functional: str, dbo: db.core.Database | p
 
 
 def vector_minus(v1: list[float], v2: list[float]) -> list[float]: return [a-b for a,b in zip(v1,v2)]
-def cart_to_polar(cord: tuple[float,float]) -> tuple[float,float]: return np.sqrt(cord[0]**2+cord[1]**2), np.arctan2(cord[1],cord[2])
+def cart_to_polar(cord: tuple[float,float]) -> tuple[float,float]: return np.sqrt(cord[0]**2+cord[1]**2), np.arctan2(cord[1],cord[0])
 
 def main(db_dir: Sequence[str] = ('molreact.db',)):
 

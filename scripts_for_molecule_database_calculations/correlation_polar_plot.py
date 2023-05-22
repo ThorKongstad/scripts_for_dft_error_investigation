@@ -42,12 +42,12 @@ class functional:
 
     @property
     def correlation_vectors_str(self):
-        return self._correlation_vectors
+        return self._correlation_vectors_str
 
     @correlation_vectors_str.setter
     def correlation_vectors_str(self, val: list[Tuple[str, str]]):
-        if self._correlation_vectors is None: self._correlation_vectors = val
-        else: self._correlation_vectors += val
+        if self._correlation_vectors_str is None: self._correlation_vectors_str = val
+        else: self._correlation_vectors_str += val
 
     def calc_correlation_vector(self,reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame):
 

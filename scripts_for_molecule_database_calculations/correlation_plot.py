@@ -131,7 +131,7 @@ def correlation_plot(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Da
         try: ax.scatter(x=reaction_enthalpy(reaction_1, func, dbo), y=reaction_enthalpy(reaction_2, func, dbo), label=func)
         except: pass
         if func == 'BEEF-vdW':
-            try: ax.scatter(x=BEE_reaction_enthalpy_final_energy_correction(reaction_1, func, dbo).tolist(), y=BEE_reaction_enthalpy_final_energy_correction(reaction_2, func, dbo).tolist(), label=f'BEE for {func}', c='grey', alpha=0.2)
+            try: ax.scatter(x=BEE_reaction_enthalpy_final_energy_correction(reaction_1, func, dbo).tolist(), y=BEE_reaction_enthalpy_final_energy_correction(reaction_2, func, dbo).tolist(), label=f'BEE for {func}', c='grey', alpha=0.2, zordor=-10)
             except: pass
     ax.scatter(x=reaction_1.experimental_ref,y=reaction_2.experimental_ref,label='experimental ref',marker='X',c='firebrick')
 

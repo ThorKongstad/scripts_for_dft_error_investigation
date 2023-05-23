@@ -142,7 +142,7 @@ def reaction_enthalpy(reac: reaction, functional: str, dbo: db.core.Database | p
 
 
 def vector_minus(v1: list[float], v2: list[float]) -> list[float]: return [a-b for a,b in zip(v1,v2)]
-def cart_to_polar(cord: tuple[float,float]) -> tuple[float,float]: return np.sqrt(cord[0]**2+cord[1]**2), np.arctan2(cord[1],cord[0])
+def cart_to_polar(cord: tuple[float,float]) -> tuple[float,float]: return np.sqrt(cord[0]**2+cord[1]**2), np.rad2deg(np.arctan2(cord[1],cord[0]))
 
 def main(db_dir: Sequence[str] = ('molreact.db',)):
 

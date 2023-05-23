@@ -19,7 +19,7 @@ class reaction:
     experimental_ref: float
 
     def toStr(self) -> str:
-        return ' + '.join([f'{n:.2f}{smi if smi != "cid281" else "C|||O"}' for smi, n in self.reactants]) + ' ---> ' + ' + '.join([f'{n:.2f}{smi  if smi != "cid281" else "C|||O"}' for smi, n in self.products])
+        return ' + '.join([f'{n:.2g}{smi if smi != "cid281" else "C|||O"}' for smi, n in self.reactants]) + ' ---> ' + ' + '.join([f'{n:.2g}{smi  if smi != "cid281" else "C|||O"}' for smi, n in self.products])
 
 
 @dataclass
@@ -89,8 +89,8 @@ class functional:
 
             for i, cord in enumerate(self._correlation_vectors):
                 fig.add_trace(go.Scatter(
-                    x=cord[0],
-                    y=cord[1],
+                    x=[cord[0]],
+                    y=[cord[1]],
                     mode='markers',
                     hovertemplate=self.correlation_vectors_str[i][0] + '<br>' + self.correlation_vectors_str[i][1],
                     marker=dict(color='black')

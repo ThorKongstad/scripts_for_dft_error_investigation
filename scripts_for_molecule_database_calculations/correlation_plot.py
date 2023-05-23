@@ -20,7 +20,7 @@ class reaction:
     experimental_ref: float
 
     def toStr(self) -> str:
-        return ' + '.join([f'{n:.2f}{smi if smi != "cid281" else "C|||O"}' for smi,n in self.reactants]) + ' ---> ' + ' + '.join([f'{n:.2f}{smi  if smi != "cid281" else "C|||O"}' for smi,n in self.products])
+        return ' + '.join([f'{n:.2g}{smi if smi != "cid281" else "C|||O"}' for smi,n in self.reactants]) + ' ---> ' + ' + '.join([f'{n:.2g}{smi  if smi != "cid281" else "C|||O"}' for smi,n in self.products])
 
 
 def folder_exist(folder_name: str, path: str = '.', tries: int = 10) -> NoReturn:
@@ -123,19 +123,28 @@ def BEE_reaction_enthalpy_final_energy_correction(reac: reaction, functional: st
 def correlation_plot(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame, reaction_indexes: Optional[Tuple[int, int]] = None):
     fig, ax = plt.subplots()
 
+    colour_dict = {
+        'PBE': 'idianred',
+        'RPBE': 'firebrick',
+        'PBE-PZ-SIC': 'darkorange',
+        'BEEF-vdW': 'mediumblue',
+        "{'name':'BEEF-vdW','backend':'libvdwxc'}": 'mediumpurple'
+    }
+
     if isinstance(dbo, db.core.Database): functional_list = {row.get('xc') for row in dbo.select()}
     elif isinstance(dbo, pd.DataFrame): functional_list = {xc for _, row in dbo.iterrows() if not pd.isna((xc := row.get('xc')))}
     else: raise ValueError('The type of database object was not recognised')
 
     for c_nr, func in enumerate(functional_list):
-        try: ax.scatter(x=reaction_enthalpy(reaction_1, func, dbo), y=reaction_enthalpy(reaction_2, func, dbo), label=func)
+        colour_arg = {'color':colour_dict[func]} if func in colour_dict.keys() else {}
+        try: ax.scatter(x=reaction_enthalpy(reaction_1, func, dbo), y=reaction_enthalpy(reaction_2, func, dbo), label=func, **colour_arg)
         except: pass
         if func == 'BEEF-vdW':
             try: ax.scatter(x=BEE_reaction_enthalpy_final_energy_correction(reaction_1, func, dbo).tolist(), y=BEE_reaction_enthalpy_final_energy_correction(reaction_2, func, dbo).tolist(), label=f'BEE for {func}', c='grey', alpha=0.2, zordor=-10)
             except: pass
-    ax.scatter(x=reaction_1.experimental_ref,y=reaction_2.experimental_ref,label='experimental ref',marker='X',c='firebrick')
+    ax.scatter(x=reaction_1.experimental_ref,y=reaction_2.experimental_ref,label='experimental ref',marker='X',c='gold')
 
-    ax.legend()
+#    ax.legend()
     if isinstance(reaction_indexes,tuple): ax.set_title(f'correlation between reaction {reaction_indexes[0]} and {reaction_indexes[1]}')
     else: ax.set_title(f'correlation between two reactions')
     ax.set_title(f'correlation between two reactions')
@@ -150,24 +159,35 @@ def correlation_plot(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Da
 def correlation_plotly(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame, reaction_indexes: Optional[Tuple[int, int]] = None):
     fig = go.Figure()
 
+    colour_dict = {
+        'PBE': 'idianred',
+        'RPBE': 'firebrick',
+        'PBE-PZ-SIC': 'darkorange',
+        'BEEF-vdW': 'mediumblue',
+        "{'name':'BEEF-vdW','backend':'libvdwxc'}": 'mediumpurple'
+    }
+
     functionals = {xc for _, func in dbo.iterrows() if not pd.isna((xc := func.get('xc')))}
 
     for c_nr, func in enumerate(functionals):
+        marker_arg = dict(marker={'color':colour_dict[func]}) if func in colour_dict.keys() else {}
         try:
             fig.add_trace(go.Scatter(
              x=reaction_enthalpy(reaction_1, func, dbo),
              y=reaction_enthalpy(reaction_2, func, dbo),
              name=func,
-             mode='markers'))
+             mode='markers',
+             **marker_arg))
             if func == 'BEEF-vdW':
                 try:
-                    fig.add_trace(go.Scatter(
+                    ensamble_trace = go.Scatter(
                         x=BEE_reaction_enthalpy_final_energy_correction(reaction_1, func, dbo).tolist(),
                         y=BEE_reaction_enthalpy_final_energy_correction(reaction_2, func, dbo).tolist(),
                         name=f'BEE for {func}',
                         mode='markers',
                         marker=dict(color='Grey',opacity=0.5,)
-                    ))
+                    )
+                    fig.data = (ensamble_trace,) + fig.data
                 except: pass
         except: continue
 

@@ -70,7 +70,8 @@ class functional:
                     r=[cord[0]],
                     theta=[cord[1]],
                     mode='markers',
-                    hovertemplate= self.correlation_vectors_str[i][0] + self.correlation_vectors_str[i][1],
+                    hovertemplate= self.correlation_vectors_str[i][0] +'<br>'+ self.correlation_vectors_str[i][1],
+                    marker=dict(color='black')
                 ))
 
             fig.update_layout(
@@ -80,6 +81,27 @@ class functional:
 
             fig.write_html('reaction_plots/' + f'{sanitize(self.name)}_polar_plot.html', include_mathjax='cdn')
 
+    def plotly_scatter_plot(self):
+        if self._correlation_vectors is not None:
+            fig = go.Figure()
+
+            #cart_points = [cart_to_polar(point) for point in self._correlation_vectors]
+
+            for i, cord in enumerate(self._correlation_vectors):
+                fig.add_trace(go.Scatter(
+                    x=cord[0],
+                    y=cord[1],
+                    mode='markers',
+                    hovertemplate=self.correlation_vectors_str[i][0] + '<br>' + self.correlation_vectors_str[i][1],
+                    marker=dict(color='black')
+                ))
+
+            fig.update_layout(
+                title=dict(text=self.name),
+                showlegend=False
+            )
+
+            fig.write_html('reaction_plots/' + f'{sanitize(self.name)}_polar_plot.html', include_mathjax='cdn')
 
 def sanitize(unclean_str: str) -> str:
     for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'"','.']: unclean_str = unclean_str.replace(ch, '')

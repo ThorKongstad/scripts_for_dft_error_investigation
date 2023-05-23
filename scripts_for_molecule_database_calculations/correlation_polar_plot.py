@@ -210,7 +210,7 @@ def main(db_dir: Sequence[str] = ('molreact.db',)):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('db', nargs='+')
+    parser.add_argument('db', nargs='+', help='path to one or more databases containing the data.')
     args = parser.parse_args()
 
     main(args.db)

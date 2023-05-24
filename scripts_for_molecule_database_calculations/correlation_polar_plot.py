@@ -78,7 +78,12 @@ class functional:
             fig.update_layout(
                 title=dict(text=self.name),
                 showlegend=False,
-                polar=dict(radialaxis=dict(visible=True, rotation=45), sector=[45, 225])
+                polar=dict(
+                    radialaxis=dict(
+                        visible=True,),
+                    angularaxis=dict(
+                        rotation=45,),
+                    sector=[45, 225])
             )
 
             fig.write_html('reaction_plots/' + f'{sanitize(self.name)}_polar_plot.html', include_mathjax='cdn')

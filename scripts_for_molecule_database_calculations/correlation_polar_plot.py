@@ -149,7 +149,7 @@ def main(db_dir: Sequence[str] = ('molreact.db',)):
 
     db_list = [db.connect(work_db) for work_db in db_dir]
 
-    if len(db_list) == 1: pd_dat = db_list[0]
+    if False: pass #len(db_list) == 1: pd_dat = db_list[0]
     else: pd_dat = pd.DataFrame([row.__dict__ for work_db in db_list for row in work_db.select()])
 
     functional_list = {xc for _, row in pd_dat.iterrows() if not pd.isna((xc := row.get('xc')))}

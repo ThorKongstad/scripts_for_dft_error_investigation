@@ -1,12 +1,12 @@
 import ase.db as db
 from ase.db.core import bytes_to_object
-import os
+#import os
 import argparse
 from dataclasses import dataclass, field
 from typing import Sequence, NoReturn, Tuple, Iterable, Optional
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import numpy as np
-import time
+#import time
 import pandas as pd
 #import plotly.express as px
 import plotly.graph_objects as go
@@ -49,15 +49,14 @@ class functional:
         if self._correlation_vectors_str is None: self._correlation_vectors_str = val
         else: self._correlation_vectors_str += val
 
-    def calc_correlation_vector(self,reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame):
+    def calc_correlation_vector(self, reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame):
 
-        reaction_1_val = reaction_enthalpy(reaction_1,self.name,dbo)
-        reaction_2_val = reaction_enthalpy(reaction_2,self.name,dbo)
+        reaction_1_val = reaction_enthalpy(reaction_1, self.name, dbo)
+        reaction_2_val = reaction_enthalpy(reaction_2, self.name, dbo)
 
         correlation_vector = vector_minus([reaction_1_val, reaction_2_val], [reaction_1.experimental_ref, reaction_2.experimental_ref])
         self.correlation_vectors = [correlation_vector]
-        self.correlation_vectors_str = [(reaction_1.toStr(),reaction_2.toStr())]
-
+        self.correlation_vectors_str = [(reaction_1.toStr(), reaction_2.toStr())]
 
     def plotly_polar_plot(self):
         if self._correlation_vectors is not None:
@@ -70,14 +69,14 @@ class functional:
                     r=[cord[0]],
                     theta=[cord[1]],
                     mode='markers',
-                    hovertemplate= self.correlation_vectors_str[i][0] +'<br>'+ self.correlation_vectors_str[i][1],
+                    hovertemplate= self.correlation_vectors_str[i][0] + '<br>' + self.correlation_vectors_str[i][1],
                     marker=dict(color='black')
                 ))
 
             fig.update_layout(
                 title=dict(text=self.name),
                 showlegend=False,
-                polar=dict(radialaxis=dict(visible=True), sector=[45,225])
+                polar=dict(radialaxis=dict(visible=True, rotation=45), sector=[45, 225])
             )
 
             fig.write_html('reaction_plots/' + f'{sanitize(self.name)}_polar_plot.html', include_mathjax='cdn')
@@ -115,12 +114,12 @@ def reaction_enthalpy(reac: reaction, functional: str, dbo: db.core.Database | p
     # exception for the wrong 37 row
     # if dbo.get([('smiles','=',smile),('xc','=',functional)]).get('id') != 37 else -21.630*amount
     if isinstance(dbo, db.core.Database):
-        reac_enthalpy = sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')*amount for smile,amount in reac.reactants)
-        prod_enthalpy = sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')*amount for smile,amount in reac.products)
+        reac_enthalpy = sum(dbo.get([('smiles', '=',smile), ('xc', '=', functional)]).get('enthalpy')*amount for smile, amount in reac.reactants)
+        prod_enthalpy = sum(dbo.get([('smiles', '=',smile), ('xc', '=', functional)]).get('enthalpy')*amount for smile, amount in reac.products)
 
         if bee and functional in ('BEEF-vdW',):  # ,"{'name':'BEEF-vdW','backend':'libvdwxc'}"):
-            reac_ensamble_enthalpy = np.sum((np.array(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('data').get('ensemble_en')[:]+(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')-dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')))*amount for smile,amount in reac.reactants),axis=0)
-            prod_ensamble_enthalpy = np.sum((np.array(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('data').get('ensemble_en')[:]+(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('enthalpy')-dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')))*amount for smile,amount in reac.products),axis=0)
+            reac_ensamble_enthalpy = np.sum((np.array(dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en')[:]+(dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('enthalpy')-dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('energy')))*amount for smile, amount in reac.reactants), axis=0)
+            prod_ensamble_enthalpy = np.sum((np.array(dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en')[:]+(dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('enthalpy')-dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('energy')))*amount for smile, amount in reac.products), axis=0)
             error_dev = (prod_ensamble_enthalpy-reac_ensamble_enthalpy).std()
             return error_dev, prod_enthalpy - reac_enthalpy
         return prod_enthalpy - reac_enthalpy
@@ -131,19 +130,20 @@ def reaction_enthalpy(reac: reaction, functional: str, dbo: db.core.Database | p
 
         if bee and functional in ('BEEF-vdW',):
             reac_ensamble_enthalpy = np.sum((np.array(bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en')[:]
-                                                      +(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy').iloc[0]
-                                                        -dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]))*amount for smile,amount in reac.reactants),axis=0)
+                                                      + (dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy').iloc[0]
+                                                      - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]))*amount for smile,amount in reac.reactants), axis=0)
             prod_ensamble_enthalpy = np.sum((np.array(bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en')[:]
-                                                      +(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy').iloc[0]
-                                                      - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]))*amount for smile,amount in reac.products),axis=0)
+                                                      + (dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy').iloc[0]
+                                                      - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]))*amount for smile,amount in reac.products), axis=0)
             error_dev = (prod_ensamble_enthalpy-reac_ensamble_enthalpy).std()
             return error_dev, prod_enthalpy - reac_enthalpy
         return prod_enthalpy - reac_enthalpy
     raise ValueError('The type of database object was not recognised')
 
 
-def vector_minus(v1: list[float], v2: list[float]) -> list[float]: return [a-b for a,b in zip(v1,v2)]
+def vector_minus(v1: list[float], v2: list[float]) -> list[float]: return [a-b for a, b in zip(v1,v2)]
 def cart_to_polar(cord: tuple[float,float]) -> tuple[float,float]: return np.sqrt(cord[0]**2+cord[1]**2), np.rad2deg(np.arctan2(cord[1],cord[0]))
+
 
 def main(db_dir: Sequence[str] = ('molreact.db',)):
 
@@ -194,8 +194,8 @@ def main(db_dir: Sequence[str] = ('molreact.db',)):
         reaction((('O=CO', 1), ('O=O', 1 / 2)), (('C(=O)=O', 1), ('O', 1)), -2.637499504),  # 8
         reaction((('CC(O)=O', 0.5), ('O=O', 1)), (('C(=O)=O', 1), ('O', 1)), -9.059602457 / 2),  # 9
         reaction((('C1CCCCC1', 1 / 6), ('O=O', 9 / 6)), (('C(=O)=O', 1), ('O', 1)), -40.60200692 / 6),  # 10
-        reaction((('C1=CC=CC=C1', 1 / 6), ('O=O', 7 / 6)), (('C(=O)=O', 1), ('O', 0.5)), -33.83941093 / 6),  # 10
-        reaction((('C1=CC=C(C=C1)O', 1 / 6), ('O=O', 7 / 6)), (('C(=O)=O', 1), ('O', 0.5)), -31.6325807 / 6),  # 10
+        reaction((('C1=CC=CC=C1', 1 / 6), ('O=O', 7 / 6)), (('C(=O)=O', 1), ('O', 0.5)), -33.83941093 / 6),  # 11
+        reaction((('C1=CC=C(C=C1)O', 1 / 6), ('O=O', 7 / 6)), (('C(=O)=O', 1), ('O', 0.5)), -31.6325807 / 6),  # 12
     ]
 
     all_reactions = reactions + combustion_reactions

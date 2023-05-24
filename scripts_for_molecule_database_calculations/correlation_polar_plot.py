@@ -82,9 +82,9 @@ class functional:
                     radialaxis=dict(
                         visible=True,),
                     angularaxis=dict(
-#                        rotation=45,
+                        rotation=-45,
                     ),
-                    sector=[45, 225])
+                    sector=[0, 180])
             )
 
             fig.write_html('reaction_plots/' + f'{sanitize(self.name)}_polar_plot.html', include_mathjax='cdn')

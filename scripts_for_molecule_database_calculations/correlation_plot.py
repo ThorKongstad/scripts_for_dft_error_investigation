@@ -235,15 +235,15 @@ def main(reaction_index_1: int, reaction_index_2: int, db_dir: Sequence[str] = (
         reaction((('[HH]', 3), ('C(=O)=O', 1)), (('C=C', 1 / 2), ('O', 2)), -0.66),  # 13  a7
         reaction((('[HH]', 2), ('cid281', 1)), (('C=C', 0.5), ('O', 1)), -1.09),  # 14
         reaction((('[HH]', 2.75), ('C(=O)=O', 1)), (('C=CC=C', 1 / 4), ('O', 2)), -0.65),  # 15  a8
-        reaction((('[HH]', 2), ('cid281', 1)), (('C=CC=C', 0.25), ('O', 1)), -1.08),  # 16
+        reaction((('[HH]', 1.75), ('cid281', 1)), (('C=CC=C', 0.25), ('O', 1)), -1.08),  # 16
         reaction((('[HH]', 2), ('C(=O)=O', 1)), (('CC(O)=O', 0.5), ('O', 1)), -0.67),  # 17  a9
         reaction((('[HH]', 1), ('cid281', 1)), (('CC(O)=O', 0.5),), -1.1),  # 18
-        reaction((('[HH]', 2), ('C(=O)=O', 1)), (('COC=O', 0.5),), -0.17),  # 19  a10
+        reaction((('[HH]', 2), ('C(=O)=O', 1)), (('COC=O', 0.5), ('O', 1)), -0.17),  # 19  a10
         reaction((('[HH]', 1), ('cid281', 1)), (('COC=O', 0.5),), -0.60)  # 20
     ]
 
     varification_reactions = [
-        reaction((('[HH]', 3), ('C(=O)=O', 1)), (('COC', 0.5), ('O', 4/3)), None),  # a15
+        reaction((('[HH]', 3), ('C(=O)=O', 1)), (('COC', 0.5), ('O', 4 / 3)), None),  # a15
     ]
 
     combustion_reactions = [
@@ -257,8 +257,8 @@ def main(reaction_index_1: int, reaction_index_2: int, db_dir: Sequence[str] = (
         reaction((('O=CO', 1), ('O=O', 1 / 2)), (('C(=O)=O', 1), ('O', 1)), -2.637499504),  # 8
         reaction((('CC(O)=O', 0.5), ('O=O', 1)), (('C(=O)=O', 1), ('O', 1)), -9.059602457 / 2),  # 9
         reaction((('C1CCCCC1', 1 / 6), ('O=O', 9 / 6)), (('C(=O)=O', 1), ('O', 1)), -40.60200692 / 6),  # 10
-        reaction((('C1=CC=CC=C1', 1 / 6), ('O=O', 7 / 6)), (('C(=O)=O', 1), ('O', 0.5)), -33.83941093 / 6),  # 11
-        reaction((('C1=CC=C(C=C1)O', 1 / 6), ('O=O', 7 / 6)), (('C(=O)=O', 1), ('O', 0.5)), -31.6325807 / 6),  # 12
+        reaction((('C1=CC=CC=C1', 1 / 6), ('O=O', 7 / 6)), (('C(=O)=O', 1), ('O', 0.5)), -33.83941093 / 6),  # 10
+        reaction((('C1=CC=C(C=C1)O', 1 / 6), ('O=O', 7 / 6)), (('C(=O)=O', 1), ('O', 0.5)), -31.6325807 / 6),  # 10
     ]
 
     # a total of 33 reactions

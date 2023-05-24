@@ -66,7 +66,7 @@ class functional:
 
             for i, cord in enumerate(cart_points):
                 template_str = self.correlation_vectors_str[i][0] + '<br>' + self.correlation_vectors_str[i][1]
-                colour = 'darkviolet' if ('O=O' in template_str and 'C|||O' in template_str) else 'firebrick' if 'O=O' in template_str else 'royalblue' if 'C|||O' in template_str else 'black'
+                colour = 'darkviolet' if ('O=O' in template_str and 'C|||O' in template_str) else ('firebrick' if template_str.count('O=O') == 2 else 'indianred') if 'O=O' in template_str else ('royalblue' if template_str.count('C|||O') == 2 else 'cornflowerblue') if 'C|||O' in template_str else 'black'
                 fig.add_trace(go.Scatterpolar(
                     r=[cord[0]],
                     theta=[cord[1]],

@@ -64,13 +64,16 @@ class functional:
 
             cart_points = [cart_to_polar(point) for point in self._correlation_vectors]
 
+
             for i, cord in enumerate(cart_points):
+                template_str = self.correlation_vectors_str[i][0] + '<br>' + self.correlation_vectors_str[i][1]
+                colour = 'm' if ('O=O' in template_str and 'C|||O' in template_str) else 'firebrick' if 'O=O' in template_str else 'royalblue' if 'C|||O' in template_str else 'black'
                 fig.add_trace(go.Scatterpolar(
                     r=[cord[0]],
                     theta=[cord[1]],
                     mode='markers',
-                    hovertemplate= self.correlation_vectors_str[i][0] + '<br>' + self.correlation_vectors_str[i][1],
-                    marker=dict(color='black')
+                    hovertemplate= template_str,
+                    marker=dict(color=colour)
                 ))
 
             fig.update_layout(

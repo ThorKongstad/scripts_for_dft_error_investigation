@@ -82,7 +82,8 @@ class functional:
                     radialaxis=dict(
                         visible=True,),
                     angularaxis=dict(
-                        rotation=45,),
+#                        rotation=45,
+                    ),
                     sector=[45, 225])
             )
 

@@ -72,7 +72,7 @@ class functional:
                     theta=[cord[1]],
                     mode='markers',
                     hovertemplate= template_str,
-                    marker=dict(color=colour)
+                    marker=dict(color=colour, size=16)
                 ))
 
             fig.update_layout(
@@ -80,7 +80,8 @@ class functional:
                 showlegend=False,
                 polar=dict(
                     radialaxis=dict(
-                        visible=True,),
+                        visible=True,
+                        title=dict(text='Distance in eV to exp ref')),
                     angularaxis=dict(
                         rotation=-45,
                     ),

@@ -147,6 +147,7 @@ def correlation_plot(reaction_1: reaction, reaction_2: reaction, dbo: db.core.Da
 #    ax.legend()
     if isinstance(reaction_indexes,tuple): ax.set_title(f'correlation between reaction {reaction_indexes[0]} and {reaction_indexes[1]}')
     else: ax.set_title(f'correlation between two reactions')
+    ax.axis('equal')
     ax.set_title(f'correlation between two reactions')
     ax.set_xlabel(reaction_1.toStr())
     ax.set_ylabel(reaction_2.toStr())

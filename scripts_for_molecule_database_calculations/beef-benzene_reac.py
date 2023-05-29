@@ -1,3 +1,8 @@
+#partition=katla_verylong
+#nprocshared=32
+#mem=2000MB
+#constrain='[v1|v2|v3|v4|v5]'
+
 from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
 from ase.collections import g2

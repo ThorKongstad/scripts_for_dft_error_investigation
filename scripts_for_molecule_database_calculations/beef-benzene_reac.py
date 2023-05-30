@@ -29,7 +29,7 @@ def main():
     example_reaction = reaction((('C1=CC=CC=C1', 1/6), ('O=O', 7/6)), (('C(=O)=O', 1), ('O', 0.5)), -33.83941093/6)  # 10
 
     benzene_beef: Atoms = g2['C6H6']
-
+    benzene_beef.set_cell([10,10,10])
     calc = GPAW(mode='fd',
                 xc='BEEF_vdW',
                 basis='dzp',
@@ -54,7 +54,7 @@ def main():
 
 
     oxygen_beef: Atoms = g2['O2']
-
+    oxygen_beef.set_cell([10,10,10])
     calc = GPAW(mode='fd',
                 xc='BEEF_vdW',
                 basis='dzp',
@@ -81,7 +81,7 @@ def main():
 
 
     carbon_dioxide_beef: Atoms = g2['CO2']
-
+    carbon_dioxide_beef.set_cell([10,10,10])
     calc = GPAW(mode='fd',
                 xc='BEEF_vdW',
                 basis='dzp',
@@ -106,7 +106,7 @@ def main():
 
 
     water_beef: Atoms = g2['H2O']
-
+    water_beef.set_cell([10,10,10])
     calc = GPAW(mode='fd',
                 xc='BEEF_vdW',
                 basis='dzp',

@@ -14,7 +14,7 @@ def multi_filter_or(row:AtomsRow,funcs:Sequence[Callable[[AtomsRow],bool]]) -> b
 def multi_filter_and(row:AtomsRow,funcs:Sequence[Callable[[AtomsRow],bool]]) -> bool: return all(func(row) for func in funcs)
 
 
-def main(key: str, python_scibt: str, filter: Optional[str] = None, db_dir: str = 'molreact.db', local: bool = False):
+def main(key: str, python_scibt: str, filter: Optional[str] = None, db_dir: str = 'molreact.db', local: bool = False, slurm: str = '/groups/kemi/thorkong/katla_submission/submit_katla_GP228_static'):
     if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir))>0 else '.'): raise FileNotFoundError("Can't find database")
     func_list = []
     if filter is not None:
@@ -35,7 +35,7 @@ def main(key: str, python_scibt: str, filter: Optional[str] = None, db_dir: str 
 
     for row in row_iter:
         if local: call(['python', python_scibt, str(row.get("id")),'-db',db_dir])
-        else: call([f'/groups/kemi/thorkong/katla_submission/submit_katla_GP228_static', python_scibt, str(row.get("id")), '-db', db_dir])
+        else: call([slurm, python_scibt, str(row.get("id")), '-db', db_dir])
 
 
 if __name__ == '__main__':
@@ -45,6 +45,7 @@ if __name__ == '__main__':
     parser.add_argument('-db','--database',help='directory to the database, if not stated will look for molreact.db in pwd.', default='molreact.db')
     parser.add_argument('--filter','-f', help='current implemented filters are isgga, ismgga and collNotExist="COLLOM" t. a "," denotes an or and "&&" denotes an and')
     parser.add_argument('--local','-local', action='store_true')
+    parser.add_argument('-ss','--submission_script',help='directory to the slurm submission script.', default='/groups/kemi/thorkong/katla_submission/submit_katla_GP228_static')
     args = parser.parse_args()
 
-    main(args.keyword, args.python_scipt,args.filter, args.database, local=args.local)
+    main(args.keyword, args.python_scipt,args.filter, args.database, local=args.local, slurm=args.submission_script)

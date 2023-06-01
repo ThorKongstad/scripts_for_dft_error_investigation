@@ -15,7 +15,7 @@ from ase.parallel import parprint, world
 from ase.dft.bee import BEEFEnsemble
 
 def folder_exist(folder_name: str) -> NoReturn:
-    if not  os.path.basename(folder_name) in os.listdir(os.path.dirname(folder_name)): os.mkdir(folder_name)
+    if not os.path.basename(folder_name) in os.listdir(os.path.dirname(folder_name)): os.mkdir(folder_name)
 
 def sanitize(unclean_str: str) -> str:
     for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'"']: unclean_str = unclean_str.replace(ch, '')
@@ -38,7 +38,7 @@ def weighted_sd(dat: Sequence[float|int], coef: Sequence[float|int], mean:float|
         (((non_zero_coefs-1)*sum(coef))/non_zero_coefs)
     )
 
-def main(calc_name:str,structures:Sequence[str], db_name: str|None = None, opt_bool: bool = False, dir: Optional[str] = None):
+def main(calc_name:str,structures:Sequence[str], db_name: Optional[str] = None, opt_bool: bool = False, dir: Optional[str] = None):
 
     if dir is None: dir = '/groups/kemi/thorkong/errors_investigation/transistion_calc/'
     folder = dir + sanitize(calc_name)
@@ -46,13 +46,16 @@ def main(calc_name:str,structures:Sequence[str], db_name: str|None = None, opt_b
         folder_exist(folder)
 
     grid_spacing = 0.16
-    for image_name in structures:
-        image = read(image_name)
+
+    if len(structures) == 1: images = read(structures[0],index=':')
+    else: images = map(read, structures)
+
+    for nr, image in enumerate(images):
         calc = GPAW(mode=PW(500),
                     kpts=(4, 4, 1),
                     xc='RPBE',
                     basis='dzp',
-                    txt=f'{folder}/BEE_{os.path.basename(image_name)}.txt',
+                    txt=f'{folder}/BEE_image-{nr}.txt',
                     gpts=h2gpts(grid_spacing, image.get_cell(), idiv=4),
                     parallel={'augment_grids': True, 'sl_auto': True},
                     convergence={'eigenstates': 0.000001},
@@ -75,7 +78,7 @@ def main(calc_name:str,structures:Sequence[str], db_name: str|None = None, opt_b
         if world.rank == 0:
             with db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db') as db_obj:
                 data_dict = {'ensemble_en': ensem_en_li} #,'ensemble_coef':ensem_coef}
-                db_obj.write(image, name=os.path.basename(image_name), ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
+                db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
 
 
 if __name__ == '__main__':

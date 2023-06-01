@@ -1,5 +1,5 @@
 #partition=katla_medium
-#nprocshared=8
+#nprocshared=24
 #mem=2300MB
 #constrain='[v4|v5]'
 import argparse

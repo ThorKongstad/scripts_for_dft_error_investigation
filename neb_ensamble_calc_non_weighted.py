@@ -13,14 +13,26 @@ from gpaw.utilities import h2gpts
 from typing import NoReturn, Sequence, Optional
 from ase.parallel import parprint, world
 from ase.dft.bee import BEEFEnsemble
+import time
 
-def folder_exist(folder_name: str) -> NoReturn:
-    if not os.path.basename(folder_name) in os.listdir(os.path.dirname(folder_name)): os.mkdir(folder_name)
+def folder_exist(folder_name: str, path: str = '.', tries: int = 10) -> NoReturn:
+    try:
+        tries -= 1
+        if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/')+folder_name)
+    except FileExistsError:
+        if tries > 0:
+            time.sleep(2)
+            folder_exist(folder_name, path=path, tries=tries)
+
+
+def ends_with(string: str, end_str: str) -> str:
+    return string + end_str * (end_str != string[-len(end_str):0])
+
 
 def sanitize(unclean_str: str) -> str:
-    for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'"']: unclean_str = unclean_str.replace(ch, '')
+    for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'"','.']: unclean_str = unclean_str.replace(ch, '')
     for ch in ['/', '\\', '|',' ']: unclean_str = unclean_str.replace(ch, '_')
-    for ch in ['=', '+', ':']: unclean_str = unclean_str.replace(ch, '-')
+    for ch in ['=', '+', ':',',']: unclean_str = unclean_str.replace(ch, '-')
     return unclean_str
 
 def weighted_mean(dat: Sequence[float|int], coef: Sequence[float|int]) -> float|int:
@@ -41,9 +53,8 @@ def weighted_sd(dat: Sequence[float|int], coef: Sequence[float|int], mean:float|
 def main(calc_name:str,structures:Sequence[str], db_name: Optional[str] = None, opt_bool: bool = False, dir: Optional[str] = None):
 
     if dir is None: dir = '/groups/kemi/thorkong/errors_investigation/transistion_calc/'
-    folder = dir + sanitize(calc_name)
-    if world.rank == 0:
-        folder_exist(folder)
+    folder = ends_with(dir,'/') + sanitize(calc_name)
+    if world.rank == 0: folder_exist(os.path.basename(folder), path=os.path.dirname(folder))
 
     grid_spacing = 0.16
 

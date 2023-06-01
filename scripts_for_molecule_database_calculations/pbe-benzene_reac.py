@@ -47,12 +47,11 @@ def main():
     benzene_PBE_vib = Vibrations(benzene_PBE, name=f'benzene_PBE_vib.txt')
     benzene_PBE_vib.run()
     benzene_PBE_thermo = IdealGasThermo(
-        vib_energies=(val for val in benzene_PBE_vib.get_energies() if val.isreal()), # will likely fail because of imaginary vals fix
+        vib_energies=tuple(val for val in benzene_PBE_vib.get_energies() if not isinstance(val,complex)), # will likely fail because of imaginary vals fix
         geometry='nonlinear',
         potentialenergy=benzene_PBE.get_potential_energy(),
         atoms=benzene_PBE,
     )
-
 
     oxygen_PBE: Atoms = g2['O2']
     oxygen_PBE.set_cell([10,10,10])
@@ -74,7 +73,7 @@ def main():
     oxygen_PBE_vib = Vibrations(oxygen_PBE, name=f'oxygen_PBE_vib.txt')
     oxygen_PBE_vib.run()
     oxygen_PBE_thermo = IdealGasThermo(
-        vib_energies=oxygen_PBE_vib.get_energies(),
+        vib_energies=tuple(val for val in oxygen_PBE_vib.get_energies() if not isinstance(val,complex)),
         geometry='linear',
         potentialenergy=oxygen_PBE.get_potential_energy(),
         atoms=oxygen_PBE,
@@ -101,7 +100,7 @@ def main():
     carbon_dioxide_PBE_vib = Vibrations(carbon_dioxide_PBE, name=f'carbon_dioxide_PBE_vib.txt')
     carbon_dioxide_PBE_vib.run()
     carbon_dioxide_PBE_thermo = IdealGasThermo(
-        vib_energies=carbon_dioxide_PBE_vib.get_energies(),
+        vib_energies=tuple(val for val in carbon_dioxide_PBE_vib.get_energies() if not isinstance(val,complex)),
         geometry='linear',
         potentialenergy=carbon_dioxide_PBE.get_potential_energy(),
         atoms=carbon_dioxide_PBE,
@@ -126,9 +125,8 @@ def main():
     water_PBE.get_potential_energy()
     water_PBE_vib = Vibrations(water_PBE, name=f'water_PBE_vib.txt')
     water_PBE_vib.run()
-    carbon_dioxide_PBE_vib.run()
     water_PBE_thermo = IdealGasThermo(
-        vib_energies=water_PBE_vib.get_energies(),
+        vib_energies=tuple(val for val in water_PBE_vib.get_energies() if not isinstance(val,complex)),
         geometry='nonlinear',
         potentialenergy=water_PBE.get_potential_energy(),
         atoms=water_PBE,

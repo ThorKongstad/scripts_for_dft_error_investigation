@@ -47,7 +47,7 @@ def main():
     benzene_beef_vib = Vibrations(benzene_beef, name=f'benzene_beef_vib.txt')
     benzene_beef_vib.run()
     benzene_beef_thermo = IdealGasThermo(
-        vib_energies=(val for val in benzene_beef_vib.get_energies() if val.isreal()), # will likely fail because of imaginary vals fix
+        vib_energies=tuple(val for val in benzene_beef_vib.get_energies() if not isinstance(val,complex)), # will likely fail because of imaginary vals fix
         geometry='nonlinear',
         potentialenergy=benzene_beef.get_potential_energy(),
         atoms=benzene_beef,
@@ -74,7 +74,7 @@ def main():
     oxygen_beef_vib = Vibrations(oxygen_beef, name=f'oxygen_beef_vib.txt')
     oxygen_beef_vib.run()
     oxygen_beef_thermo = IdealGasThermo(
-        vib_energies=oxygen_beef_vib.get_energies(),
+        vib_energies=tuple(val for val in oxygen_beef_vib.get_energies() if not isinstance(val,complex)),
         geometry='linear',
         potentialenergy=oxygen_beef.get_potential_energy(),
         atoms=oxygen_beef,
@@ -101,7 +101,7 @@ def main():
     carbon_dioxide_beef_vib = Vibrations(carbon_dioxide_beef, name=f'carbon_dioxide_beef_vib.txt')
     carbon_dioxide_beef_vib.run()
     carbon_dioxide_beef_thermo = IdealGasThermo(
-        vib_energies=carbon_dioxide_beef_vib.get_energies(),
+        vib_energies=tuple(val for val in carbon_dioxide_beef_vib.get_energies() if not isinstance(val,complex)),
         geometry='linear',
         potentialenergy=carbon_dioxide_beef.get_potential_energy(),
         atoms=carbon_dioxide_beef,
@@ -126,9 +126,8 @@ def main():
     water_beef.get_potential_energy()
     water_beef_vib = Vibrations(water_beef, name=f'water_beef_vib.txt')
     water_beef_vib.run()
-    carbon_dioxide_beef_vib.run()
     water_beef_thermo = IdealGasThermo(
-        vib_energies=water_beef_vib.get_energies(),
+        vib_energies=tuple(val for val in water_beef_vib.get_energies() if not isinstance(val,complex)),
         geometry='nonlinear',
         potentialenergy=water_beef.get_potential_energy(),
         atoms=water_beef,

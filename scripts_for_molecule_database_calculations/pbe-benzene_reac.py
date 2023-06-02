@@ -135,7 +135,7 @@ def main():
     reac_enthalpy = benzene_PBE_thermo.get_enthalpy(temperature=298.15,verbose=False)*example_reaction.reactants[0][1] + oxygen_PBE_thermo.get_enthalpy(temperature=298.15,verbose=False)*example_reaction.reactants[1][1]
     prod_enthalpy = carbon_dioxide_PBE_thermo.get_enthalpy(temperature=298.15,verbose=False)*example_reaction.products[0][1] + water_PBE_thermo.get_enthalpy(temperature=298.15,verbose=False)*example_reaction.products[1][1]
 
-    reaction_enthalpy = reac_enthalpy - prod_enthalpy
+    reaction_enthalpy = prod_enthalpy - reac_enthalpy
 
     parprint("reaction test for PBE-vdW")
     parprint(f"finale reaction enthalpy: {reaction_enthalpy}")

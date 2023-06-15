@@ -44,18 +44,20 @@ def plot_correction(functional_obj: functional, reaction_seq: Sequence[reaction]
     fig = go.Figure()
 
     for reac in reaction_seq:
-        template_str = reac.toStr()
-        colour = 'darkviolet' if ('O=O' in template_str and 'C|||O' in template_str) else (
-            'firebrick' if 'O=O' in template_str else (
-            'royalblue' if 'C|||O' in template_str else 'black'))
+        try:
+            template_str = reac.toStr()
+            colour = 'darkviolet' if ('O=O' in template_str and 'C|||O' in template_str) else (
+                'firebrick' if 'O=O' in template_str else (
+                'royalblue' if 'C|||O' in template_str else 'black'))
 
-        fig.add_trace(go.Scatter(
-            x=[reac.experimental_ref],
-            y=[functional_obj.calc_reaction(reac,correction_dict)],
-            mode='markers',
-            hovertemplate=template_str,
-            marker=dict(color=colour, size=16)
-        ))
+            fig.add_trace(go.Scatter(
+                x=[reac.experimental_ref],
+                y=[functional_obj.calc_reaction(reac,correction_dict)],
+                mode='markers',
+                hovertemplate=template_str,
+                marker=dict(color=colour, size=16)
+            ))
+        except: pass
 
     fig.update_layout(
         title=dict(text=functional_obj.name),
@@ -73,7 +75,7 @@ def main(db_dir: Sequence[str] = ('molreact.db',)):
     else: pd_dat = pd.DataFrame([row.__dict__ for work_db in db_list for row in work_db.select()])
 
     functional_list = {xc for _, row in pd_dat.iterrows() if not pd.isna((xc := row.get('xc')))}
-    functional_objs = [functional(func, {smile: enthalpy for _, row in pd_dat.iterrows() if not pd.isna((smile := row.get('smiles'))) and not pd.isna((enthalpy := row.get('enthalpy')))}) for func in functional_list]
+    functional_objs = [functional(func, {smile: enthalpy for _, row in pd_dat.iterrows() if row.get('xc') == func and not pd.isna((smile := row.get('smiles'))) and not pd.isna((enthalpy := row.get('enthalpy')))}) for func in functional_list]
 
     reactions = [
         reaction((('[HH]', 1), ('C(=O)=O', 1)), (('cid281', 1), ('O', 1)), 0.43),  # 0  a0

@@ -45,8 +45,8 @@ def plot_correction(functional_obj: functional, reaction_seq: Sequence[reaction]
 
     for reac in reaction_seq:
         fig.add_trace(go.Scatter(
-            x=reac.experimental_ref,
-            y=functional_obj.calc_reaction(reac,correction_dict),
+            x=[reac.experimental_ref],
+            y=[functional_obj.calc_reaction(reac,correction_dict)],
             mode='markers'
         ))
 

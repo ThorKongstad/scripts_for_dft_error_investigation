@@ -29,7 +29,7 @@ class functional:
     def calc_reaction(self, reaction_obj: reaction, correction_dict: Optional[dict[str,float]] = None):
         if correction_dict is None: correction_dict = {}
         reactants_enthalpy = sum((self.molecule_dict[reactant] + (0 if reactant not in correction_dict.keys() else correction_dict.get(reactant)))*amount for reactant, amount in reaction_obj.reactants)
-        product_enthalpy = sum((self.molecule_dict[product] + (0 if product not in correction_dict.keys() else correction_dict.get(product)))*amount for product, amount in reaction_obj.reactants)
+        product_enthalpy = sum((self.molecule_dict[product] + (0 if product not in correction_dict.keys() else correction_dict.get(product)))*amount for product, amount in reaction_obj.products)
 
         return product_enthalpy - reactants_enthalpy
 

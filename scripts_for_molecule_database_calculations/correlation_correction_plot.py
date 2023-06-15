@@ -44,10 +44,17 @@ def plot_correction(functional_obj: functional, reaction_seq: Sequence[reaction]
     fig = go.Figure()
 
     for reac in reaction_seq:
+        template_str = reac.toStr()
+        colour = 'darkviolet' if ('O=O' in template_str and 'C|||O' in template_str) else (
+            'firebrick' if 'O=O' in template_str else (
+            'royalblue' if 'C|||O' in template_str else 'black'))
+
         fig.add_trace(go.Scatter(
             x=[reac.experimental_ref],
             y=[functional_obj.calc_reaction(reac,correction_dict)],
-            mode='markers'
+            mode='markers',
+            hovertemplate=template_str,
+            marker=dict(color=colour, size=16)
         ))
 
     fig.update_layout(

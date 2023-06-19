@@ -7,7 +7,7 @@ import argparse
 import os
 import sys
 
-sys.path + os.path.basename(__file__)
+sys.path += [os.path.basename(__file__)]
 from scripts_for_adsorbate_database import sanitize, folder_exist, update_db
 
 from ase.optimize import QuasiNewton

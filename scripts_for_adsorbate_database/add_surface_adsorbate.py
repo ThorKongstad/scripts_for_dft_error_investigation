@@ -2,7 +2,7 @@ import argparse
 import os
 import sys
 from typing import NoReturn, Tuple
-sys.path += [os.path.basename(__file__)]
+#sys.path.insert(0, str(pathlib.Path(__file__).parent))
 #from scripts_for_adsorbate_database import sanitize, folder_exist
 
 from ase.io import read

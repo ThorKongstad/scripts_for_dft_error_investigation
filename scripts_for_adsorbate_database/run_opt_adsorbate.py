@@ -8,7 +8,7 @@ import os
 import sys
 import pathlib
 
-sys.path.insert(0, str(pathlib.Path(__file__).parent))
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 from scripts_for_adsorbate_database import sanitize, folder_exist, update_db
 
 from ase.optimize import QuasiNewton

@@ -1,5 +1,5 @@
 #partition=katla_medium
-#nprocshared=16
+#nprocshared=32
 #mem=2300MB
 #constrain='[v1|v2|v3|v4|v5]'
 

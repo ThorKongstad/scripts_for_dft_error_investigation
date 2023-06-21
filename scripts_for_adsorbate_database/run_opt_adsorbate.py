@@ -42,7 +42,7 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     if '{' in functional[0] and '}' in functional[-1] and ':' in functional: functional = eval(functional)
 
     calc = GPAW(mode=PW(500),
-                xc=functional,
+                xc=functional if functional not in ['PBE0'] else {'name':functional,'backend':'pw'},
                 kpts=[4,4,1],
                 basis='dzp',
                 txt=f'{functional_folder}/opt_{structure_str}_{db_id}.txt',

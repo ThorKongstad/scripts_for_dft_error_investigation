@@ -73,7 +73,8 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
             energy_string = fil.read()
 
         # saving vib data
-        update_db(db_dir, dict(vibration=True, vib_en=energy_string))
+        update_db(db_dir, dict(id=db_id, vibration=True, vib_en=energy_string))
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

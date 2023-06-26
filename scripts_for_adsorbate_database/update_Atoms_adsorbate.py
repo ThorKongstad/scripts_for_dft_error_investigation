@@ -27,4 +27,4 @@ if __name__ == '__main__':
     parser.add_argument('-relaxed', '--relaxed', action='store_true', default=False)
     args = parser.parse_args()
 
-    main(args.db_index, args.txt_directory, args.db_diretory, args.relaxed)
+    main(args.db_index, args.txt_directory, args.db_directory, args.relaxed)

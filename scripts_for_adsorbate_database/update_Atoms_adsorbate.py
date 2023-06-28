@@ -5,7 +5,6 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 from scripts_for_adsorbate_database import update_db
 from ase.io import read
 from ase import Atoms
-import ase.db as db
 
 
 def main(db_index: int, txt_dir: str, db_dir: str, relaxed: bool = False, discard_constraint: bool = False):
@@ -33,4 +32,4 @@ if __name__ == '__main__':
     parser.add_argument('-disCon', '--discard_constraint', action='store_true', default=False)
     args = parser.parse_args()
 
-    main(args.db_index, args.txt_directory, args.db_directory, args.relaxed)
+    main(args.db_index, args.txt_directory, args.db_directory, args.relaxed, args.discard_constraint)

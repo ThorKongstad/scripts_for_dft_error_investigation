@@ -25,7 +25,7 @@ class sic_functional:
         elif (amount_match := match(r'PBE-PZ-SIC-direct-(?P<amount>\d+)', self.name)): self.sic_amount = float(amount_match.group('amount')) / 100
         else: self.sic_amount = 0.5
 
-    def calc_reaction(self, reaction_obj: 'reaction', correction_dict: Optional[dict[str,float]] = None):
+    def calc_reaction(self, reaction_obj: 'reaction', correction_dict: Optional[dict[str,float]] = None) -> float:
         if correction_dict is None: correction_dict = {}
         reactants_enthalpy = sum((self.molecule_dict[reactant] + (0 if reactant not in correction_dict.keys() else correction_dict.get(reactant)))*amount for reactant, amount in reaction_obj.reactants)
         product_enthalpy = sum((self.molecule_dict[product] + (0 if product not in correction_dict.keys() else correction_dict.get(product)))*amount for product, amount in reaction_obj.products)
@@ -59,8 +59,8 @@ def plot_sic_deviation(functional_obj_seq: Sequence[sic_functional], reaction_se
     fig.update_layout(
         title=dict(text='Sic deviation'),
         showlegend=False,
-        xaxis_title='Deviation from experimental reference',
-        yaxis_title='sic %'
+        xaxis_title='sic %',
+        yaxis_title='Deviation from experimental reference',
     )
 
     fig.write_html('reaction_plots/' + f'sic_deviation_plot.html', include_mathjax='cdn')
@@ -74,6 +74,8 @@ def main(sic_db_dir: str, pbe_db_dir: str):
     functional_list = {xc for _, row in sic_pd.iterrows() if not pd.isna((xc := row.get('xc'))) and match('PBE-PZ-SIC-direct(-(?P<amount>\d+))?',xc)}
     functional_objs = [sic_functional('PBE', {smile: enthalpy for _, row in pbe_pd.iterrows() if row.get('xc') == 'PBE' and not pd.isna((smile := row.get('smiles'))) and not pd.isna((enthalpy := row.get('enthalpy')))})] \
                       + [sic_functional(func, {smile: enthalpy for _, row in sic_pd.iterrows() if row.get('xc') == func and not pd.isna((smile := row.get('smiles'))) and not pd.isna((enthalpy := row.get('enthalpy')))}) for func in functional_list]
+
+    print(functional_objs[-1].molecule_dict)
 
     plot_sic_deviation(functional_objs, all_reactions)
 

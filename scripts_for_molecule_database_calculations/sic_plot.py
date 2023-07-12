@@ -48,7 +48,7 @@ def plot_sic_deviation(functional_obj_seq: Sequence[sic_functional], reaction_se
         fig.add_trace(go.Scatter(
             x= tuple(func.sic_amount for func in functional_obj_seq_sorted),
             y=tuple(func.calc_reaction(reac) - reac.experimental_ref for func in functional_obj_seq_sorted),
-            mode='markers+line',
+            mode='markers+lines',
             hovertemplate=template_str,
             marker=dict(color=colour, size=16),
             line=dict(color=colour,),

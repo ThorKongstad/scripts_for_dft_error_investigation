@@ -36,7 +36,7 @@ class sic_functional:
 def plot_sic_deviation(functional_obj_seq: Sequence[sic_functional], reaction_seq: Sequence['reaction']):
     fig = go.Figure()
 
-    functional_obj_seq_sorted = sorted(functional_obj_seq, key=attrgetter('sic_amount'))
+    functional_obj_seq_sorted = list(sorted(functional_obj_seq, key=attrgetter('sic_amount')))
 
     for reac in reaction_seq:
         try:
@@ -74,8 +74,6 @@ def main(sic_db_dir: str, pbe_db_dir: str):
     functional_list = {xc for _, row in sic_pd.iterrows() if not pd.isna((xc := row.get('xc'))) and match('PBE-PZ-SIC-direct(-(?P<amount>\d+))?',xc)}
     functional_objs = [sic_functional('PBE', {smile: enthalpy for _, row in pbe_pd.iterrows() if row.get('xc') == 'PBE' and not pd.isna((smile := row.get('smiles'))) and not pd.isna((enthalpy := row.get('enthalpy')))})] \
                       + [sic_functional(func, {smile: enthalpy for _, row in sic_pd.iterrows() if row.get('xc') == func and not pd.isna((smile := row.get('smiles'))) and not pd.isna((enthalpy := row.get('enthalpy')))}) for func in functional_list]
-
-    print(functional_objs[-1].molecule_dict)
 
     plot_sic_deviation(functional_objs, all_reactions)
 

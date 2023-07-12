@@ -39,22 +39,22 @@ def plot_sic_deviation(functional_obj_seq: Sequence[sic_functional], reaction_se
     functional_obj_seq_sorted = list(sorted(functional_obj_seq, key=attrgetter('sic_amount')))
 
     for reac in reaction_seq:
-        try:
-            template_str = reac.toStr()
-            colour = 'darkviolet' if ('O=O' in template_str and 'C|||O' in template_str) else (
-                'firebrick' if 'O=O' in template_str else (
-                'royalblue' if 'C|||O' in template_str else 'black'))
+        #try:
+        template_str = reac.toStr()
+        colour = 'darkviolet' if ('O=O' in template_str and 'C|||O' in template_str) else (
+            'firebrick' if 'O=O' in template_str else (
+            'royalblue' if 'C|||O' in template_str else 'black'))
 
-            fig.add_trace(go.Scatter(
-                x= tuple(func.sic_amount for func in functional_obj_seq_sorted),
-                y=tuple(func.calc_reaction(reac) - reac.experimental_ref for func in functional_obj_seq_sorted),
-                mode='markers+line',
-                hovertemplate=template_str,
-                marker=dict(color=colour, size=16),
-                line=dict(color=colour,),
-                opacity=0.4
-            ))
-        except: pass
+        fig.add_trace(go.Scatter(
+            x= tuple(func.sic_amount for func in functional_obj_seq_sorted),
+            y=tuple(func.calc_reaction(reac) - reac.experimental_ref for func in functional_obj_seq_sorted),
+            mode='markers+line',
+            hovertemplate=template_str,
+            marker=dict(color=colour, size=16),
+            line=dict(color=colour,),
+            opacity=0.4
+        ))
+        #except: pass
 
     fig.update_layout(
         title=dict(text='Sic deviation'),

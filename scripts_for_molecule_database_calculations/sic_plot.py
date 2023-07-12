@@ -36,7 +36,7 @@ class sic_functional:
 def plot_sic_deviation(functional_obj_seq: Sequence[sic_functional], reaction_seq: Sequence['reaction']):
     fig = go.Figure()
 
-    functional_obj_seq_sorted = sorted(functional_obj_seq, key=attrgetter('sig_amount'))
+    functional_obj_seq_sorted = sorted(functional_obj_seq, key=attrgetter('sic_amount'))
 
     for reac in reaction_seq:
         try:

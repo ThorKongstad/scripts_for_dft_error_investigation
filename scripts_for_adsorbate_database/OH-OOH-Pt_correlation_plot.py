@@ -48,7 +48,7 @@ class Functional:
     def __init__(self, functional_name: str, slab_db: pd.DataFrame, adsorbate_db: pd.DataFrame, mol_db: pd.DataFrame, needed_struc_dict: Optional[dict[str, list[str]]] = None):
         self.name = functional_name
         self.molecule = {smile: mol_db.query(f'smiles == "{smile}" and xc == "{functional_name}" and enthalpy.notna()').get('enthalpy').iloc[0] for smile in needed_struc_dict['molecule']}
-        self.slab = {structure_str: slab_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and energy.notna()').get('energy').iloc[0] for structure_str in needed_struc_dict['slabs']}
+        self.slab = {structure_str: slab_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and energy.notna()').get('energy').iloc[0] for structure_str in needed_struc_dict['slab']}
         self.adsorbate = {structure_str: adsorbate_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and enthalpy.notna()').get('enthalpy').iloc[0] for structure_str in needed_struc_dict['adsorbate']}
 
         self.has_BEE = functional_name == 'BEEF-vdW'

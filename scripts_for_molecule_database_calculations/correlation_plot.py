@@ -79,7 +79,7 @@ def BEE_reaction_enthalpy(reac:reaction, functional: str, dbo: db.core.Database 
                         dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('enthalpy') - dbo.get(
                     [('smiles', '=', smile), ('xc', '=', functional)]).get('energy'))) * amount for smile, amount in
                                          reac.products), axis=0)
-        return reac_ensamble_enthalpy - prod_ensamble_enthalpy
+        return prod_ensamble_enthalpy - reac_ensamble_enthalpy
 
     elif isinstance(dbo, pd.DataFrame):
         reac_ensamble_enthalpy = np.sum(list((
@@ -91,32 +91,32 @@ def BEE_reaction_enthalpy(reac:reaction, functional: str, dbo: db.core.Database 
             np.array(bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en')[:])
             + (dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy').iloc[0]
             - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0])) * amount for smile, amount in reac.products), axis=0)
-        return reac_ensamble_enthalpy - prod_ensamble_enthalpy
+        return prod_ensamble_enthalpy - reac_ensamble_enthalpy
     raise ValueError('The type of database object was not recognised')
 
 
 def BEE_reaction_enthalpy_final_energy_correction(reac: reaction, functional: str, dbo: db.core.Database | pd.DataFrame) -> np.ndarray:
     if isinstance(dbo, db.core.Database):
         correction = reaction_enthalpy(reac, functional, dbo) \
-                     -(sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')*amount for smile,amount in reac.reactants)
-                     -sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')*amount for smile,amount in reac.products))
+                     -(sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')*amount for smile,amount in reac.products)
+                      -sum(dbo.get([('smiles','=',smile),('xc','=',functional)]).get('energy')*amount for smile,amount in reac.reactants))
         reac_ensamble_enthalpy = sum(np.array(
             dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en'))[:] * amount for smile, amount in
                                          reac.reactants)
         prod_ensamble_enthalpy = sum(np.array(
             dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en'))[:] * amount for smile, amount in
                                          reac.products)
-        return reac_ensamble_enthalpy - prod_ensamble_enthalpy + correction
+        return prod_ensamble_enthalpy - reac_ensamble_enthalpy + correction
 
     elif isinstance(dbo, pd.DataFrame):
         correction = (reaction_enthalpy(reac, functional, dbo)
-                     -(sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]*amount for smile,amount in reac.reactants)
-                     -sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]*amount for smile,amount in reac.products)))
+                     -(sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]*amount for smile,amount in reac.products)
+                     -sum(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]*amount for smile,amount in reac.reactants)))
         reac_ensamble_enthalpy = sum(np.array(
             bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] * amount for smile, amount in reac.reactants)
         prod_ensamble_enthalpy = sum(np.array(
             bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] * amount for smile, amount in reac.products)
-        return reac_ensamble_enthalpy - prod_ensamble_enthalpy + correction
+        return prod_ensamble_enthalpy - reac_ensamble_enthalpy + correction
     raise ValueError('The type of database object was not recognised')
 
 

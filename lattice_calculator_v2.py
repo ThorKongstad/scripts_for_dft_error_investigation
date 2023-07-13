@@ -82,7 +82,7 @@ def calculate_pE_of_latt(lattice: float, metal: str, slab_type:str, functional: 
     bulk_con = bulk(name=metal, crystalstructure=slab_type, a=lattice)
 
     calc = GPAW(mode=PW(500),
-                xc=functional,
+                xc=functional if functional not in ['PBE0'] else {'name':functional,'backend':'pw'},
                 basis='dzp',
                 kpts=(10,10,10),
                 txt=f'{functional_folder}/{metal}_latt_fit/lat-opt_{metal}_{slab_type}_a-{lattice}.txt',

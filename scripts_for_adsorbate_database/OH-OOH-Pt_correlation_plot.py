@@ -36,7 +36,7 @@ class adsorbate_reaction:
             new_component_seq = []
             for i, reac_or_prod in enumerate(reacs_or_prods):
                 if len(reac_or_prod) != 3: raise ValueError('a component of a reaction does not have the correct size')
-                if not reac_or_prod in ('molecule', 'slab', 'adsorbate'): raise ValueError('The reactant or product type sting appear to be wrong')
+                if not reac_or_prod[0] in ('molecule', 'slab', 'adsorbate'): raise ValueError('The reactant or product type string appear to be wrong')
                 new_component_seq.append(component(*reac_or_prod) if not isinstance(reac_or_prod, component) else reac_or_prod)
             setattr(self, 'reactants' if n == 0 else 'products', tuple(new_component_seq))
 

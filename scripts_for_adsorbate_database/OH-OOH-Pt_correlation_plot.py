@@ -144,7 +144,10 @@ def main(reaction_index_1, reaction_index_2, slab_db_dir: list[str], adsorbate_d
         for compo in reac.reactants + reac.products:
             dictionary_of_needed_strucs[compo.type].append(compo.name)
 
-    functional_list = [Functional(functional_name=xc, slab_db=pd_slab_dat, adsorbate_db=pd_adsorbate_dat, mol_db=pd_mol_dat, needed_struc_dict=dictionary_of_needed_strucs) for xc in functional_set]
+    functional_list = []
+    for xc in functional_set:
+        try: functional_list.append(Functional(functional_name=xc, slab_db=pd_slab_dat, adsorbate_db=pd_adsorbate_dat, mol_db=pd_mol_dat, needed_struc_dict=dictionary_of_needed_strucs))
+        except: pass
 
     correlation_plotly(reaction_1=reactions[reaction_index_1], reaction_2=reactions[reaction_index_2], functional_seq=functional_list, reaction_indexes=(reaction_index_1, reaction_index_2))
 

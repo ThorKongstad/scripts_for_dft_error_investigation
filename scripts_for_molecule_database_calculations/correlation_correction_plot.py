@@ -1,15 +1,14 @@
 import ase.db as db
-from ase.db.core import bytes_to_object
-#import os
 import argparse
+import sys
+import pathlib
 from dataclasses import dataclass, field
 from typing import Sequence, NoReturn, Tuple, Iterable, Optional
-#import matplotlib.pyplot as plt
-import numpy as np
-#import time
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
+from scripts_for_molecule_database_calculations import build_pd, all_reactions, sanitize
 import pandas as pd
-#import plotly.express as px
 import plotly.graph_objects as go
+
 
 @dataclass
 class reaction:
@@ -26,21 +25,15 @@ class functional:
     name: str
     molecule_dict: dict[str, float]
 
-    def calc_reaction(self, reaction_obj: reaction, correction_dict: Optional[dict[str,float]] = None):
+    def calc_reaction(self, reaction_obj: reaction, correction_dict: Optional[dict[str, float]] = None):
         if correction_dict is None: correction_dict = {}
         reactants_enthalpy = sum((self.molecule_dict[reactant] + (0 if reactant not in correction_dict.keys() else correction_dict.get(reactant)))*amount for reactant, amount in reaction_obj.reactants)
         product_enthalpy = sum((self.molecule_dict[product] + (0 if product not in correction_dict.keys() else correction_dict.get(product)))*amount for product, amount in reaction_obj.products)
 
         return product_enthalpy - reactants_enthalpy
 
-def sanitize(unclean_str: str) -> str:
-    for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'"','.']: unclean_str = unclean_str.replace(ch, '')
-    for ch in ['/', '\\', '|',' ']: unclean_str = unclean_str.replace(ch, '_')
-    for ch in ['=', '+', ':',',']: unclean_str = unclean_str.replace(ch, '-')
-    return unclean_str
 
-
-def plot_correction(functional_obj: functional, reaction_seq: Sequence[reaction], correction_dict: Optional[dict[str,float]] = None):
+def plot_correction(functional_obj: functional, reaction_seq: Sequence[reaction], correction_dict: Optional[dict[str, float]] = None):
     fig = go.Figure()
 
     for reac in reaction_seq:
@@ -61,7 +54,9 @@ def plot_correction(functional_obj: functional, reaction_seq: Sequence[reaction]
 
     fig.update_layout(
         title=dict(text=functional_obj.name),
-        showlegend=False
+        showlegend=False,
+        xaxis_title='Experimental reference',
+        yaxis_title='Calculated enthalpy'
     )
 
     fig.write_html('reaction_plots/' + f'{sanitize(functional_obj.name)}_correction_plot.html', include_mathjax='cdn')
@@ -120,10 +115,15 @@ def main(db_dir: Sequence[str] = ('molreact.db',)):
         reaction((('C1=CC=C(C=C1)O', 1 / 6), ('O=O', 7 / 6)), (('C(=O)=O', 1), ('O', 0.5)), -31.6325807 / 6),  # 12
     ]
 
+    oxygen_reactions = [
+        reaction((('[HH]',1),('O=O',0.5)),(('O',1),), None),
+        reaction((('[HH]', 1), ('O=O', 1)), (('OO', 1),), None),
+    ]
+
     all_reactions = reactions + combustion_reactions
 
     for func_obj in functional_objs:
-        plot_correction(func_obj,all_reactions)
+        plot_correction(func_obj, all_reactions)
 
 
 if __name__ == '__main__':

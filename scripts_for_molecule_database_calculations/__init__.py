@@ -25,6 +25,14 @@ def build_pd(db_dir_list, select_key: Optional = None):
     return pd_dat
 
 
+def sanitize(unclean_str: str) -> str:
+    for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}', "'", '"']: unclean_str = unclean_str.replace(ch, '')
+    for ch in ['/', '\\', '|', ' ', ',', '.']: unclean_str = unclean_str.replace(ch, '_')
+    for ch in ['=', '+', ':', ';']: unclean_str = unclean_str.replace(ch, '-')
+    return unclean_str
+
+
+
 reactions = [
         reaction((('[HH]', 1), ('C(=O)=O', 1)), (('cid281', 1), ('O', 1)), 0.43),  # 0  a0
         reaction((('[HH]', 4), ('C(=O)=O', 1)), (('C', 1), ('O', 2)), -1.71),  # 1  a1

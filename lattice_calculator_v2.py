@@ -1,5 +1,5 @@
-#partition=katla_verylong
-#nprocshared=8
+#partition=katla
+#nprocshared=16
 #mem=2300MB
 #constrain='[v5]'
 

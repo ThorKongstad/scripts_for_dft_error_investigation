@@ -62,6 +62,7 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
         if at.symbol == metal_symbol: metal_at.append(i)
         else: not_metal_at.append(i)
     atoms.set_constraint(FixAtoms(metal_at))
+    atoms.get_potential_energy() # fix incase it cant read forces, need to figure out a test for it. possible try TypeError or if self._cache['forces'] == None
 
     vib = Vibrations(atoms, name=f'{functional_folder}/{file_name.replace(".txt", "")}')
     vib.run()

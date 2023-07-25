@@ -1,9 +1,8 @@
 import argparse
-import os
 import sys
 import pathlib
-from dataclasses import dataclass, field
-from typing import Sequence, NoReturn, Tuple, Iterable, Optional
+from dataclasses import dataclass
+from typing import Sequence, Optional
 from re import match
 from operator import attrgetter
 
@@ -12,7 +11,6 @@ from scripts_for_molecule_database_calculations import build_pd, all_reactions
 
 import pandas as pd
 import plotly.graph_objects as go
-
 
 
 @dataclass
@@ -39,22 +37,20 @@ def plot_sic_deviation(functional_obj_seq: Sequence[sic_functional], reaction_se
     functional_obj_seq_sorted = list(sorted(functional_obj_seq, key=attrgetter('sic_amount')))
 
     for reac in reaction_seq:
-        #try:
-        template_str = reac.toStr()
-        colour = 'darkviolet' if ('O=O' in template_str and 'C|||O' in template_str) else (
-            'firebrick' if 'O=O' in template_str else (
-            'royalblue' if 'C|||O' in template_str else 'black'))
+        try:
+            template_str = reac.toStr()
+            colour = 'darkviolet' if ('O=O' in template_str and 'C|||O' in template_str) else ('firebrick' if 'O=O' in template_str else ('royalblue' if 'C|||O' in template_str else 'black'))
 
-        fig.add_trace(go.Scatter(
-            x= tuple(func.sic_amount for func in functional_obj_seq_sorted),
-            y=tuple(func.calc_reaction(reac) - reac.experimental_ref for func in functional_obj_seq_sorted),
-            mode='markers+lines',
-            hovertemplate=template_str,
-            marker=dict(color=colour, size=16),
-            line=dict(color=colour,),
-            opacity=0.4
-        ))
-        #except: pass
+            fig.add_trace(go.Scatter(
+                x=tuple(func.sic_amount for func in functional_obj_seq_sorted),
+                y=tuple(func.calc_reaction(reac) - reac.experimental_ref for func in functional_obj_seq_sorted),
+                mode='markers+lines',
+                hovertemplate=template_str,
+                marker=dict(color=colour, size=16),
+                line=dict(color=colour,),
+                opacity=0.4
+            ))
+        except: pass
 
     fig.update_layout(
         title=dict(text='Sic deviation'),
@@ -71,9 +67,8 @@ def main(sic_db_dir: str, pbe_db_dir: str):
     sic_pd = build_pd(sic_db_dir)
     pbe_pd = build_pd(pbe_db_dir, 'xc=PBE')
 
-    functional_list = {xc for _, row in sic_pd.iterrows() if not pd.isna((xc := row.get('xc'))) and match('PBE-PZ-SIC-direct(-(?P<amount>\d+))?',xc)}
-    functional_objs = [sic_functional('PBE', {smile: enthalpy for _, row in pbe_pd.iterrows() if row.get('xc') == 'PBE' and not pd.isna((smile := row.get('smiles'))) and not pd.isna((enthalpy := row.get('enthalpy')))})] \
-                      + [sic_functional(func, {smile: enthalpy for _, row in sic_pd.iterrows() if row.get('xc') == func and not pd.isna((smile := row.get('smiles'))) and not pd.isna((enthalpy := row.get('enthalpy')))}) for func in functional_list]
+    functional_list = {xc for _, row in sic_pd.iterrows() if not pd.isna((xc := row.get('xc'))) and match('PBE-PZ-SIC-direct(-(?P<amount>\d+))?', xc)}
+    functional_objs = [sic_functional('PBE', {smile: enthalpy for _, row in pbe_pd.iterrows() if row.get('xc') == 'PBE' and not pd.isna((smile := row.get('smiles'))) and not pd.isna((enthalpy := row.get('enthalpy')))})] + [sic_functional(func, {smile: enthalpy for _, row in sic_pd.iterrows() if row.get('xc') == func and not pd.isna((smile := row.get('smiles'))) and not pd.isna((enthalpy := row.get('enthalpy')))}) for func in functional_list]
 
     plot_sic_deviation(functional_objs, all_reactions)
 

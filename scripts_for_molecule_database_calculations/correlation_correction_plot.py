@@ -60,9 +60,10 @@ def plot_correction(functional_obj: functional, reaction_seq: Sequence[reaction]
                       xref="x",yref='y',
                       x0=min_value, y0=min_value,
                       x1=max_value, y1=max_value,
-                      line=dict(color='grey'),
-                      opacity=0.3,
-                      layer='below'
+                      line=dict(color='grey', width=3, dash='solid'),
+                      opacity=0.5,
+                      layer='below',
+                      visible=True
                       )
 
     fig.update_layout(

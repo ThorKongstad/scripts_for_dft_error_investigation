@@ -52,6 +52,18 @@ def plot_correction(functional_obj: functional, reaction_seq: Sequence[reaction]
             ))
         except: pass
 
+    min_value = min([min(fig.data, key=lambda d: d['x'])['x'], min(fig.data, key=lambda d: d['y'])['y']])
+    max_value = min([max(fig.data, key=lambda d: d['x'])['x'], max(fig.data, key=lambda d: d['y'])['y']])
+
+    fig.add_shape(type='line',
+                  xref="x",yref='y',
+                  x0=min_value, y0=min_value,
+                  x1=max_value, y1=max_value,
+                  line=dict(color='grey'),
+                  opacity=0.3,
+                  layer='below'
+                  )
+
     fig.update_layout(
         title=dict(text=functional_obj.name),
         showlegend=False,

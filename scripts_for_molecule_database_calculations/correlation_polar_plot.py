@@ -26,6 +26,7 @@ class reaction:
 class functional:
     name: str
     _correlation_vectors: Sequence[Tuple[float, float]] = field(default=None)
+    _correlation_vectors_stds: Sequence[Tuple[float, float]] = field(default=None)
     _correlation_vectors_str: Sequence[Tuple[str, str]] = field(default=None)
 
     @property
@@ -41,6 +42,15 @@ class functional:
 #                else: self._correlation_vectors.update({key: val[key]})
 
     @property
+    def correlation_vectors_stds(self):
+        return self._correlation_vectors_stds
+
+    @correlation_vectors_stds.setter
+    def correlation_vectors_stds(self, val: list[Tuple[float, float]]):
+        if self._correlation_vectors_stds is None: self._correlation_vectors_stds = val
+        else: self._correlation_vectors_stds += val
+
+    @property
     def correlation_vectors_str(self):
         return self._correlation_vectors_str
 
@@ -49,10 +59,12 @@ class functional:
         if self._correlation_vectors_str is None: self._correlation_vectors_str = val
         else: self._correlation_vectors_str += val
 
-    def calc_correlation_vector(self, reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame):
+    def calc_correlation_vector(self, reaction_1: reaction, reaction_2: reaction, dbo: db.core.Database | pd.DataFrame, reaction_1_std: Optional[float] = None, reaction_2_std: Optional[float] = None):
 
         reaction_1_val = reaction_enthalpy(reaction_1, self.name, dbo)
         reaction_2_val = reaction_enthalpy(reaction_2, self.name, dbo)
+
+        # need to probagate the error from the vector minus
 
         correlation_vector = vector_minus([reaction_1_val, reaction_2_val], [reaction_1.experimental_ref, reaction_2.experimental_ref])
         self.correlation_vectors = [correlation_vector]
@@ -71,7 +83,7 @@ class functional:
                     r=[cord[0]],
                     theta=[cord[1]],
                     mode='markers',
-                    hovertemplate= template_str,
+                    hovertemplate=template_str,
                     marker=dict(color=colour, size=16)
                 ))
 
@@ -114,8 +126,8 @@ class functional:
 
 def sanitize(unclean_str: str) -> str:
     for ch in ['!', '*', '?', '{', '[', '(', ')', ']', '}',"'",'"','.']: unclean_str = unclean_str.replace(ch, '')
-    for ch in ['/', '\\', '|',' ']: unclean_str = unclean_str.replace(ch, '_')
-    for ch in ['=', '+', ':',',']: unclean_str = unclean_str.replace(ch, '-')
+    for ch in ['/', '\\', '|', ' ']: unclean_str = unclean_str.replace(ch, '_')
+    for ch in ['=', '+', ':', ',']: unclean_str = unclean_str.replace(ch, '-')
     return unclean_str
 
 
@@ -123,8 +135,8 @@ def reaction_enthalpy(reac: reaction, functional: str, dbo: db.core.Database | p
     # exception for the wrong 37 row
     # if dbo.get([('smiles','=',smile),('xc','=',functional)]).get('id') != 37 else -21.630*amount
     if isinstance(dbo, db.core.Database):
-        reac_enthalpy = sum(dbo.get([('smiles', '=',smile), ('xc', '=', functional)]).get('enthalpy')*amount for smile, amount in reac.reactants)
-        prod_enthalpy = sum(dbo.get([('smiles', '=',smile), ('xc', '=', functional)]).get('enthalpy')*amount for smile, amount in reac.products)
+        reac_enthalpy = sum(dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('enthalpy')*amount for smile, amount in reac.reactants)
+        prod_enthalpy = sum(dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('enthalpy')*amount for smile, amount in reac.products)
 
         if bee and functional in ('BEEF-vdW',):  # ,"{'name':'BEEF-vdW','backend':'libvdwxc'}"):
             reac_ensamble_enthalpy = np.sum((np.array(dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('data').get('ensemble_en')[:]+(dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('enthalpy')-dbo.get([('smiles', '=', smile), ('xc', '=', functional)]).get('energy')))*amount for smile, amount in reac.reactants), axis=0)
@@ -143,15 +155,15 @@ def reaction_enthalpy(reac: reaction, functional: str, dbo: db.core.Database | p
                                                       - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]))*amount for smile,amount in reac.reactants), axis=0)
             prod_ensamble_enthalpy = np.sum((np.array(bytes_to_object(dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en')[:]
                                                       + (dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('enthalpy').iloc[0]
-                                                      - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]))*amount for smile,amount in reac.products), axis=0)
+                                                      - dbo.query(f'smiles == "{smile}" and xc == "{functional}" and enthalpy.notna()').get('energy').iloc[0]))*amount for smile, amount in reac.products), axis=0)
             error_dev = (prod_ensamble_enthalpy-reac_ensamble_enthalpy).std()
             return error_dev, prod_enthalpy - reac_enthalpy
         return prod_enthalpy - reac_enthalpy
     raise ValueError('The type of database object was not recognised')
 
 
-def vector_minus(v1: list[float], v2: list[float]) -> list[float]: return [a-b for a, b in zip(v1,v2)]
-def cart_to_polar(cord: tuple[float,float]) -> tuple[float,float]: return np.sqrt(cord[0]**2+cord[1]**2), np.rad2deg(np.arctan2(cord[1],cord[0]))
+def vector_minus(v1: list[float], v2: list[float]) -> list[float]: return [a-b for a, b in zip(v1, v2)]
+def cart_to_polar(cord: tuple[float, float]) -> tuple[float, float]: return np.sqrt(cord[0]**2+cord[1]**2), np.rad2deg(np.arctan2(cord[1], cord[0]))
 
 
 def main(db_dir: Sequence[str] = ('molreact.db',)):
@@ -211,9 +223,17 @@ def main(db_dir: Sequence[str] = ('molreact.db',)):
 
     for func_obj in functional_objs:
         for i in all_reactions:
+            try:
+                bee_x_std, _ = reaction_enthalpy(i, 'BEEF-vdW', pd_dat, bee=True)
+            except:
+                bee_x_std = None
             for j in all_reactions:
                 if i != j:
-                    try: func_obj.calc_correlation_vector(i, j, pd_dat)
+                    try:
+                        bee_y_std, _ = reaction_enthalpy(j, 'BEEF-vdW', pd_dat, bee=True)
+                    except:
+                        bee_y_std = None
+                    try: func_obj.calc_correlation_vector(i, j, pd_dat, bee_x_std, bee_y_std)
                     except: print(f'correlation vector between reaction_1 ({i.toStr()}) and reaction_2 ({j.toStr()}) failed for reaction {func_obj.name}')
     for func_obj in functional_objs: func_obj.plotly_polar_plot()
 

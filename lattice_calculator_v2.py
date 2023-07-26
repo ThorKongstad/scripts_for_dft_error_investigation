@@ -23,6 +23,7 @@ import pathlib
 from time import sleep
 from random import randint
 from dataclasses import field, make_dataclass
+import plotly.graph_objects as go
 
 
 def folder_exist(folder_name: str, path: str = '.', tries: int = 10) -> NoReturn:
@@ -113,12 +114,15 @@ def report(res: OptimizeResult) -> NoReturn:
 
 
 def plot_steps(steps: 'steps', save_name: Optional[str]) -> NoReturn:
-    import plotly.express as px
-
-    fig = px.scatter(x=steps.lattice,y=steps.energy)
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+                     x=steps.lattice, y=steps.energy,
+                     mode='markers+lines',
+                     line=dict(color='grey')
+    ))
 
     fig.update_layout(
-        xaxis_title=f'lattice konstant',
+        xaxis_title=f'lattice constant',
         yaxis_title='potential energy eV'
     )
 

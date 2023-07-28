@@ -5,12 +5,14 @@
 
 import argparse
 import os
-from typing import Tuple, Sequence, NoReturn, Optional, Callable
-import numpy as np
+from typing import Tuple, Sequence, NoReturn, Optional, Callable, Never
+#import numpy as np
 from ase.data import reference_states,chemical_symbols
 from ase.build import bulk#, fcc100, bcc100,hcp0001
 import ase.db as db
 from ase.parallel import parprint, world
+from ase.calculators.mixing import SumCalculator
+from dftd4.ase import DFTD4
 #from gpaw.cluster import Cluster
 from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
@@ -24,15 +26,12 @@ from time import sleep
 from random import randint
 from dataclasses import field, make_dataclass
 import plotly.graph_objects as go
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_random
 
 
-def folder_exist(folder_name: str, path: str = '.', tries: int = 10) -> NoReturn:
-    try:
-        tries -= 1
-        if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/')+folder_name)
-    except FileExistsError:
-        sleep(2)
-        if tries > 0: folder_exist(folder_name, path=path, tries=tries)
+@retry(retry=retry_if_exception_type(FileExistsError), stop=stop_after_attempt(5), wait=wait_random(min=1, max=25))
+def folder_exist(folder_name: str, path: str = '.') -> Never:
+    if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/') + folder_name)
 
 
 def ends_with(string: str, end_str: str) -> str:
@@ -76,11 +75,21 @@ def secant_method(func: Callable[[float | int], float | int], guess_minus: float
     return guess_current, nr_iter
 
 
-def calculate_pE_of_latt(lattice: float, metal: str, slab_type:str, functional: str, functional_folder: str, grid_spacing: float, step_obj: Optional['steps'] = None) -> float:
-    if (isinstance(lattice,list) or isinstance(lattice,tuple)) and len(lattice) == 1: lattice = lattice[0]
+def calculate_pE_of_latt(lattice: float, metal: str, slab_type:str, functional: str, functional_folder: str, grid_spacing: float, correction: Optional[str] = None, step_obj: Optional['steps'] = None) -> float:
+    if (isinstance(lattice, list) or isinstance(lattice, tuple)) and len(lattice) == 1: lattice = lattice[0]
     lattice = float(lattice)
 
     bulk_con = bulk(name=metal, crystalstructure=slab_type, a=lattice)
+
+
+    match correction:
+        case 'DFTD4' | 'D4':
+            correction_func = DFTD4
+            correction_arg = dict(
+                method=functional
+            )
+        case _:
+            raise ValueError('Corrections were not recognised and have likely not been implement.')
 
     calc = GPAW(mode=PW(500),
                 xc=functional if functional not in ['PBE0'] else {'name':functional,'backend':'pw'},
@@ -94,7 +103,7 @@ def calculate_pE_of_latt(lattice: float, metal: str, slab_type:str, functional: 
                 # hund=smile == 'O=O',
                 )
 
-    bulk_con.set_calculator(calc)
+    bulk_con.set_calculator(calc if correction is None else SumCalculator([correction_func(**correction_arg), calc]))
 
     potential_energy = bulk_con.get_potential_energy()
     ### DELETE BULK AND CALC ###
@@ -130,10 +139,10 @@ def plot_steps(steps: 'steps', save_name: Optional[str]) -> NoReturn:
     else: fig.show()
 
 
-def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[float] = None, grid_spacing: float = 0.16):
+def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[float] = None, grid_spacing: float = 0.16, correction: Optional[str] = None):
 
     at_number = chemical_symbols.index(metal)
-    functional_folder = sanitize(functional)
+    functional_folder = sanitize('_'.join([functional, correction]) if correction is not None else functional)
 
     script_overlab_protection_time = randint(0, 60)
     if world.rank == 0:
@@ -155,7 +164,7 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
                             ('energy', list, field(default_factory=list))]
     )()  # this obj is made to save the optimisation steps without having to return the values.
 
-    opt_step_func = lambda lat: calculate_pE_of_latt(lat, metal, slab_type, functional, functional_folder, grid_spacing, step_obj=opts_steps) # this is to make a function which is only dependent on a single variable lat
+    opt_step_func = lambda lat: calculate_pE_of_latt(lat, metal, slab_type, functional, functional_folder, grid_spacing, correction=correction, step_obj=opts_steps) # this is to make a function which is only dependent on a single variable lat
 
 #    optimised_lat,final_itr = secant_method(opt_step_func,guess_minus= guess_lattice*0.9, guess_current=guess_lattice,maxs_iter=30)
     opt_res = minimize(opt_step_func, x0=guess_lattice, method='Powell', tol=0.01, options=dict(disp=True), bounds=((2.7, 7),))
@@ -179,12 +188,15 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
     parprint(opts_steps)
     if world.rank == 0: plot_steps(opts_steps, f'{functional_folder}/opt_steps_{metal}_{functional}.html')
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('metal',type=str)
-    parser.add_argument('surface_type',type=str,choices=('fcc','bcc','hcp'))
-    parser.add_argument('func',type=str)
-    parser.add_argument('--lattice','-a',type=float)
+    parser.add_argument('metal', type=str)
+    parser.add_argument('surface_type', type=str, choices=('fcc', 'bcc', 'hcp'))
+    parser.add_argument('func', type=str)
+    parser.add_argument('--lattice', '-a', type=float)
+    parser.add_argument('--correction', '-cor', type=str, choices=('DFTD4', 'D4'))
     args = parser.parse_args()
 
-    main(metal=args.metal,functional=args.func,slab_type=args.surface_type,guess_lattice=args.lattice)
+    main(metal=args.metal, functional=args.func, slab_type=args.surface_type, guess_lattice=args.lattice, correction=args.correction)
+

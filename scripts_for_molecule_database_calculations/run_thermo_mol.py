@@ -11,7 +11,8 @@ from ase.parallel import parprint, world
 from dataclasses import dataclass
 import re
 from typing import NoReturn, Sequence, Tuple
-
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
+from sqlite3 import OperationalError
 
 
 @dataclass
@@ -20,11 +21,18 @@ class mode:
     energy: float
     reci_length: float
 
+
 def load_vib_en_str(st:str) -> Tuple[float,Sequence[mode]]:
     pattern = r'(?:-{21}\s.+\s-{21}\s)(?P<freq_dat>(\s+\d+(\s+\d+(\.\d+i?)?){2})+)(?:\s+-{21}\s+)(?P<zpe>(?:Zero-point energy:\s*)\d+(\.\d+)?)'
     vib_match = re.match(pattern, st)
     mode_list = [mode(*[float(nr) for nr in mo.split(' ') if len(nr)>0]) for mo in vib_match.group('freq_dat').split('\n') if 'i' not in mo]
     return float(vib_match.group('zpe').split(' ')[-1]), mode_list
+
+
+@retry(retry=retry_if_exception_type(OperationalError), stop=stop_after_attempt(5), wait=wait_fixed(10))
+def update_db(db_dir: str, db_update_args: dict):
+    with db.connect(db_dir) as db_obj:
+        db_obj.update(**db_update_args)
 
 
 def main(db_id: int, db_dir: str = 'molreact.db'):
@@ -42,7 +50,7 @@ def main(db_id: int, db_dir: str = 'molreact.db'):
 
     parprint(f'outstd of thermo calculation for db entry {db_id} with structure: {smile} and functional: {functional}')
 
-    zpe,mode_list = load_vib_en_str(vib_en_str)
+    zpe, mode_list = load_vib_en_str(vib_en_str)
     geom = 'linear' if smile in ['[HH]','C(=O)=O','O=O','cid281'] else 'nonlinear'
 
     thermo_obj = IdealGasThermo(
@@ -54,8 +62,9 @@ def main(db_id: int, db_dir: str = 'molreact.db'):
     )
 
     if world.rank == 0:
-        with db.connect(db_dir) as db_obj:
-            db_obj.update(db_id, enthalpy=thermo_obj.get_enthalpy(temperature=298.15),zpe=zpe)
+        update_db(db_dir, db_update_args=dict(id=db_id, enthalpy=thermo_obj.get_enthalpy(temperature=298.15), zpe=zpe))
+        #with db.connect(db_dir) as db_obj:
+        #    db_obj.update(db_id, enthalpy=thermo_obj.get_enthalpy(temperature=298.15),zpe=zpe)
 
 
 if __name__ == '__main__':

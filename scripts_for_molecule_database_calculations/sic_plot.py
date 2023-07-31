@@ -41,9 +41,16 @@ def plot_sic_deviation(functional_obj_seq: Sequence[sic_functional], reaction_se
             template_str = reac.toStr()
             colour = 'darkviolet' if ('O=O' in template_str and 'C|||O' in template_str) else ('firebrick' if 'O=O' in template_str else ('royalblue' if 'C|||O' in template_str else 'black'))
 
+            x_values,y_values = [], []
+            for func in functional_obj_seq_sorted:
+                try:
+                    y_values.append(func.calc_reaction(reac) - reac.experimental_ref)
+                    x_values.append(func.sic_amount)
+                except: pass
+
             fig.add_trace(go.Scatter(
-                x=tuple(func.sic_amount for func in functional_obj_seq_sorted),
-                y=tuple(func.calc_reaction(reac) - reac.experimental_ref for func in functional_obj_seq_sorted),
+                x=x_values,
+                y=y_values,
                 mode='markers+lines',
                 hovertemplate=template_str,
                 marker=dict(color=colour, size=16),

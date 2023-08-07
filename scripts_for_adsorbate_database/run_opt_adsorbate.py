@@ -37,7 +37,7 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
         parprint('grid spacing could not be found in the database entry and was set to 0.16')
 
     functional_folder = sanitize(functional)
-    folder_exist(functional_folder)
+    if world.rank == 0: folder_exist(functional_folder)
 
     if '{' in functional[0] and '}' in functional[-1] and ':' in functional: functional = eval(functional)
 

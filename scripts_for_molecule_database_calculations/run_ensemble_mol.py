@@ -52,7 +52,7 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
         if world.rank == 0:
             data_dict = row.get('data')
 
-    parprint(f'outstd of opt calculation for db entry {db_id} with structure: {smile} and functional: {functional}')
+    parprint(f'outstd of ensemble calculation for db entry {db_id} with structure: {smile} and functional: {functional}')
 
     if not grid_spacing:
         grid_spacing = 0.16

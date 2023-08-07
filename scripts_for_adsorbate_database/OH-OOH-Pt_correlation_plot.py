@@ -45,20 +45,21 @@ class adsorbate_reaction:
 
 
 class Functional:
-    def __init__(self, functional_name: str, slab_db: pd.DataFrame, adsorbate_db: pd.DataFrame, mol_db: pd.DataFrame, needed_struc_dict: Optional[dict[str, list[str]]] = None):
+    def __init__(self, functional_name: str, slab_db: pd.DataFrame, adsorbate_db: pd.DataFrame, mol_db: pd.DataFrame, needed_struc_dict: Optional[dict[str, list[str]]] = None, thermo_dynamic: bool = True):
+        energy_type = 'enthalpy' if thermo_dynamic else 'energy'
         self.name = functional_name
-        self.molecule = {smile: mol_db.query(f'smiles == "{smile}" and xc == "{functional_name}" and enthalpy.notna()').get('enthalpy').iloc[0] for smile in needed_struc_dict['molecule']}
+        self.molecule = {smile: mol_db.query(f'smiles == "{smile}" and xc == "{functional_name}" and {energy_type}.notna()').get(energy_type).iloc[0] for smile in needed_struc_dict['molecule']}
         self.slab = {structure_str: slab_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and energy.notna()').get('energy').iloc[0] for structure_str in needed_struc_dict['slab']}
-        self.adsorbate = {structure_str: adsorbate_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and enthalpy.notna()').get('enthalpy').iloc[0] for structure_str in needed_struc_dict['adsorbate']}
+        self.adsorbate = {structure_str: adsorbate_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and {energy_type}.notna()').get(energy_type).iloc[0] for structure_str in needed_struc_dict['adsorbate']}
 
         self.has_BEE = functional_name == 'BEEF-vdW'
         if self.has_BEE:
-            self.molecule_energy = {smile: mol_db.query(f'smiles == "{smile}" and xc == "{functional_name}" and enthalpy.notna()').get('energy').iloc[0] for smile in needed_struc_dict['molecule']}
+            self.molecule_energy = {smile: mol_db.query(f'smiles == "{smile}" and xc == "{functional_name}" and energy.notna()').get('energy').iloc[0] for smile in needed_struc_dict['molecule']}
             self.slab_energy = self.slab
-            self.adsorbate_energy = {structure_str: adsorbate_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and enthalpy.notna()').get('energy').iloc[0] for structure_str in needed_struc_dict['adsorbate']}
-            self.molecule_bee = {smile: np.array(bytes_to_object(mol_db.query(f'smiles == "{smile}" and xc == "{functional_name}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for smile in needed_struc_dict['molecule']}
-            self.slab_bee = {structure_str: np.array(bytes_to_object(mol_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for structure_str in needed_struc_dict['slabs']}
-            self.adsorbate_bee = {structure_str: np.array(bytes_to_object(mol_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and enthalpy.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for structure_str in needed_struc_dict['adsorbate']}
+            self.adsorbate_energy = {structure_str: adsorbate_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and energy.notna()').get('energy').iloc[0] for structure_str in needed_struc_dict['adsorbate']}
+            self.molecule_bee = {smile: np.array(bytes_to_object(mol_db.query(f'smiles == "{smile}" and xc == "{functional_name}" and _data.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for smile in needed_struc_dict['molecule']}
+            self.slab_bee = {structure_str: np.array(bytes_to_object(mol_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and _data.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for structure_str in needed_struc_dict['slabs']}
+            self.adsorbate_bee = {structure_str: np.array(bytes_to_object(mol_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and _date.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for structure_str in needed_struc_dict['adsorbate']}
         else:
             self.molecule_energy = {}
             self.adsorbate_energy ={}
@@ -127,7 +128,7 @@ def correlation_plotly(reaction_1: adsorbate_reaction, reaction_2: adsorbate_rea
     fig.write_html(save_name, include_mathjax='cdn')
 
 
-def main(reaction_index_1, reaction_index_2, slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[str]):
+def main(reaction_index_1, reaction_index_2, slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[str], thermo_dynamics: bool = True):
     pd_adsorbate_dat = build_pd(adsorbate_db_dir)
     pd_slab_dat = build_pd(slab_db_dir)
     pd_mol_dat = build_pd(mol_db_dir)
@@ -146,7 +147,7 @@ def main(reaction_index_1, reaction_index_2, slab_db_dir: list[str], adsorbate_d
 
     functional_list = []
     for xc in functional_set:
-        try: functional_list.append(Functional(functional_name=xc, slab_db=pd_slab_dat, adsorbate_db=pd_adsorbate_dat, mol_db=pd_mol_dat, needed_struc_dict=dictionary_of_needed_strucs))
+        try: functional_list.append(Functional(functional_name=xc, slab_db=pd_slab_dat, adsorbate_db=pd_adsorbate_dat, mol_db=pd_mol_dat, needed_struc_dict=dictionary_of_needed_strucs, thermo_dynamic=thermo_dynamics))
         except: pass
 
     correlation_plotly(reaction_1=reactions[reaction_index_1], reaction_2=reactions[reaction_index_2], functional_seq=functional_list, reaction_indexes=(reaction_index_1, reaction_index_2))
@@ -159,6 +160,7 @@ if __name__ == '__main__':
     parser.add_argument('-adb', '--adsorbate_db', nargs='+', help='path to one or more databases containing the data.')
     parser.add_argument('-mdb', '--molecule_db', nargs='+', help='path to one or more databases containing the data.')
     parser.add_argument('-sdb', '--slab_db', nargs='+', help='path to one or more databases containing the data.')
+    parser.add_argument('-dft_e', '--dft_energy', action='store_true', default=False, help='dictates if the script should use dft energies or look for enthalpies')
     args = parser.parse_args()
 
-    main(reaction_index_1=args.reaction_1, reaction_index_2=args.reaction_2, slab_db_dir=args.slab_db, adsorbate_db_dir=args.adsorbate_db, mol_db_dir=args.molecule_db)
+    main(reaction_index_1=args.reaction_1, reaction_index_2=args.reaction_2, slab_db_dir=args.slab_db, adsorbate_db_dir=args.adsorbate_db, mol_db_dir=args.molecule_db, thermo_dynamics= not args.dft_energy)

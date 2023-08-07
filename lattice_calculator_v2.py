@@ -180,7 +180,7 @@ def main(metal: str, functional: str, slab_type: str, guess_lattice: Optional[fl
                 dict(
                     metal=metal,
                     type=slab_type,
-                    functional=functional,
+                    functional='_'.join([functional, correction]) if correction is not None else functional,
                     lattice=opt_res.x if not isinstance(opt_res.x, list) else opt_res.x[0]
                 )
             )

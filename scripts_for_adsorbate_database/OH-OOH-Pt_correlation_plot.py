@@ -134,7 +134,7 @@ def correlation_plotly(reaction_1: adsorbate_reaction, reaction_2: adsorbate_rea
     fig.write_html(save_name, include_mathjax='cdn')
 
 
-def main(reaction_index_1, reaction_index_2, slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[str], thermo_dynamics: bool = True):
+def main(reaction_index_1, reaction_index_2, slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[str], thermo_dynamics: bool = True, png_bool: bool = False):
     pd_adsorbate_dat = build_pd(adsorbate_db_dir)
     pd_slab_dat = build_pd(slab_db_dir)
     pd_mol_dat = build_pd(mol_db_dir)
@@ -156,7 +156,7 @@ def main(reaction_index_1, reaction_index_2, slab_db_dir: list[str], adsorbate_d
         try: functional_list.append(Functional(functional_name=xc, slab_db=pd_slab_dat, adsorbate_db=pd_adsorbate_dat, mol_db=pd_mol_dat, needed_struc_dict=dictionary_of_needed_strucs, thermo_dynamic=thermo_dynamics))
         except: pass
 
-    correlation_plotly(reaction_1=reactions[reaction_index_1], reaction_2=reactions[reaction_index_2], functional_seq=functional_list, reaction_indexes=(reaction_index_1, reaction_index_2))
+    correlation_plotly(reaction_1=reactions[reaction_index_1], reaction_2=reactions[reaction_index_2], functional_seq=functional_list, reaction_indexes=(reaction_index_1, reaction_index_2), png_bool=png_bool)
 
 
 if __name__ == '__main__':
@@ -170,4 +170,4 @@ if __name__ == '__main__':
     parser.add_argument('-png', '--png', action='store_true', default=False,)
     args = parser.parse_args()
 
-    main(reaction_index_1=args.reaction_1, reaction_index_2=args.reaction_2, slab_db_dir=args.slab_db, adsorbate_db_dir=args.adsorbate_db, mol_db_dir=args.molecule_db, thermo_dynamics= not args.dft_energy)
+    main(reaction_index_1=args.reaction_1, reaction_index_2=args.reaction_2, slab_db_dir=args.slab_db, adsorbate_db_dir=args.adsorbate_db, mol_db_dir=args.molecule_db, thermo_dynamics= not args.dft_energy, png_bool=args.png)

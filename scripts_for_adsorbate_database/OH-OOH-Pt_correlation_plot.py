@@ -58,8 +58,8 @@ class Functional:
             self.slab_energy = self.slab
             self.adsorbate_energy = {structure_str: adsorbate_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and energy.notna()').get('energy').iloc[0] for structure_str in needed_struc_dict['adsorbate']}
             self.molecule_bee = {smile: np.array(bytes_to_object(mol_db.query(f'smiles == "{smile}" and xc == "{functional_name}" and _data.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for smile in needed_struc_dict['molecule']}
-            self.slab_bee = {structure_str: np.array(bytes_to_object(mol_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and _data.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for structure_str in needed_struc_dict['slabs']}
-            self.adsorbate_bee = {structure_str: np.array(bytes_to_object(mol_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and _date.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for structure_str in needed_struc_dict['adsorbate']}
+            self.slab_bee = {structure_str: np.array(bytes_to_object(slab_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and _data.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for structure_str in needed_struc_dict['slab']}
+            self.adsorbate_bee = {structure_str: np.array(bytes_to_object(adsorbate_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and _date.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for structure_str in needed_struc_dict['adsorbate']}
         else:
             self.molecule_energy = {}
             self.adsorbate_energy ={}

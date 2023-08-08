@@ -84,11 +84,11 @@ class Functional:
         return product_BEE_enthalpy - reactant_BEE_enthalpy + correction
 
 
-def correlation_plotly(reaction_1: adsorbate_reaction, reaction_2: adsorbate_reaction, functional_seq: Sequence[Functional], reaction_indexes: Optional[Tuple[int, int]] = None):
-    fig = go.Figure()
+def correlation_plotly(reaction_1: adsorbate_reaction, reaction_2: adsorbate_reaction, functional_seq: Sequence[Functional], reaction_indexes: Optional[Tuple[int, int]] = None, png_bool: bool = False):
+    fig= go.Figure()
 
     colour_dict = {
-        'PBE': 'idianred',
+        'PBE': 'indianred',
         'RPBE': 'firebrick',
         'PBE-PZ-SIC': 'darkorange',
         'BEEF-vdW': 'mediumblue',
@@ -96,15 +96,15 @@ def correlation_plotly(reaction_1: adsorbate_reaction, reaction_2: adsorbate_rea
     }
 
     for c_nr, func in enumerate(functional_seq):
-        marker_arg = dict(marker={'color': colour_dict[func.name]}, size=16) if func.name in colour_dict.keys() else {}
+        marker_arg = dict(marker={'color': colour_dict[func.name], 'size':16}) if func.name in colour_dict.keys() else {}
         try:
-            fig.add_trace(go.Scatter(
+             fig.add_trace(go.Scatter(
              x=(func.calculate_reaction_enthalpy(reaction_1),),
              y=(func.calculate_reaction_enthalpy(reaction_2),),
              name=func.name,
              mode='markers',
              **marker_arg))
-            if func.name == 'BEEF-vdW':
+             if func.name == 'BEEF-vdW':
                 try:
                     fig.add_trace(go.Scatter(
                         x=func.calculate_BEE_reaction_enthalpy(reaction_1).tolist(),
@@ -122,9 +122,15 @@ def correlation_plotly(reaction_1: adsorbate_reaction, reaction_2: adsorbate_rea
         yaxis_title=str(reaction_2)
     )
 
+    fig.update_yaxes(
+        scaleanchor="x",
+        scaleratio=1,
+    )
+
     folder_exist('reaction_plots')
     if reaction_indexes: save_name = 'reaction_plots/' + f'correlation_plot_{"-".join([str(x) for x in reaction_indexes])}.html'
     else: save_name = 'reaction_plots/correlation_plot.html'
+    if png_bool: fig.write_image(save_name)
     fig.write_html(save_name, include_mathjax='cdn')
 
 
@@ -161,6 +167,7 @@ if __name__ == '__main__':
     parser.add_argument('-mdb', '--molecule_db', nargs='+', help='path to one or more databases containing the data.')
     parser.add_argument('-sdb', '--slab_db', nargs='+', help='path to one or more databases containing the data.')
     parser.add_argument('-dft_e', '--dft_energy', action='store_true', default=False, help='dictates if the script should use dft energies or look for enthalpies')
+    parser.add_argument('-png', '--png', action='store_true', default=False,)
     args = parser.parse_args()
 
     main(reaction_index_1=args.reaction_1, reaction_index_2=args.reaction_2, slab_db_dir=args.slab_db, adsorbate_db_dir=args.adsorbate_db, mol_db_dir=args.molecule_db, thermo_dynamics= not args.dft_energy)

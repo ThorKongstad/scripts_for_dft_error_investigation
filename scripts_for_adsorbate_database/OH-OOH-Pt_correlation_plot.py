@@ -128,10 +128,10 @@ def correlation_plotly(reaction_1: adsorbate_reaction, reaction_2: adsorbate_rea
     )
 
     folder_exist('reaction_plots')
-    if reaction_indexes: save_name = 'reaction_plots/' + f'correlation_plot_{"-".join([str(x) for x in reaction_indexes])}.html'
-    else: save_name = 'reaction_plots/correlation_plot.html'
-    if png_bool: fig.write_image(save_name)
-    fig.write_html(save_name, include_mathjax='cdn')
+    if reaction_indexes: save_name = 'reaction_plots/' + f'correlation_plot_{"-".join([str(x) for x in reaction_indexes])}'
+    else: save_name = 'reaction_plots/correlation_plot'
+    if png_bool: fig.write_image(save_name + '.png')
+    fig.write_html(save_name + '.html', include_mathjax='cdn')
 
 
 def main(reaction_index_1, reaction_index_2, slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[str], thermo_dynamics: bool = True, png_bool: bool = False):

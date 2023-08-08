@@ -59,7 +59,7 @@ class Functional:
             self.adsorbate_energy = {structure_str: adsorbate_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and energy.notna()').get('energy').iloc[0] for structure_str in needed_struc_dict['adsorbate']}
             self.molecule_bee = {smile: np.array(bytes_to_object(mol_db.query(f'smiles == "{smile}" and xc == "{functional_name}" and _data.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for smile in needed_struc_dict['molecule']}
             self.slab_bee = {structure_str: np.array(bytes_to_object(slab_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and _data.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for structure_str in needed_struc_dict['slab']}
-            self.adsorbate_bee = {structure_str: np.array(bytes_to_object(adsorbate_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and _date.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for structure_str in needed_struc_dict['adsorbate']}
+            self.adsorbate_bee = {structure_str: np.array(bytes_to_object(adsorbate_db.query(f'structure_str == "{structure_str}" and xc == "{functional_name}" and _data.notna()').get('_data').iloc[0]).get('ensemble_en'))[:] for structure_str in needed_struc_dict['adsorbate']}
         else:
             self.molecule_energy = {}
             self.adsorbate_energy ={}
@@ -96,7 +96,7 @@ def correlation_plotly(reaction_1: adsorbate_reaction, reaction_2: adsorbate_rea
     }
 
     for c_nr, func in enumerate(functional_seq):
-        marker_arg = dict(marker={'color': colour_dict[func.name]}) if func in colour_dict.keys() else {}
+        marker_arg = dict(marker={'color': colour_dict[func.name]}, size=16) if func.name in colour_dict.keys() else {}
         try:
             fig.add_trace(go.Scatter(
              x=(func.calculate_reaction_enthalpy(reaction_1),),
@@ -106,14 +106,14 @@ def correlation_plotly(reaction_1: adsorbate_reaction, reaction_2: adsorbate_rea
              **marker_arg))
             if func.name == 'BEEF-vdW':
                 try:
-                    ensamble_trace = go.Scatter(
+                    fig.add_trace(go.Scatter(
                         x=func.calculate_BEE_reaction_enthalpy(reaction_1).tolist(),
                         y=func.calculate_BEE_reaction_enthalpy(reaction_2).tolist(),
-                        name=f'BEE for {func}',
+                        name=f'BEE for {func.name}',
                         mode='markers',
                         marker=dict(color='Grey',opacity=0.5,)
-                    )
-                    fig.data = (ensamble_trace,) + fig.data
+                    ))
+                    fig.data = fig.data[-1:] + fig.data[0:-1]
                 except: pass
         except: continue
 

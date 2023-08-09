@@ -37,6 +37,9 @@ def folder_exist(folder_name: str, path: str = '.') -> Never:
     if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/') + folder_name)
 
 
+def ends_with(string: str, end_str: str) -> str:
+    return string + end_str * (end_str != string[-len(end_str):0])
+
 
 reactions = [
         reaction((('[HH]', 1), ('C(=O)=O', 1)), (('cid281', 1), ('O', 1)), 0.43),  # 0  a0

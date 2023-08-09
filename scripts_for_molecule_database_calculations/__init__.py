@@ -32,6 +32,11 @@ def sanitize(unclean_str: str) -> str:
     return unclean_str
 
 
+@retry(retry=retry_if_exception_type(FileExistsError), stop=stop_after_attempt(5), wait=wait_fixed(2))
+def folder_exist(folder_name: str, path: str = '.') -> Never:
+    if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/') + folder_name)
+
+
 
 reactions = [
         reaction((('[HH]', 1), ('C(=O)=O', 1)), (('cid281', 1), ('O', 1)), 0.43),  # 0  a0

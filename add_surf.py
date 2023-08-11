@@ -105,7 +105,7 @@ if __name__ == '__main__':
     parser.add_argument('facet',action=ValidateFacet,nargs=2,help='2 inputs must be given like "fcc 100 ", the first is the type of crystal and the second is the miller indici of the surface')
     parser.add_argument('functional',help='str denoting what fucntional to calculate with')
     parser.add_argument('--latice_constant','-a', type=float, help='latice constant of the metal, if nothing is given it will take the ase default which is given from experiment')
-    parser.add_argument('--size', '-s', type=int, nargs=3, help='3 numbers for the size given as x y z. standard is 2 2 4')
+    parser.add_argument('--size', '-s', type=int, nargs=3, default=(2, 2, 4), help='3 numbers for the size given as x y z. standard is 2 2 4. note size is not atom count in x distance, it is minimum unit cell in Å. would have been alot better to just have size * a = unitcell length')
     parser.add_argument('--adsorbate','-ad', default=(None,None), action=ValidateAdsorbate, nargs=2, help='2 inputs must be given, the first a placement on the surface and the smiles denoting adsorbate')
     parser.add_argument('--rotate','-r',action=ValidateRotation,nargs=2,help='defines a rotation for the adsorbate, 2 nargs; the first a string og the axes given in a combinatio of xyz, the second the degrees that each axis should turn, so far only one value for all given axis is implemented.')
     parser.add_argument('--grid_spacing', '-g', type=int, help='vacum grid spacing, default is 0.16', default=0.16)

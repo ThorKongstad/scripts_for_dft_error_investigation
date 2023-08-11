@@ -50,8 +50,8 @@ def get_mol(smiles_cid:str) -> Atoms:
 
 
 def main(metal:str, facet:Tuple[str,str], functional,
-         orthogonal:bool|None=None, lattice_constant: None | float=None, adsorbate: str | None=None, adsorbate_placement: str | None=None,rotation:Tuple[str,float]|None=None, grid_spacing:float=0.16,view_bool:bool=False):
-    slab = facet_tuple_parser(metal, facet, orthogonal=orthogonal, latice_constant=lattice_constant)
+         orthogonal:bool|None=None, lattice_constant: None | float=None, size: Tuple[float,float,float] = (2, 2, 4), adsorbate: str | None=None, adsorbate_placement: str | None=None,rotation:Tuple[str,float]|None=None, grid_spacing:float=0.16,view_bool:bool=False):
+    slab = facet_tuple_parser(metal, facet, size=size, orthogonal=orthogonal, latice_constant=lattice_constant)
 
     slab.set_constraint(constraint=FixAtoms(mask=[at.tag in (1,2,3) for at in slab]))
 
@@ -105,6 +105,7 @@ if __name__ == '__main__':
     parser.add_argument('facet',action=ValidateFacet,nargs=2,help='2 inputs must be given like "fcc 100 ", the first is the type of crystal and the second is the miller indici of the surface')
     parser.add_argument('functional',help='str denoting what fucntional to calculate with')
     parser.add_argument('--latice_constant','-a', type=float, help='latice constant of the metal, if nothing is given it will take the ase default which is given from experiment')
+    parser.add_argument('--size', '-s', type=float, nargs=3, help='3 numbers for the size given as x y z. standard is 2 2 4')
     parser.add_argument('--adsorbate','-ad', default=(None,None), action=ValidateAdsorbate, nargs=2, help='2 inputs must be given, the first a placement on the surface and the smiles denoting adsorbate')
     parser.add_argument('--rotate','-r',action=ValidateRotation,nargs=2,help='defines a rotation for the adsorbate, 2 nargs; the first a string og the axes given in a combinatio of xyz, the second the degrees that each axis should turn, so far only one value for all given axis is implemented.')
     parser.add_argument('--grid_spacing', '-g', type=int, help='vacum grid spacing, default is 0.16', default=0.16)
@@ -113,7 +114,7 @@ if __name__ == '__main__':
     args=parser.parse_args()
 
     main(
-         args.metal,facet=args.facet,functional=args.functional,lattice_constant=args.latice_constant,
+         args.metal,facet=args.facet,functional=args.functional,lattice_constant=args.latice_constant, size=args.size,
          orthogonal=args.orthogonal,adsorbate_placement=args.adsorbate[0],adsorbate=args.adsorbate[1],
          rotation=args.rotate, grid_spacing=args.grid_spacing,view_bool=args.view
     )

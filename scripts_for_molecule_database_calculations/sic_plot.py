@@ -7,7 +7,7 @@ from re import match
 from operator import attrgetter
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
-from scripts_for_molecule_database_calculations import build_pd, all_reactions
+from scripts_for_molecule_database_calculations import build_pd, all_reactions, folder_exist
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -66,6 +66,7 @@ def plot_sic_deviation(functional_obj_seq: Sequence[sic_functional], reaction_se
         yaxis_title='Deviation from experimental reference',
     )
 
+    folder_exist('reaction_plots')
     fig.write_html('reaction_plots/' + f'sic_deviation_plot.html', include_mathjax='cdn')
 
 

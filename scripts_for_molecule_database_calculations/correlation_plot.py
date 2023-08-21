@@ -181,14 +181,14 @@ def correlation_plotly(reaction_1: reaction, reaction_2: reaction, dbo: db.core.
              **marker_arg))
             if func == 'BEEF-vdW':
                 try:
-                    ensamble_trace = go.Scatter(
+                    fig.add_trace(ensamble_trace = go.Scatter(
                         x=BEE_reaction_enthalpy_final_energy_correction(reaction_1, func, dbo).tolist(),
                         y=BEE_reaction_enthalpy_final_energy_correction(reaction_2, func, dbo).tolist(),
                         name=f'BEE for {func}',
                         mode='markers',
                         marker=dict(color='Grey',opacity=0.5,)
-                    )
-                    fig.data = (ensamble_trace,) + fig.data
+                    ))
+                    fig.data = fig.data[-1:] + fig.data[0:-1]
                 except: pass
         except: continue
 

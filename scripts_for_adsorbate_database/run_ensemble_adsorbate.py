@@ -11,8 +11,8 @@ import pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 from scripts_for_adsorbate_database import sanitize, folder_exist, update_db
 
-from ase.optimize import QuasiNewton
 import ase.db as db
+from ase.dft.bee import BEEFEnsemble
 from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
 from ase.parallel import parprint, world
@@ -25,12 +25,16 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir))>0 else '.'): raise FileNotFoundError("Can't find database")
     with db.connect(db_dir) as db_obj:
         row = db_obj.get(selection=f'id={db_id}')
+        if not row.get('relaxed'): raise ValueError(f"atoms at row id: {db_id} haven't been relaxed.")
         functional = row.get('xc')
+        if functional not in ( 'BEEF-vdW', "{'name':'BEEF-vdW','backend':'libvdwxc'}"): raise ValueError(f'row {db_id}, is not a bee functional')
         atoms = row.toatoms()
         structure_str = row.get('structure_str')
-        grid_spacing= row.get('grid_spacing')
+        grid_spacing = row.get('grid_spacing')
+        if world.rank == 0:
+            data_dict = row.get('data')
 
-    parprint(f'outstd of opt calculation for db entry {db_id} with structure: {structure_str} and functional: {functional}')
+    parprint(f'outstd of ensemble calculation for db entry {db_id} with structure: {structure_str} and functional: {functional}')
 
     if not grid_spacing:
         grid_spacing = 0.16
@@ -42,7 +46,7 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     if '{' in functional[0] and '}' in functional[-1] and ':' in functional: functional = eval(functional)
 
     calc = GPAW(mode=PW(500),
-                xc=functional if functional not in ['PBE0'] else {'name':functional,'backend':'pw'},
+                xc=functional if functional not in ['PBE0'] else {'name': functional, 'backend': 'pw'},
                 kpts=[4,4,1],
                 basis='dzp',
                 txt=f'{functional_folder}/opt_{structure_str}_{db_id}.txt',
@@ -54,12 +58,13 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
                 )
 
     atoms.set_calculator(calc)
+    potential_e = atoms.get_potential_energy()
+    ens = BEEFEnsemble(atoms)
+    ensem_en_li = ens.get_ensemble_energies()
 
-    # define optimizer
-    dyn = QuasiNewton(atoms, trajectory=None)
-    # run relaxation to a maximum force of 0.03 eV / Angstroms
-    dyn.run(fmax=0.03)
-    if world.rank == 0: update_db(db_dir, dict(id=db_id, atoms=atoms, relaxed=True, vibration=False, vib_en=False))
+    if world.rank == 0:
+        data_dict.update({'ensemble_en': ensem_en_li})
+        update_db(db_dir, dict(id=db_id, ensemble_bool=True, data=data_dict))
 
 
 if __name__ == '__main__':

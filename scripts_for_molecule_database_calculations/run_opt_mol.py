@@ -6,8 +6,9 @@
 import argparse
 import os
 import time
-from ase.io import *
+#from ase.io import *
 from ase.optimize import QuasiNewton
+from ase.constraints import FixAtoms
 import ase.db as db
 from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
@@ -35,8 +36,8 @@ def sanitize(unclean_str: str) -> str:
     for ch in ['=', '+', ':',',']: unclean_str = unclean_str.replace(ch, '-')
     return unclean_str
 
-def main(db_id:int, db_dir: str = 'molreact.db'):
 
+def main(db_id:int, db_dir: str = 'molreact.db'):
     # read from  database
     #atoms = read(f'/groups/kemi/thorkong/errors_investigation/molreact.db@id={db_id}')
     if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir))>0 else '.'): raise FileNotFoundError("Can't find database")
@@ -61,6 +62,11 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     else: setup_dic = {}
 
     if '{' in functional[0] and '}' in functional[-1] and ':' in functional: functional = eval(functional)
+
+    if functional in ['TPSS', 'MGGA_X_R2SCAN+MGGA_C_R2SCAN']:
+        atoms.translate([0.1, 0.2, 0.3])
+        c = FixAtoms(indices=[0])
+        atoms.set_constraint(c)
 
     calc = GPAW(mode=PW(500),
                 xc=functional,

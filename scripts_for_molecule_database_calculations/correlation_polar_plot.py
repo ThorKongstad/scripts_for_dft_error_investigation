@@ -166,14 +166,14 @@ def vector_minus(v1: list[float], v2: list[float]) -> list[float]: return [a-b f
 def cart_to_polar(cord: tuple[float, float]) -> tuple[float, float]: return np.sqrt(cord[0]**2+cord[1]**2), np.rad2deg(np.arctan2(cord[1], cord[0]))
 
 
-def main(db_dir: Sequence[str] = ('molreact.db',)):
+def main(db_dir: Sequence[str] = ('molreact.db',), wanted_functional: Optional[list[str]] = None):
 
     db_list = [db.connect(work_db) for work_db in db_dir]
 
     if False: pass #len(db_list) == 1: pd_dat = db_list[0]
     else: pd_dat = pd.DataFrame([row.__dict__ for work_db in db_list for row in work_db.select()])
 
-    functional_list = {xc for _, row in pd_dat.iterrows() if not pd.isna((xc := row.get('xc')))}
+    functional_list = {xc for _, row in pd_dat.iterrows() if not pd.isna((xc := row.get('xc'))) and (wanted_functional is None or xc in wanted_functional)}
     functional_objs = [functional(func) for func in functional_list]
 
     reactions = [
@@ -241,6 +241,7 @@ def main(db_dir: Sequence[str] = ('molreact.db',)):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('db', nargs='+', help='path to one or more databases containing the data.')
+    parser.add_argument('-f', '--functional', nargs='+', help='notes to only look at these functionals')
     args = parser.parse_args()
 
-    main(args.db)
+    main(args.db, args.functional)

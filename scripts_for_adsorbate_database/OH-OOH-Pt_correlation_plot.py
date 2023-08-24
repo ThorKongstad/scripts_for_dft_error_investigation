@@ -158,6 +158,8 @@ def main(reaction_index_1, reaction_index_2, slab_db_dir: list[str], adsorbate_d
     reactions = (
         adsorbate_reaction((('molecule', 'O=O', 0.5), ('molecule', '[HH]', 0.5), ('slab', 'Pt_111', 1)), (('adsorbate', 'Pt_111_OH_top', 1),)),
         adsorbate_reaction((('molecule', 'O=O', 1), ('molecule', '[HH]', 0.5), ('slab', 'Pt_111', 1)), (('adsorbate', 'Pt_111_OOH_top', 1),)),
+        adsorbate_reaction((('molecule', 'O', 2),  ('slab', 'Pt_111', 1)),(('adsorbate', 'Pt_111_OOH_top', 1), ('molecule', '[HH]', 1.5))),
+        adsorbate_reaction((('molecule', 'O', 1), ('slab', 'Pt_111', 1)),(('adsorbate', 'Pt_111_OH_top', 1), ('molecule', '[HH]', 0.5))),
     )
 
     dictionary_of_needed_strucs = {'molecule': [], 'slab': [], 'adsorbate': []}

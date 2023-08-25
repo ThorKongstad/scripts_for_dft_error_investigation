@@ -2,12 +2,13 @@ import argparse
 #import os
 #import sys
 #import pathlib
-from typing import NoReturn, Tuple, Optional
+from typing import NoReturn, Tuple, Optional, Sequence
 from collections import namedtuple
 from ase.io import write
 from ase.visualize import view
 from ase import Atoms
 from ase.build import fcc100, fcc110, fcc111, fcc211, bcc100, bcc110, bcc111, hcp0001
+from ase.constraints import FixAtoms
 
 #sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 
@@ -33,9 +34,12 @@ def facet_tuple_parser(metal: str, facet: Tuple[str, str], size=(2, 2, 4), ortho
     return surface
 
 
-def main(metal: str, facet: Tuple[str, str], orthogonal: Optional[bool] = None, lattice_constant: Optional[float] = None, size: Tuple[float, float, float] = (2, 2, 4), vacuum: float = 10, view_bool: bool = False):
+def main(metal: str, facet: Tuple[str, str], orthogonal: Optional[bool] = None, lattice_constant: Optional[float] = None, size: Tuple[float, float, float] = (2, 2, 4), vacuum: float = 10, constrain: Tuple[float] = tuple(), view_bool: bool = False):
     slab = facet_tuple_parser(metal, facet, size=size, orthogonal=orthogonal, lattice_constant=lattice_constant)
     slab.center(vacuum=vacuum, axis=2)
+
+    if len(constrain) > 0:
+        slab.set_constraint(FixAtoms(indices=[atom.index for atom in slab if atom.tag in constrain]))
 
     if view_bool: view(slab)
     else: write(f'{metal}_{facet}.traj', slab)
@@ -60,6 +64,7 @@ if __name__ == '__main__':
     parser.add_argument('--vacuum', '-vac', type=float, default=10, help='Denotes the size of the vacuum around the slab, default is 10 Å')
     parser.add_argument('--orthogonal', '-ort', default=None, action='store_true', help='states whether the orthogonal key=True should be given to the builder')
     parser.add_argument('--view', '-view', action='store_true', help='if stated ase gui will be opened instead of placing the structure in the database.')
+    parser.add_argument('--constraint_layer', '-con', nargs='+', default=tuple())
     args = parser.parse_args()
 
     main(
@@ -68,6 +73,7 @@ if __name__ == '__main__':
         lattice_constant=args.lattice_constant,
         size=args.size,
         vacuum=args.vacuum,
+        constrain= args.constraint_layer,
         orthogonal=args.orthogonal,
         view_bool=args.view
     )

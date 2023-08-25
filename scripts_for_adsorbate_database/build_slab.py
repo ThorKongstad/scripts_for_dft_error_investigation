@@ -64,7 +64,7 @@ if __name__ == '__main__':
     parser.add_argument('--vacuum', '-vac', type=float, default=10, help='Denotes the size of the vacuum around the slab, default is 10 Å')
     parser.add_argument('--orthogonal', '-ort', default=None, action='store_true', help='states whether the orthogonal key=True should be given to the builder')
     parser.add_argument('--view', '-view', action='store_true', help='if stated ase gui will be opened instead of placing the structure in the database.')
-    parser.add_argument('--constraint_layer', '-con', nargs='+', default=tuple())
+    parser.add_argument('--constraint_layer', '-con', nargs='+', type=int, default=tuple(), help='the number of what layers are constraint, remember that the bottom layer have the largest number')
     args = parser.parse_args()
 
     main(

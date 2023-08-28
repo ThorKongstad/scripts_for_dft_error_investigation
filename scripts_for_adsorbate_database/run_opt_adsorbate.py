@@ -1,4 +1,4 @@
-#partition=katla_verylong
+#partition=katla
 #nprocshared=32
 #mem=2300MB
 #constrain='[v1|v2|v3|v4|v5]'
@@ -11,7 +11,7 @@ import pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 from scripts_for_adsorbate_database import sanitize, folder_exist, update_db
 
-from ase.optimize import QuasiNewton
+from ase.optimize import QuasiNewton, FIRE
 import ase.db as db
 from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
@@ -56,7 +56,8 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     atoms.set_calculator(calc)
 
     # define optimizer
-    dyn = QuasiNewton(atoms, trajectory=None)
+    #dyn = QuasiNewton(atoms, trajectory=None)
+    dyn = FIRE(atoms, trajectory=None)
     # run relaxation to a maximum force of 0.03 eV / Angstroms
     dyn.run(fmax=0.03)
     if world.rank == 0: update_db(db_dir, dict(id=db_id, atoms=atoms, relaxed=True, vibration=False, vib_en=False))

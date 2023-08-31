@@ -35,7 +35,7 @@ def sanitize(unclean_str: str) -> str:
 
 
 @retry(retry=retry_if_exception_type(FileExistsError), stop=stop_after_attempt(5), wait=wait_fixed(2))
-def folder_exist(folder_name: str, path: str = '.') -> Never:
+def folder_exist(folder_name: str, path: str = '.') -> None:
     if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/') + folder_name)
 
 

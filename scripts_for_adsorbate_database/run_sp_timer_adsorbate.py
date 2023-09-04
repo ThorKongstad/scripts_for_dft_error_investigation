@@ -38,7 +38,7 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     functional_folder = sanitize(functional)
     if world.rank == 0:
         folder_exist(functional_folder)
-        folder_exist(functional_folder + f'sp_timings_{structure_str}_{db_id}')
+        folder_exist(functional_folder + f'/sp_timings_{structure_str}_{db_id}')
 
     if '{' in functional[0] and '}' in functional[-1] and ':' in functional: functional = eval(functional)
 

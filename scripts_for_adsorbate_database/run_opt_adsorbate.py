@@ -11,7 +11,7 @@ import pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 from scripts_for_adsorbate_database import sanitize, folder_exist, update_db
 
-from ase.optimize import QuasiNewton, FIRE
+from ase.optimize import QuasiNewton, FIRE, GPMin
 import ase.db as db
 from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
@@ -42,11 +42,11 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     if '{' in functional[0] and '}' in functional[-1] and ':' in functional: functional = eval(functional)
 
     calc = GPAW(mode=PW(500),
-                xc=functional if functional not in ['PBE0'] else {'name':functional,'backend':'pw'},
+                xc=functional if functional not in ['PBE0'] else {'name': functional, 'backend': 'pw'},
                 kpts=[4,4,1],
                 basis='dzp',
                 txt=f'{functional_folder}/opt_{structure_str}_{db_id}.txt',
-                gpts=h2gpts(grid_spacing,atoms.get_cell(),idiv=4),
+                gpts=h2gpts(grid_spacing, atoms.get_cell(), idiv=4),
                 parallel={'augment_grids': True, 'sl_auto': True},
                 convergence={'eigenstates': 0.000001},
                 eigensolver=Davidson(3),
@@ -57,7 +57,8 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
 
     # define optimizer
     #dyn = QuasiNewton(atoms, trajectory=None)
-    dyn = FIRE(atoms, trajectory=None)
+    #dyn = FIRE(atoms, trajectory=None)
+    dyn = GPMin(atoms, trajectory=None)
     # run relaxation to a maximum force of 0.03 eV / Angstroms
     dyn.run(fmax=0.03)
     if world.rank == 0: update_db(db_dir, dict(id=db_id, atoms=atoms, relaxed=True, vibration=False, vib_en=False))

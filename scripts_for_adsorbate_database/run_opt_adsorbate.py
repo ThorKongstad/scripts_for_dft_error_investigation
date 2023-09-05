@@ -57,8 +57,8 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
 
     # define optimizer
     #dyn = QuasiNewton(atoms, trajectory=None)
-    #dyn = FIRE(atoms, trajectory=None)
-    dyn = GPMin(atoms, trajectory=None)
+    dyn = FIRE(atoms, trajectory=None)
+    #dyn = GPMin(atoms, trajectory=None)
     # run relaxation to a maximum force of 0.03 eV / Angstroms
     dyn.run(fmax=0.03)
     if world.rank == 0: update_db(db_dir, dict(id=db_id, atoms=atoms, relaxed=True, vibration=False, vib_en=False))

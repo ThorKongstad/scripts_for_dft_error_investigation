@@ -14,7 +14,7 @@ from scripts_for_adsorbate_database import sanitize, folder_exist, update_db
 from ase import Atoms
 import ase.db as db
 from ase.constraints import FixAtoms
-from ase.parallel import parprint, world
+from ase.parallel import parprint, world, barrier
 from ase.vibrations import Vibrations
 from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
@@ -41,6 +41,8 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     file_name = f'vib_{structure_str}_{db_id}.txt'
 
     if '{' in functional[0] and '}' in functional[-1] and ':' in functional: functional = eval(functional)
+
+    barrier()
 
     calc = GPAW(mode=PW(500),
                 xc=functional if functional not in ['PBE0'] else {'name':functional,'backend':'pw'},

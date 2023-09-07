@@ -15,7 +15,7 @@ import ase.db as db
 from ase.dft.bee import BEEFEnsemble
 from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
-from ase.parallel import parprint, world
+from ase.parallel import parprint, world, barrier
 
 
 def main(db_id:int, db_dir: str = 'molreact.db'):
@@ -44,6 +44,8 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     if world.rank == 0: folder_exist(functional_folder)
 
     if '{' in functional[0] and '}' in functional[-1] and ':' in functional: functional = eval(functional)
+
+    barrier()
 
     calc = GPAW(mode=PW(500),
                 xc=functional if functional not in ['PBE0'] else {'name': functional, 'backend': 'pw'},

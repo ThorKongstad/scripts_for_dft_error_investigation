@@ -156,15 +156,20 @@ def main(reaction_index_1, reaction_index_2, slab_db_dir: list[str], adsorbate_d
     functional_set = {xc for _, row in pd_adsorbate_dat.iterrows() if not pd.isna((xc := row.get('xc')))}
 
     reactions = (
-        adsorbate_reaction((('molecule', 'O=O', 0.5), ('molecule', '[HH]', 0.5), ('slab', 'Pt_111', 1)), (('adsorbate', 'Pt_111_OH_top', 1),)), #0
-        adsorbate_reaction((('molecule', 'O=O', 1), ('molecule', '[HH]', 0.5), ('slab', 'Pt_111', 1)), (('adsorbate', 'Pt_111_OOH_top', 1),)), #1
-        adsorbate_reaction((('molecule', 'O', 2),  ('slab', 'Pt_111', 1)),(('adsorbate', 'Pt_111_OOH_top', 1), ('molecule', '[HH]', 1.5))), #2
-        adsorbate_reaction((('molecule', 'O', 1), ('slab', 'Pt_111', 1)),(('adsorbate', 'Pt_111_OH_top', 1), ('molecule', '[HH]', 0.5))), #3
+        adsorbate_reaction((('molecule', 'O=O', 0.5), ('molecule', '[HH]', 0.5), ('slab', 'Pt_111', 1)), (('adsorbate', 'Pt_111_OH_top', 1),)),  #0
+        adsorbate_reaction((('molecule', 'O=O', 1), ('molecule', '[HH]', 0.5), ('slab', 'Pt_111', 1)), (('adsorbate', 'Pt_111_OOH_top', 1),)),  #1
+        adsorbate_reaction((('molecule', 'O', 2),  ('slab', 'Pt_111', 1)),(('adsorbate', 'Pt_111_OOH_top', 1), ('molecule', '[HH]', 1.5))),  #2
+        adsorbate_reaction((('molecule', 'O', 1), ('slab', 'Pt_111', 1)),(('adsorbate', 'Pt_111_OH_top', 1), ('molecule', '[HH]', 0.5))),  #3
+        adsorbate_reaction((('molecule', 'O=O', 0.5), ('molecule', '[HH]', 0.5), ('slab', 'Cu_111', 1)),(('adsorbate', 'Cu_111_OH_top', 1),)),  # 4
+        adsorbate_reaction((('molecule', 'O=O', 1), ('molecule', '[HH]', 0.5), ('slab', 'Cu_111', 1)),(('adsorbate', 'Cu_111_OOH_top', 1),)),  # 5
+        adsorbate_reaction((('molecule', 'O', 2), ('slab', 'Cu_111', 1)), (('adsorbate', 'Cu_111_OOH_top', 1), ('molecule', '[HH]', 1.5))),  # 6
+        adsorbate_reaction((('molecule', 'O', 1), ('slab', 'Cu_111', 1)), (('adsorbate', 'Cu_111_OH_top', 1), ('molecule', '[HH]', 0.5))),  # 7
+
     )
 
     metal_ref_ractions = (
-        adsorbate_reaction((('adsorbate', 'Pt_111_OH_top', 1), ('slab', 'Cu_111', 1)), (('adsorbate', 'Cu_111_OH_top', 1), ('slab', 'Pt_111', 1))), #4
-        adsorbate_reaction((('adsorbate', 'Pt_111_OOH_top', 1), ('slab', 'Pt_111', 1)), (('adsorbate', 'Cu_111_OOH_top', 1), ('slab', 'Pt_111', 1))), #5
+        adsorbate_reaction((('adsorbate', 'Pt_111_OH_top', 1), ('slab', 'Cu_111', 1)), (('adsorbate', 'Cu_111_OH_top', 1), ('slab', 'Pt_111', 1))), #8
+        adsorbate_reaction((('adsorbate', 'Pt_111_OOH_top', 1), ('slab', 'Pt_111', 1)), (('adsorbate', 'Cu_111_OOH_top', 1), ('slab', 'Pt_111', 1))), #9
 
     )
 

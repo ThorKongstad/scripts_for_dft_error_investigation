@@ -169,7 +169,7 @@ def main(reaction_index_1, reaction_index_2, slab_db_dir: list[str], adsorbate_d
 
     metal_ref_ractions = (
         adsorbate_reaction((('adsorbate', 'Pt_111_OH_top', 1), ('slab', 'Cu_111', 1)), (('adsorbate', 'Cu_111_OH_top', 1), ('slab', 'Pt_111', 1))), #8
-        adsorbate_reaction((('adsorbate', 'Pt_111_OOH_top', 1), ('slab', 'Pt_111', 1)), (('adsorbate', 'Cu_111_OOH_top', 1), ('slab', 'Pt_111', 1))), #9
+        adsorbate_reaction((('adsorbate', 'Pt_111_OOH_top', 1), ('slab', 'Cu_111', 1)), (('adsorbate', 'Cu_111_OOH_top', 1), ('slab', 'Pt_111', 1))), #9
 
     )
 

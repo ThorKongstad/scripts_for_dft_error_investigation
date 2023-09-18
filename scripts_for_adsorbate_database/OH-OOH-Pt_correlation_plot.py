@@ -119,7 +119,7 @@ def correlation_plotly(reaction_1: adsorbate_reaction, reaction_2: adsorbate_rea
 
     if len(fig.data) > 0:
         min_value = min([min(fig.data, key=lambda d: d['x'])['x'], min(fig.data, key=lambda d: d['y'])['y']])[0]
-        max_value = min([max(fig.data, key=lambda d: d['x'])['x'], max(fig.data, key=lambda d: d['y'])['y']])[0]
+        max_value = max([max(fig.data, key=lambda d: d['x'])['x'], max(fig.data, key=lambda d: d['y'])['y']])[0]
 
         fig.add_shape(type='line',
                       xref='x', yref='y',

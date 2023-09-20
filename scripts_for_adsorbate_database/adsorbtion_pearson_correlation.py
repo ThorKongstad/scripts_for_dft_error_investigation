@@ -32,20 +32,20 @@ def pearson(point_seq: Sequence[tuple[float, float]]) -> float:
 def plot_correlation_matrix(reaction_seq: Sequence[adsorbate_reaction], BEEF_vdW_functional: Functional, png_bool: bool = False):
     fig = go.Figure()
 
-    correlation_matrix = [[
+    correlation_matrix = [[None]*(i+1)+[
         pearson(tuple(zip(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reaction_1),
                           BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reaction_2))))
-        for j, reaction_2 in enumerate(reaction_seq[i+1:], start=i+1)] + [None]*(len(reaction_seq)-i)
+        for j, reaction_2 in enumerate(reaction_seq[i+1:], start=i+1)]
         for i, reaction_1 in enumerate(reaction_seq)]
 
-    text_matrix = [[
+    text_matrix = [[None]*(i+1)+[
         f'{str(reaction_1)}<br>{str(reaction_2)}'
-        for j, reaction_2 in enumerate(reaction_seq[i+1:], start=i+1)] + [None]*(len(reaction_seq)-i)
+        for j, reaction_2 in enumerate(reaction_seq[i+1:], start=i+1)]
         for i, reaction_1 in enumerate(reaction_seq)]
 
     fig.add_trace(go.Heatmap(
         z=correlation_matrix,
-        x=(text_axis:=[str(reac) for reac in reversed(reaction_seq)]),#(nr_axis := [str(i) for i in range(len(reaction_seq))]),
+        x=(text_axis:=[str(reac) for reac in reaction_seq]),#(nr_axis := [str(i) for i in range(len(reaction_seq))]),
         y=text_axis, #nr_axis,
         text=text_matrix,
         #texttemplate='{text}',

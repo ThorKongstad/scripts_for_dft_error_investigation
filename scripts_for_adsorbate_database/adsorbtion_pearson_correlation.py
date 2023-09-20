@@ -94,7 +94,7 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
     if reaction_list_bool:
         folder_exist('reaction_plots')
         with open('reaction_plots/reaction_lists.txt', 'w') as work_file:
-            work_file.writelines([str(reac) for reac in all_reactions])
+            work_file.writelines([str(reac)+'\n' for reac in all_reactions])
 
     plot_correlation_matrix(all_reactions, functional_list[0], png_bool=png_bool)
 

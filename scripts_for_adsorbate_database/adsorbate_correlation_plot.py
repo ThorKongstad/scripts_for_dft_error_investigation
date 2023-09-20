@@ -3,6 +3,7 @@ import os
 import re
 import sys
 import pathlib
+from itertools import chain
 from dataclasses import dataclass, field
 from typing import Sequence, NoReturn, Tuple, Iterable, Optional, NamedTuple
 #from collections import namedtuple
@@ -27,8 +28,8 @@ class component(NamedTuple):
 
 @dataclass
 class adsorbate_reaction:
-    reactants: Sequence[Tuple[str, str, float] | component]
-    products: Sequence[Tuple[str, str, float] | component]
+    reactants: Tuple[Tuple[str, str, float] | component, ...]
+    products: Tuple[Tuple[str, str, float] | component, ...]
 
     def __post_init__(self):
         #component = namedtuple('component', ['type', 'name', 'amount'])
@@ -85,7 +86,7 @@ class Functional:
 
 
 def correlation_plotly(reaction_1: adsorbate_reaction, reaction_2: adsorbate_reaction, functional_seq: Sequence[Functional], reaction_indexes: Optional[Tuple[int, int]] = None, png_bool: bool = False):
-    fig= go.Figure()
+    fig = go.Figure()
 
     colour_dict = {
         'PBE': 'indianred',
@@ -96,7 +97,7 @@ def correlation_plotly(reaction_1: adsorbate_reaction, reaction_2: adsorbate_rea
     }
 
     for c_nr, func in enumerate(functional_seq):
-        marker_arg = dict(marker={'color': colour_dict[func.name], 'size':16}) if func.name in colour_dict.keys() else {}
+        marker_arg = dict(marker={'color': colour_dict[func.name], 'size':16}) if func.name in colour_dict.keys() else dict(marker={'size':16})
         try:
              fig.add_trace(go.Scatter(
              x=(func.calculate_reaction_enthalpy(reaction_1),),
@@ -111,7 +112,7 @@ def correlation_plotly(reaction_1: adsorbate_reaction, reaction_2: adsorbate_rea
                         y=func.calculate_BEE_reaction_enthalpy(reaction_2).tolist(),
                         name=f'BEE for {func.name}',
                         mode='markers',
-                        marker=dict(color='Grey',opacity=0.5,)
+                        marker=dict(color='Grey', opacity=0.5,)
                     ))
                     fig.data = fig.data[-1:] + fig.data[0:-1]
                 except: pass
@@ -155,22 +156,18 @@ def main(reaction_index_1, reaction_index_2, slab_db_dir: list[str], adsorbate_d
 
     functional_set = {xc for _, row in pd_adsorbate_dat.iterrows() if not pd.isna((xc := row.get('xc')))}
 
-    reactions = (
-        adsorbate_reaction((('molecule', 'O=O', 0.5), ('molecule', '[HH]', 0.5), ('slab', 'Pt_111', 1)), (('adsorbate', 'Pt_111_OH_top', 1),)),  #0
-        adsorbate_reaction((('molecule', 'O=O', 1), ('molecule', '[HH]', 0.5), ('slab', 'Pt_111', 1)), (('adsorbate', 'Pt_111_OOH_top', 1),)),  #1
-        adsorbate_reaction((('molecule', 'O', 2),  ('slab', 'Pt_111', 1)),(('adsorbate', 'Pt_111_OOH_top', 1), ('molecule', '[HH]', 1.5))),  #2
-        adsorbate_reaction((('molecule', 'O', 1), ('slab', 'Pt_111', 1)),(('adsorbate', 'Pt_111_OH_top', 1), ('molecule', '[HH]', 0.5))),  #3
-        adsorbate_reaction((('molecule', 'O=O', 0.5), ('molecule', '[HH]', 0.5), ('slab', 'Cu_111', 1)),(('adsorbate', 'Cu_111_OH_top', 1),)),  # 4
-        adsorbate_reaction((('molecule', 'O=O', 1), ('molecule', '[HH]', 0.5), ('slab', 'Cu_111', 1)),(('adsorbate', 'Cu_111_OOH_top', 1),)),  # 5
-        adsorbate_reaction((('molecule', 'O', 2), ('slab', 'Cu_111', 1)), (('adsorbate', 'Cu_111_OOH_top', 1), ('molecule', '[HH]', 1.5))),  # 6
-        adsorbate_reaction((('molecule', 'O', 1), ('slab', 'Cu_111', 1)), (('adsorbate', 'Cu_111_OH_top', 1), ('molecule', '[HH]', 0.5))),  # 7
-
-    )
+    reactions = tuple(chain((
+        adsorbate_reaction((('molecule', 'O=O', 0.5), ('molecule', '[HH]', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1),)),  # 0
+        adsorbate_reaction((('molecule', 'O=O', 1), ('molecule', '[HH]', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1),)),  # 1
+        adsorbate_reaction((('molecule', 'O', 2), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('molecule', '[HH]', 1.5))),  # 2
+        adsorbate_reaction((('molecule', 'O', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1), ('molecule', '[HH]', 0.5))),  # 3
+        adsorbate_reaction((('molecule', 'OO', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('molecule', '[HH]', 0.5))),  # 4
+        adsorbate_reaction((('molecule', 'OO', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1),)),  # 5
+                           )for metal in ['Pt', 'Cu']))
 
     metal_ref_ractions = (
         adsorbate_reaction((('adsorbate', 'Pt_111_OH_top', 1), ('slab', 'Cu_111', 1)), (('adsorbate', 'Cu_111_OH_top', 1), ('slab', 'Pt_111', 1))), #8
         adsorbate_reaction((('adsorbate', 'Pt_111_OOH_top', 1), ('slab', 'Cu_111', 1)), (('adsorbate', 'Cu_111_OOH_top', 1), ('slab', 'Pt_111', 1))), #9
-
     )
 
     all_reactions = reactions + metal_ref_ractions

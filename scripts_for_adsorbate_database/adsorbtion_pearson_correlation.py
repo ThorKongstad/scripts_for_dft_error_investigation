@@ -93,7 +93,7 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
 
     if reaction_list_bool:
         folder_exist('reaction_plots')
-        with open('reaction_plots/reaction_lists', 'w') as work_file:
+        with open('reaction_plots/reaction_lists.txt', 'w') as work_file:
             work_file.writelines([str(reac) for reac in all_reactions])
 
     plot_correlation_matrix(all_reactions, functional_list[0], png_bool=png_bool)
@@ -109,4 +109,4 @@ if __name__ == '__main__':
     parser.add_argument('-list', '--reaction_list', action='store_true', default=False,)
     args = parser.parse_args()
 
-    main(slab_db_dir=args.slab_db, adsorbate_db_dir=args.adsorbate_db, mol_db_dir=args.molecule_db, png_bool=args.png)
+    main(slab_db_dir=args.slab_db, adsorbate_db_dir=args.adsorbate_db, mol_db_dir=args.molecule_db, png_bool=args.png,reaction_list_bool=args.reaction_list)

@@ -72,12 +72,12 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
         adsorbate_reaction((('molecule', 'O', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1), ('molecule', '[HH]', 0.5))),  # 3
         adsorbate_reaction((('molecule', 'OO', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('molecule', '[HH]', 0.5))),  # 4
         adsorbate_reaction((('molecule', 'OO', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1),)),  # 5
-                        )for metal in ['Pt', 'Cu'])))
+                        )for metal in ['Pt', 'Cu', 'Pd', 'Rh'])))
 
     metal_ref_ractions = tuple(chain(*((
         adsorbate_reaction((('adsorbate', 'Pt_111_OH_top', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1), ('slab', 'Pt_111', 1))), #8
         adsorbate_reaction((('adsorbate', 'Pt_111_OOH_top', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('slab', 'Pt_111', 1))), #9
-                        )for metal in ['Cu'])))
+                        )for metal in ['Cu', 'Pd', 'Rh'])))
 
     all_reactions = reactions + metal_ref_ractions
 

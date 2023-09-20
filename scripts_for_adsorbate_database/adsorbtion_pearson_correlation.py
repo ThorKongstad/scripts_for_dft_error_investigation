@@ -45,8 +45,8 @@ def plot_correlation_matrix(reaction_seq: Sequence[adsorbate_reaction], BEEF_vdW
 
     fig.add_trace(go.Heatmap(
         z=correlation_matrix,
-        x=(nr_axis := [str(i) for i in range(len(reaction_seq))]),
-        y=nr_axis,
+        x=(text_axis:=[str(reac) for reac in reaction_seq]),#(nr_axis := [str(i) for i in range(len(reaction_seq))]),
+        y=text_axis,#nr_axis,
         text=text_matrix,
         #texttemplate='{text}',
         hoverongaps=False

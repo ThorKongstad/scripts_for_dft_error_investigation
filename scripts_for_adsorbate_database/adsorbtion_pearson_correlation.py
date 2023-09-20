@@ -98,5 +98,6 @@ if __name__ == '__main__':
     parser.add_argument('-sdb', '--slab_db', nargs='+', help='path to one or more databases containing the data.')
     #parser.add_argument('-m', '--metals', nargs='+', default=['Pt', 'Cu'])
     parser.add_argument('-png', '--png', action='store_true', default=False,)
-
     args = parser.parse_args()
+
+    main(slab_db_dir=args.slab_db, adsorbate_db_dir=args.adsorbate_db, mol_db_dir=args.molecule_db, png_bool=args.png)

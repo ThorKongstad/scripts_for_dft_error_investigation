@@ -23,7 +23,7 @@ from scripts_for_adsorbate_database.adsorbate_correlation_plot import Functional
 import plotly.graph_objects as go
 
 
-def pearson(point_seq: Sequence[Sequence[float, float]]) -> float:
+def pearson(point_seq: Sequence[tuple[float, float]]) -> float:
     x_avg = sum(map(itemgetter(0), point_seq))/(n := len(point_seq))
     y_avg = sum(map(itemgetter(1), point_seq))/n
     return sum((x-x_avg)*(y-y_avg) for x, y in point_seq)/(math.sqrt(sum((x-x_avg)**2 for x, _ in point_seq))*math.sqrt(sum((y-y_avg)**2 for _, y in point_seq)))

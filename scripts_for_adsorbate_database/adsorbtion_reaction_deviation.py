@@ -24,7 +24,7 @@ def build_latex_sd_table(reaction_seq: Sequence[adsorbate_reaction], BEEF_vdW_fu
 
     first_line_text = '    Reaction & mean & Standard Deviation & Relative Standard deviation \\\\ \n'
 
-    main_text = '    '.join(f'{str(reac)}  &  {mean(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac))}  &  {sd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac))}  &  {rsd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.2f} \\\\ \n' for reac in reaction_seq)
+    main_text = '    '.join(f'{str(reac)}  &  {mean(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  &  {sd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  &  {rsd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f} \\\\ \n' for reac in reaction_seq)
 
     return start_of_text + first_line_text + '\\hline \\\\ \n' + main_text + end_of_text
 

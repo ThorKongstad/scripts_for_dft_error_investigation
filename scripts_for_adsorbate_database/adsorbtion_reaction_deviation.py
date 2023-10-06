@@ -15,7 +15,7 @@ def sd(values: Sequence[float], mean_value: Optional[float] = None) -> float:
     if not mean_value: mean_value = mean(values)
     return np.sqrt((1 / len(values)) * sum(((x - mean_value) ** 2 for x in values)))
 def mean(values: Sequence[float]) -> float: return sum(values) / len(values)
-def rsd(values: Sequence[float]) -> float: return sd(values, mean_value := mean(values)) / mean_value
+def rsd(values: Sequence[float]) -> float: return sd(values, mean_value := mean(values)) / abs(mean_value)
 
 
 def build_latex_sd_table(reaction_seq: Sequence[adsorbate_reaction], BEEF_vdW_functional: Functional):

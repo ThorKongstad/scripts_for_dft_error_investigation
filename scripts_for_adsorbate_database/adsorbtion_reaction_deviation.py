@@ -15,6 +15,7 @@ def sd(values: Sequence[float], mean_value: Optional[float] = None) -> float:
     if not mean_value: mean_value = mean(values)
     return np.sqrt((1 / len(values)) * sum(((x - mean_value) ** 2 for x in values)))
 def mean(values: Sequence[float]) -> float: return sum(values) / len(values)
+def rsd(values: Sequence[float]) -> float: return sd(values, mean_value := mean(values)) / mean_value
 
 
 def build_latex_sd_table(reaction_seq: Sequence[adsorbate_reaction], BEEF_vdW_functional: Functional):
@@ -23,7 +24,7 @@ def build_latex_sd_table(reaction_seq: Sequence[adsorbate_reaction], BEEF_vdW_fu
 
     first_line_text = '    reaction & standard deviation  \\\\ \n'
 
-    main_text = ''.join(f'{str(reac)}  &  {sd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.2f} \\\\ \n' for reac in reaction_seq)
+    main_text = ''.join(f'{str(reac)}  &  {rsd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.2f} \\\\ \n' for reac in reaction_seq)
 
     return start_of_text + first_line_text + main_text + end_of_text
 
@@ -58,4 +59,4 @@ if __name__ == '__main__':
     parser.add_argument('-list', '--reaction_list', action='store_true', default=False,)
     args = parser.parse_args()
 
-    main(slab_db_dir=args.slab_db, adsorbate_db_dir=args.adsorbate_db, mol_db_dir=args.molecule_db)
+    main(slab_db_dir=args.slab_db, adsorbate_db_dir=args.adsorbate_db, mol_db_dir=args.molecule_db, reaction_list_bool=args.reaction_list)

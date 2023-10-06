@@ -102,5 +102,5 @@ def build_pd(db_dir_list, select_key: Optional = None):
     return pd_dat
 
 
-__all__ = [sanitize, folder_exist, ends_with, update_db, reaction, build_pd, adsorbate_reaction, adsorption_reactions, metal_ref_ractions, all_adsorption_reactions]
+__all__ = [sanitize, folder_exist, ends_with, update_db, reaction, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, all_adsorption_reactions]
 

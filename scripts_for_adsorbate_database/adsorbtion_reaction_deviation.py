@@ -26,7 +26,7 @@ def build_latex_sd_table(reaction_seq: Sequence[adsorbate_reaction], BEEF_vdW_fu
 
     main_text = '    '.join(f'{str(reac)}  &  {mean(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  &  {sd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  &  {rsd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f} \\\\ \n' for reac in reaction_seq)
 
-    return start_of_text + first_line_text + '\\hline \\\\ \n' + main_text + end_of_text
+    return start_of_text + first_line_text + '\\hline &&&\\\\ \n' + main_text + end_of_text
 
 
 def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[str], reaction_list_bool: bool = False):

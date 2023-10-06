@@ -78,18 +78,18 @@ adsorption_OH_reactions = tuple(chain(*((
         adsorbate_reaction((('molecule', 'O=O', 0.5), ('molecule', '[HH]', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1),)),  # 0
         adsorbate_reaction((('molecule', 'O', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1), ('molecule', '[HH]', 0.5))),  # 3
         adsorbate_reaction((('molecule', 'OO', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1),)),  # 5
-                        )for metal in ['Pt', 'Cu', 'Pd', 'Rh'])))
+                        )for metal in ['Pt', 'Cu', 'Pd', 'Rh', 'Ag', 'Ir'])))
 
 adsorption_OOH_reactions = tuple(chain(*((
         adsorbate_reaction((('molecule', 'O=O', 1), ('molecule', '[HH]', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1),)),  # 1
         adsorbate_reaction((('molecule', 'O', 2), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('molecule', '[HH]', 1.5))),  # 2
         adsorbate_reaction((('molecule', 'OO', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('molecule', '[HH]', 0.5))),  # 4
-                        )for metal in ['Pt', 'Cu', 'Pd', 'Rh'])))
+                        )for metal in ['Pt', 'Cu', 'Pd', 'Rh', 'Ag', 'Ir'])))
 
 metal_ref_ractions = tuple(chain(*((
         adsorbate_reaction((('adsorbate', 'Pt_111_OH_top', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1), ('slab', 'Pt_111', 1))), #8
         adsorbate_reaction((('adsorbate', 'Pt_111_OOH_top', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('slab', 'Pt_111', 1))), #9
-                        )for metal in ['Cu', 'Pd', 'Rh'])))
+                        )for metal in ['Cu', 'Pd', 'Rh', 'Ag', 'Ir'])))
 
 all_adsorption_reactions = adsorption_OH_reactions + adsorption_OOH_reactions + metal_ref_ractions
 

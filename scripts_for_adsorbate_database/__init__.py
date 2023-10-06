@@ -1,7 +1,8 @@
 import os
 import time
-from typing import NoReturn, Sequence, Tuple, Never, Optional
+from typing import NoReturn, Sequence, Tuple, Never, Optional, NamedTuple
 from dataclasses import dataclass, field
+from itertools import chain
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 import ase.db as db
 import pandas as pd
@@ -16,6 +17,31 @@ class reaction:
 
     def toStr(self) -> str:
         return ' + '.join([f'{n:.2g}{smi if smi != "cid281" else "C|||O"}' for smi, n in self.reactants]) + ' ---> ' + ' + '.join([f'{n:.2g}{smi  if smi != "cid281" else "C|||O"}' for smi, n in self.products])
+
+
+class component(NamedTuple):
+    type: str
+    name: str
+    amount: float
+
+
+@dataclass
+class adsorbate_reaction:
+    reactants: Tuple[Tuple[str, str, float] | component, ...]
+    products: Tuple[Tuple[str, str, float] | component, ...]
+
+    def __post_init__(self):
+        #component = namedtuple('component', ['type', 'name', 'amount'])
+        for n, reacs_or_prods in enumerate([self.reactants, self.products]):
+            new_component_seq = []
+            for i, reac_or_prod in enumerate(reacs_or_prods):
+                if len(reac_or_prod) != 3: raise ValueError('a component of a reaction does not have the correct size')
+                if not reac_or_prod[0] in ('molecule', 'slab', 'adsorbate'): raise ValueError('The reactant or product type string appear to be wrong')
+                new_component_seq.append(component(*reac_or_prod) if not isinstance(reac_or_prod, component) else reac_or_prod)
+            setattr(self, 'reactants' if n == 0 else 'products', tuple(new_component_seq))
+
+    def __str__(self):
+        return ' ---> '.join([' + '.join([f'{reac.amount:.2g}{reac.name if reac.name != "cid281" else "C|||O"}({reac.type})' for reac in comp]) for comp in (self.reactants,self.products)])
 
 
 def sanitize(unclean_str: str) -> str:
@@ -48,6 +74,26 @@ def update_db(db_dir: str, db_update_args: dict):
     with db.connect(db_dir) as db_obj:
         db_obj.update(**db_update_args)
 
+adsorption_OH_reactions = tuple(chain(*((
+        adsorbate_reaction((('molecule', 'O=O', 0.5), ('molecule', '[HH]', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1),)),  # 0
+        adsorbate_reaction((('molecule', 'O', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1), ('molecule', '[HH]', 0.5))),  # 3
+        adsorbate_reaction((('molecule', 'OO', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1),)),  # 5
+                        )for metal in ['Pt', 'Cu', 'Pd', 'Rh'])))
+
+adsorption_OOH_reactions = tuple(chain(*((
+        adsorbate_reaction((('molecule', 'O=O', 1), ('molecule', '[HH]', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1),)),  # 1
+        adsorbate_reaction((('molecule', 'O', 2), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('molecule', '[HH]', 1.5))),  # 2
+        adsorbate_reaction((('molecule', 'OO', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('molecule', '[HH]', 0.5))),  # 4
+                        )for metal in ['Pt', 'Cu', 'Pd', 'Rh'])))
+
+metal_ref_ractions = tuple(chain(*((
+        adsorbate_reaction((('adsorbate', 'Pt_111_OH_top', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1), ('slab', 'Pt_111', 1))), #8
+        adsorbate_reaction((('adsorbate', 'Pt_111_OOH_top', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('slab', 'Pt_111', 1))), #9
+                        )for metal in ['Cu', 'Pd', 'Rh'])))
+
+all_adsorption_reactions = adsorption_OH_reactions + adsorption_OOH_reactions + metal_ref_ractions
+
+
 
 def build_pd(db_dir_list, select_key: Optional = None):
     if isinstance(db_dir_list, str): db_dir_list = [db_dir_list]
@@ -56,5 +102,5 @@ def build_pd(db_dir_list, select_key: Optional = None):
     return pd_dat
 
 
-__all__ = [sanitize, folder_exist, ends_with, update_db, reaction, build_pd]
+__all__ = [sanitize, folder_exist, ends_with, update_db, reaction, build_pd, adsorbate_reaction, adsorption_reactions, metal_ref_ractions, all_adsorption_reactions]
 

@@ -9,7 +9,7 @@ from typing import Sequence, NoReturn, Tuple, Iterable, Optional, NamedTuple
 #from collections import namedtuple
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
-from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd
+from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction
 
 #import ase.db as db
 from ase.db.core import bytes_to_object
@@ -18,31 +18,6 @@ import numpy as np
 import pandas as pd
 #import plotly.express as px
 import plotly.graph_objects as go
-
-
-class component(NamedTuple):
-    type: str
-    name: str
-    amount: float
-
-
-@dataclass
-class adsorbate_reaction:
-    reactants: Tuple[Tuple[str, str, float] | component, ...]
-    products: Tuple[Tuple[str, str, float] | component, ...]
-
-    def __post_init__(self):
-        #component = namedtuple('component', ['type', 'name', 'amount'])
-        for n, reacs_or_prods in enumerate([self.reactants, self.products]):
-            new_component_seq = []
-            for i, reac_or_prod in enumerate(reacs_or_prods):
-                if len(reac_or_prod) != 3: raise ValueError('a component of a reaction does not have the correct size')
-                if not reac_or_prod[0] in ('molecule', 'slab', 'adsorbate'): raise ValueError('The reactant or product type string appear to be wrong')
-                new_component_seq.append(component(*reac_or_prod) if not isinstance(reac_or_prod, component) else reac_or_prod)
-            setattr(self, 'reactants' if n == 0 else 'products', tuple(new_component_seq))
-
-    def __str__(self):
-        return ' ---> '.join([' + '.join([f'{reac.amount:.2g}{reac.name if reac.name != "cid281" else "C|||O"}({reac.type})' for reac in comp]) for comp in (self.reactants,self.products)])
 
 
 class Functional:

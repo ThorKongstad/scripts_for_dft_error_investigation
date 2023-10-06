@@ -1,25 +1,13 @@
 import argparse
 import math
-#import os
-#import re
 import sys
 import pathlib
-from itertools import chain
-#from dataclasses import dataclass, field
-from typing import Sequence, NoReturn, Tuple, Iterable, Optional, NamedTuple
-#from collections import namedtuple
+from typing import Sequence
 from operator import itemgetter
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
-from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd
-from scripts_for_adsorbate_database.adsorbate_correlation_plot import Functional, component, adsorbate_reaction
-
-#import ase.db as db
-#from ase.db.core import bytes_to_object
-#import matplotlib.pyplot as plt
-#import numpy as np
-#import pandas as pd
-#import plotly.express as px
+from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, all_adsorption_reactions
+from scripts_for_adsorbate_database.adsorbate_correlation_plot import Functional
 import plotly.graph_objects as go
 
 
@@ -66,26 +54,10 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
     pd_slab_dat = build_pd(slab_db_dir)
     pd_mol_dat = build_pd(mol_db_dir)
 
-    functional_set = {'BEEF-vdW'} # {xc for _, row in pd_adsorbate_dat.iterrows() if not pd.isna((xc := row.get('xc')))}
-
-    reactions = tuple(chain(*((
-        adsorbate_reaction((('molecule', 'O=O', 0.5), ('molecule', '[HH]', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1),)),  # 0
-        adsorbate_reaction((('molecule', 'O=O', 1), ('molecule', '[HH]', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1),)),  # 1
-        adsorbate_reaction((('molecule', 'O', 2), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('molecule', '[HH]', 1.5))),  # 2
-        adsorbate_reaction((('molecule', 'O', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1), ('molecule', '[HH]', 0.5))),  # 3
-        adsorbate_reaction((('molecule', 'OO', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('molecule', '[HH]', 0.5))),  # 4
-        adsorbate_reaction((('molecule', 'OO', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1),)),  # 5
-                        )for metal in ['Pt', 'Cu', 'Pd', 'Rh'])))
-
-    metal_ref_ractions = tuple(chain(*((
-        adsorbate_reaction((('adsorbate', 'Pt_111_OH_top', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1), ('slab', 'Pt_111', 1))), #8
-        adsorbate_reaction((('adsorbate', 'Pt_111_OOH_top', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('slab', 'Pt_111', 1))), #9
-                        )for metal in ['Cu', 'Pd', 'Rh'])))
-
-    all_reactions = reactions + metal_ref_ractions
+    #functional_set = {'BEEF-vdW'} # {xc for _, row in pd_adsorbate_dat.iterrows() if not pd.isna((xc := row.get('xc')))}
 
     dictionary_of_needed_strucs = {'molecule': [], 'slab': [], 'adsorbate': []}
-    for reac in all_reactions:
+    for reac in all_adsorption_reactions:
         for compo in reac.reactants + reac.products:
             dictionary_of_needed_strucs[compo.type].append(compo.name)
 
@@ -94,9 +66,9 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
     if reaction_list_bool:
         folder_exist('reaction_plots')
         with open('reaction_plots/reaction_lists.txt', 'w') as work_file:
-            work_file.writelines([str(reac)+'\n' for reac in all_reactions])
+            work_file.writelines([str(reac)+'\n' for reac in all_adsorption_reactions])
 
-    plot_correlation_matrix(all_reactions, functional_list[0], png_bool=png_bool)
+    plot_correlation_matrix(all_adsorption_reactions, functional_list[0], png_bool=png_bool)
 
 
 if __name__ == '__main__':
@@ -109,4 +81,4 @@ if __name__ == '__main__':
     parser.add_argument('-list', '--reaction_list', action='store_true', default=False,)
     args = parser.parse_args()
 
-    main(slab_db_dir=args.slab_db, adsorbate_db_dir=args.adsorbate_db, mol_db_dir=args.molecule_db, png_bool=args.png,reaction_list_bool=args.reaction_list)
+    main(slab_db_dir=args.slab_db, adsorbate_db_dir=args.adsorbate_db, mol_db_dir=args.molecule_db, png_bool=args.png, reaction_list_bool=args.reaction_list)

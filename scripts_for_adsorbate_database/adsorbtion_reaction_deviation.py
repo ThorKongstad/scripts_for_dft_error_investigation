@@ -19,14 +19,14 @@ def rsd(values: Sequence[float]) -> float: return sd(values, mean_value := mean(
 
 
 def build_latex_sd_table(reaction_seq: Sequence[adsorbate_reaction], BEEF_vdW_functional: Functional):
-    start_of_text = '\\begin{center}\n\\begin{tabular}{c|c}\n'
+    start_of_text = '\\begin{center}\n\\begin{tabular}{c|c|c|c}\n'
     end_of_text = '\\end{tabular}\n\\end{center}\n'
 
-    first_line_text = '    reaction & standard deviation  \\\\ \n'
+    first_line_text = '    Reaction & mean & Standard Deviation & Relative Standard deviation \\\\ \n'
 
-    main_text = ''.join(f'{str(reac)}  &  {rsd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.2f} \\\\ \n' for reac in reaction_seq)
+    main_text = '    '.join(f'{str(reac)}  &  {mean(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac))}  $  {sd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac))}  &  {rsd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.2f} \\\\ \n' for reac in reaction_seq)
 
-    return start_of_text + first_line_text + main_text + end_of_text
+    return start_of_text + first_line_text + '\\hline \\\\ \n' + main_text + end_of_text
 
 
 def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[str], reaction_list_bool: bool = False):

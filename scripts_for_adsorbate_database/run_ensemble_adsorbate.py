@@ -18,16 +18,16 @@ from gpaw.utilities import h2gpts
 from ase.parallel import parprint, world, barrier
 
 
-def main(db_id:int, db_dir: str = 'molreact.db'):
+def main(db_id: int, db_dir: str = 'molreact.db'):
 
     # read from  database
     #atoms = read(f'/groups/kemi/thorkong/errors_investigation/molreact.db@id={db_id}')
-    if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir))>0 else '.'): raise FileNotFoundError("Can't find database")
+    if not os.path.basename(db_dir) in os.listdir(db_path if len(db_path := os.path.dirname(db_dir)) > 0 else '.'): raise FileNotFoundError("Can't find database")
     with db.connect(db_dir) as db_obj:
         row = db_obj.get(selection=f'id={db_id}')
         if not row.get('relaxed'): raise ValueError(f"atoms at row id: {db_id} haven't been relaxed.")
         functional = row.get('xc')
-        if functional not in ( 'BEEF-vdW', "{'name':'BEEF-vdW','backend':'libvdwxc'}"): raise ValueError(f'row {db_id}, is not a bee functional')
+        if functional not in ('BEEF-vdW', "{'name':'BEEF-vdW','backend':'libvdwxc'}"): raise ValueError(f'row {db_id}, is not a bee functional')
         atoms = row.toatoms()
         structure_str = row.get('structure_str')
         grid_spacing = row.get('grid_spacing')
@@ -49,9 +49,9 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
 
     calc = GPAW(mode=PW(500),
                 xc=functional if functional not in ['PBE0'] else {'name': functional, 'backend': 'pw'},
-                kpts=[4,4,1],
+                kpts=[4, 4, 1],
                 basis='dzp',
-                txt=f'{functional_folder}/opt_{structure_str}_{db_id}.txt',
+                txt=f'{functional_folder}/ensambel_{structure_str}_{db_id}.txt',
                 gpts=h2gpts(grid_spacing,atoms.get_cell(),idiv=4),
                 parallel={'augment_grids': True, 'sl_auto': True},
                 convergence={'eigenstates': 0.000001},
@@ -71,8 +71,8 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('data_base_id',type=int)
-    parser.add_argument('-db','--database',help='directory to the database, if not stated will look for molreact.db in pwd.', default='molreact.db')
+    parser.add_argument('data_base_id', type=int)
+    parser.add_argument('-db', '--database', help='directory to the database, if not stated will look for molreact.db in pwd.', default='molreact.db')
     args = parser.parse_args()
 
     main(args.data_base_id, args.database)

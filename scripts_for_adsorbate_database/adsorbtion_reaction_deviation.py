@@ -19,12 +19,12 @@ def rsd(values: Sequence[float]) -> float: return sd(values, mean_value := mean(
 
 
 def build_latex_sd_table(reaction_seq: Sequence[adsorbate_reaction], BEEF_vdW_functional: Functional):
-    start_of_text = '\\begin{center}\n\\begin{tabular}{c|c|c}\n'
+    start_of_text = '\\begin{center}\n\\begin{tabular}{c|c|c|c}\n'
     end_of_text = '\\end{tabular}\n\\end{center}\n'
 
-    first_line_text = '    Reaction & $\\mu$ (eV) & $\\sigma$ \\\\ \n  \\hline &&\\\\ \n'
+    first_line_text = '    Reaction & beef_vdw & $\\mu$ (eV) & $\\sigma$ \\\\ \n  \\hline &&\\\\ \n'
 
-    main_text = '    '.join(f'{str(reac)}  &  {mean(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  &  {sd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  \\\\ \n '
+    main_text = '    '.join(f'{str(reac)} & {BEEF_vdW_functional.calculate_reaction_energy(reac)}  &  {mean(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  &  {sd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  \\\\ \n '
                 + ('\\rowcolor{Gray} \n' * ((i+1) % 2))
                 for i, reac in enumerate(reaction_seq))
 

@@ -243,7 +243,7 @@ def main(time_files: str, alignment: str = None, interval=None,plot_save=None):
             call.alignment = alignment
 
     print('starts plotting')
-    plot_calls(calls,interval=interval,save_plot=plot_save)
+    plotly_calls(calls,interval=interval,save_plot=plot_save)
 
 
 if __name__ == '__main__':

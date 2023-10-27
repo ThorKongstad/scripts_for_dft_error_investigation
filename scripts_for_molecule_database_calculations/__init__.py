@@ -1,6 +1,6 @@
 import os
 import time
-from typing import NoReturn, Sequence, Tuple, Never, Optional
+from typing import NoReturn, Sequence, Tuple, Optional
 from dataclasses import dataclass, field
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 import ase.db as db
@@ -33,12 +33,18 @@ def sanitize(unclean_str: str) -> str:
 
 
 @retry(retry=retry_if_exception_type(FileExistsError), stop=stop_after_attempt(5), wait=wait_fixed(2))
-def folder_exist(folder_name: str, path: str = '.') -> Never:
+def folder_exist(folder_name: str, path: str = '.') -> None:
     if folder_name not in os.listdir(path): os.mkdir(ends_with(path, '/') + folder_name)
 
 
 def ends_with(string: str, end_str: str) -> str:
     return string + end_str * (end_str != string[-len(end_str):0])
+
+
+@retry(retry=retry_if_exception_type(OperationalError), stop=stop_after_attempt(5), wait=wait_fixed(10))
+def update_db(db_dir: str, db_update_args: dict):
+    with db.connect(db_dir) as db_obj:
+        db_obj.update(**db_update_args)
 
 
 reactions = [

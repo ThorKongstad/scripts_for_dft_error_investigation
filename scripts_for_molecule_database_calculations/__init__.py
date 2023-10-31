@@ -23,8 +23,10 @@ class reaction:
 def build_pd(db_dir_list, select_key: Optional = None):
     @contextmanager
     def open_mul_db(db_addres_list: list[str]):
-        db_connections = tuple()
-        try: yield (db_connections := (db.connect(work_db) for work_db in db_addres_list))
+        db_connections = []
+        try:
+            for work_db in db_addres_list: db_connections.append(db.connect(work_db))
+            yield db_connections
         except Exception: traceback.print_exc()
         finally:
             for work_db in db_connections: work_db.connection.close()

@@ -31,13 +31,13 @@ class Functional:
 
     def calculate_reaction_energy(self, reaction_obj: reaction) -> float:
         if not self.has_BEE: raise ValueError('calculate_reaction_energy only if the functional has BEE')
-        reactant_enthalpy, product_enthalpy = tuple(sum(self.molecule_energy[name] * amount for typ, name, amount in getattr(reaction_obj, reac_part)) for reac_part in ('reactants', 'products'))
+        reactant_enthalpy, product_enthalpy = tuple(sum(self.molecule_energy[name] * amount for name, amount in getattr(reaction_obj, reac_part)) for reac_part in ('reactants', 'products'))
         return product_enthalpy - reactant_enthalpy
 
     def calculate_BEE_reaction_enthalpy(self, reaction_obj: reaction) -> np.ndarray[float]:
         if not self.has_BEE: raise ValueError('calculate_reaction_energy only if the functional has BEE')
         correction = self.calculate_reaction_enthalpy(reaction_obj) - self.calculate_reaction_energy(reaction_obj)
-        reactant_BEE_enthalpy, product_BEE_enthalpy = tuple(sum(self.molecule_bee[name] * amount for typ, name, amount in getattr(reaction_obj, reac_part)) for reac_part in ('reactants', 'products'))
+        reactant_BEE_enthalpy, product_BEE_enthalpy = tuple(sum(self.molecule_bee[name] * amount for name, amount in getattr(reaction_obj, reac_part)) for reac_part in ('reactants', 'products'))
         return product_BEE_enthalpy - reactant_BEE_enthalpy + correction
 
 

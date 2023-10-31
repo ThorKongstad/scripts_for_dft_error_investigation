@@ -68,7 +68,7 @@ def main(db_address: Sequence[str]):
 
     folder_exist('reaction_plots')
 
-    functional_list = [Functional(functional_name='BEEF-vdW', mol_db=benz_pd, needed_struc_dict=dict(molecule=['c1ccccc1', 'c1ccccc1.c1ccccc1']), thermo_dynamic=False)]
+    functional_list = [Functional(functional_name='BEEF-vdW', mol_db=benz_pd, needed_struc_dict=dict(molecule=['C1CCCCC1', 'C1CCCCC1.C1CCCCC1']), thermo_dynamic=False)]
 
     with open('reaction_plots/Beef_ensemble_benzene_test.txt', 'w') as work_file:
         work_file.write(build_latex_sd_table((benzene_reaction,),functional_list[0]))

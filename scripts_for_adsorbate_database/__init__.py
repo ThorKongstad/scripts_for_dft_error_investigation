@@ -3,8 +3,6 @@ import time
 from typing import NoReturn, Sequence, Tuple, Never, Optional, NamedTuple
 from dataclasses import dataclass, field
 from itertools import chain
-import traceback
-from contextlib import contextmanager
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 import ase.db as db
 import pandas as pd
@@ -98,18 +96,9 @@ all_adsorption_reactions = adsorption_OH_reactions + adsorption_OOH_reactions + 
 
 
 def build_pd(db_dir_list, select_key: Optional = None):
-    @contextmanager
-    def open_mul_db(db_addres_list: list[str]):
-        db_connections = []
-        try:
-            for work_db in db_addres_list: db_connections.append(db.connect(work_db))
-            yield db_connections
-        except Exception: traceback.print_exc()
-        finally:
-            for work_db in db_connections: work_db.connection.close()
     if isinstance(db_dir_list, str): db_dir_list = [db_dir_list]
-    with open_mul_db(db_dir_list) as db_list:
-        pd_dat = pd.DataFrame([row.__dict__ for work_db in db_list for row in work_db.select(selection=select_key)])
+    db_list = [db.connect(work_db) for work_db in db_dir_list]
+    pd_dat = pd.DataFrame([row.__dict__ for work_db in db_list for row in work_db.select(selection=select_key)])
     return pd_dat
 
 

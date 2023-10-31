@@ -21,19 +21,11 @@ class reaction:
 
 
 def build_pd(db_dir_list, select_key: Optional = None):
-    @contextmanager
-    def open_mul_db(db_addres_list: list[str]):
-        db_connections = []
-        try:
-            for work_db in db_addres_list: db_connections.append(db.connect(work_db))
-            yield db_connections
-        except Exception: traceback.print_exc()
-        finally:
-            for work_db in db_connections: work_db.connection.close()
     if isinstance(db_dir_list, str): db_dir_list = [db_dir_list]
-    with open_mul_db(db_dir_list) as db_list:
-        pd_dat = pd.DataFrame([row.__dict__ for work_db in db_list for row in work_db.select(selection=select_key)])
+    db_list = [db.connect(work_db) for work_db in db_dir_list]
+    pd_dat = pd.DataFrame([row.__dict__ for work_db in db_list for row in work_db.select(selection=select_key)])
     return pd_dat
+
 
 
 def sanitize(unclean_str: str) -> str:

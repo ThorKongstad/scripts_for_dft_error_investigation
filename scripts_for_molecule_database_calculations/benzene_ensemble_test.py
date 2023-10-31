@@ -64,7 +64,7 @@ def build_latex_sd_table(reaction_seq: Sequence[reaction], BEEF_vdW_functional: 
 def main(db_address: Sequence[str]):
     benz_pd = build_pd(db_address)
 
-    benzene_reaction = reaction((('c1ccccc1', 2),), (('c1ccccc1.c1ccccc1', 1),), None)
+    benzene_reaction = reaction((('C1CCCCC1', 2),), (('C1CCCCC1.C1CCCCC1', 1),), None)
 
     folder_exist('reaction_plots')
 

@@ -62,9 +62,11 @@ def main(db_id: int, db_dir: str = 'molreact.db'):
     atoms.set_calculator(calc)
     potential_e = atoms.get_potential_energy()
 
-    atoms.calc = atoms.calc.fixed_density(xc='mBEEF-vdW',
+    atoms.calc = atoms.calc.fixed_density(
                                           txt=f'{functional_folder}/mBEEF_ensemble_{structure_str}_{db_id}.txt',
                                           )
+    atoms.calc.set(xc='mBEEF-vdW')
+
     mBEEF_potential_e = atoms.get_potential_energy()
 
     ens = BEEFEnsemble(atoms)

@@ -51,7 +51,7 @@ def main(db_id: int, db_dir: str = 'molreact.db'):
                 xc=functional if functional not in ['PBE0'] else {'name': functional, 'backend': 'pw'},
                 kpts=[4, 4, 1],
                 basis='dzp',
-                txt=f'{functional_folder}/mBEEF_ensambel_{structure_str}_{db_id}.txt',
+                txt=f'{functional_folder}/mBEEF_ensemble_{structure_str}_{db_id}.txt',
                 gpts=h2gpts(grid_spacing,atoms.get_cell(),idiv=4),
                 parallel={'augment_grids': True, 'sl_auto': True},
                 convergence={'eigenstates': 0.000001},
@@ -63,7 +63,7 @@ def main(db_id: int, db_dir: str = 'molreact.db'):
     potential_e = atoms.get_potential_energy()
 
     atoms.calc = atoms.calc.fixed_density(xc='mBEEF-vdW',
-                                          txt=f'{functional_folder}/mBEEF_ensambel_{structure_str}_{db_id}.txt',
+                                          txt=f'{functional_folder}/mBEEF_ensemble_{structure_str}_{db_id}.txt',
                                           )
     mBEEF_potential_e = atoms.get_potential_energy()
 

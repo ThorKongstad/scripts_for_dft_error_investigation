@@ -83,7 +83,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     fig.write_html(save_name + '.html', include_mathjax='cdn')
 
 
-def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[str]):
+def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[str], thermo_dynamics: bool = False):
     pd_adsorbate_dat = build_pd(adsorbate_db_dir)
     pd_slab_dat = build_pd(slab_db_dir)
     pd_mol_dat = build_pd(mol_db_dir)

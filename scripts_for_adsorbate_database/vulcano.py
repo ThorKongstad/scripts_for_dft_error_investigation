@@ -48,9 +48,9 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc}',
-                x=[(oh_adsorp := xc.calculate_reaction_energy(oh_reac))],
+                x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac))],
                 y=[overpotential(
-                    dG_OOH=(ooh_adsorp := xc.calculate_reaction_energy(ooh_reac)),
+                    dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac)),
                     dG_OH=oh_adsorp,
                     dG_O=oh_adsorp*2
                 )],

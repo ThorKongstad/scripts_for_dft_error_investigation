@@ -35,8 +35,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         x=line,
         y=over_potential_line,
         line=dict(
-            color='grey',
-            opacity=0.5
+            color='Grey',
+            #opacity=0.5
             ),
         showlegend=False,
     ))

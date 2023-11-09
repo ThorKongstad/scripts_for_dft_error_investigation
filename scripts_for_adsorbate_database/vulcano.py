@@ -31,7 +31,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     over_potential_line = list(map(lambda x: overpotential(x + 3.2, x, x * 2), line))
 
     fig.add_trace(go.Scatter(
-        mode='line',
+        mode='lines',
         x=line,
         y=over_potential_line,
         line=dict(

@@ -38,13 +38,13 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
             color='grey',
             opacity=0.5
             ),
-        hoveron=False
+        showlegend=False,
     ))
 
     for xc in functional_list:
         marker_arg = dict(marker={'color': colour_dict[xc.name], 'size': 16}) if xc.name in colour_dict.keys() else dict(marker={'size': 16})
         for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):
-            fig.add_trace(go.Scatter(
+            try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc}',
                 x=[(oh_adsorp := xc.calculate_reaction_energy(oh_reac))],
@@ -56,9 +56,11 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 hoverinfo=f'functional: {xc.name}',
                 **marker_arg
             ))
+            except: pass
 
             if xc.name in ['BEEF-vdW', "{'name':'BEEF-vdW','backend':'libvdwxc'}"]:
-                fig.add_trace(go.Scatter(
+                try:
+                    fig.add_trace(go.Scatter(
                     mode='markers',
                     name=f'BEE for {xc.name}',
                     y=list(map(lambda ooh, oh: overpotential(
@@ -69,8 +71,10 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac).tolist()),)),
                     x=oh_ensem,
                     marker=dict(color='Grey', opacity=0.5, )
-                ))
-                fig.data = fig.data[-1:] + fig.data[0:-1]
+                    ))
+
+                    fig.data = fig.data[-1:] + fig.data[0:-1]
+                except: pass
 
     folder_exist('reaction_plots')
     save_name = 'reaction_plots/vulcano_plot'

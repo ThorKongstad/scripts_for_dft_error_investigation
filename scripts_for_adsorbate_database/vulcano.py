@@ -13,7 +13,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 
-def overpotential(dG_OOH: float, dG_OH: float, dG_O: float) -> float: return 1.23 - min((4.92 - dG_OOH, dG_OOH - dG_O, dG_O - dG_OH, dG_OH))
+def overpotential(dG_OOH: float, dG_OH: float, dG_O: float) -> float: return 1.23 - max((4.92 - dG_OOH, dG_OOH - dG_O, dG_O - dG_OH, dG_OH))
 
 
 def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence[adsorbate_reaction], ooh_reactions: Sequence[adsorbate_reaction], png_bool: bool = False):

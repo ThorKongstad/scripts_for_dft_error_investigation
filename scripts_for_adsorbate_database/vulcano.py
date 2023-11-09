@@ -54,7 +54,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                     dG_OH=oh_adsorp,
                     dG_O=oh_adsorp*2
                 )],
-                hoverinfo=f'functional: {xc.name}',
+                #hoverinfo=f'functional: {xc.name}',
                 **marker_arg
             ))
             except: traceback.print_exc()

@@ -12,15 +12,16 @@ from scripts_for_adsorbate_database.adsorbate_correlation_plot import Functional
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import plotly.express as px
 
 
-def overpotential(dG_OOH: float, dG_OH: float, dG_O: float) -> float: return 1.23 - min((4.92 - dG_OOH, dG_OOH - dG_O, dG_O - dG_OH, dG_OH)) # dG_OOH - dG_O, dG_O - dG_OH
+def overpotential(dG_OOH: float, dG_OH: float, dG_O: float) -> float: return 1.23 - min((4.92 - dG_OOH, dG_OOH - dG_O, dG_O - dG_OH, dG_OH)) #
 
 
 def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence[adsorbate_reaction], ooh_reactions: Sequence[adsorbate_reaction], png_bool: bool = False):
     fig = go.Figure()
 
-    colour_dict = {
+    colour_dict_functional = {
         'PBE': 'indianred',
         'RPBE': 'firebrick',
         'PBE-PZ-SIC': 'darkorange',
@@ -28,8 +29,17 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         "{'name':'BEEF-vdW','backend':'libvdwxc'}": 'mediumpurple'
     }
 
-    line = np.linspace(0,2,500)
-    over_potential_line = list(map(lambda x: overpotential(x + 3.2, x, x * 2), line))
+    colour_dict_metal = dict(
+        Pt=px.colors.qualitative.Prism[1],
+        Cu=px.colors.qualitative.Plotly[1],
+        Pd=px.colors.qualitative.Safe[4],
+        Rh=px.colors.qualitative.Vivid[5],
+        Ag=px.colors.qualitative.Pastel[10],
+        Ir=px.colors.qualitative.Dark2[7]
+    )
+
+    line = np.linspace(0, 2, 500)
+    over_potential_line = list(map(lambda x: overpotential(dG_OOH=x + 3.2, dG_OH=x, dG_O=x * 2), line))
 
     fig.add_trace(go.Scatter(
         mode='lines',
@@ -43,18 +53,20 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     ))
 
     for xc in functional_list:
-        marker_arg = dict(marker={'color': colour_dict[xc.name], 'size': 16}) if xc.name in colour_dict.keys() else dict(marker={'size': 16})
+        #marker_arg = dict(marker={'color': colour_dict[xc.name], 'size': 16}) if xc.name in colour_dict.keys() else dict(marker={'size': 16})
         for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):
+            assert (metal := oh_reac.products[0].split('_')[0]) == ooh_reac.products[0].split('_')[0]
+            marker_arg = dict(marker={'color': colour_dict_metal[metal], 'size': 16}) if metal in colour_dict_metal.keys() else dict(marker={'size': 16})
             try: fig.add_trace(go.Scatter(
                 mode='markers',
-                name=f'{xc.name}',
+                name=f'{xc.name}-{metal}',
                 x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac))],
                 y=[overpotential(
                     dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac)),
                     dG_OH=oh_adsorp,
                     dG_O=oh_adsorp*2
                 )],
-                #hoverinfo=f'functional: {xc.name}',
+                hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}',
                 **marker_arg
             ))
             except: traceback.print_exc()
@@ -71,7 +83,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
                         (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac).tolist()),)),
                     x=oh_ensem,
-                    marker=dict(color='Grey', opacity=0.5, )
+                    hovertemplate=f'metal: {metal}',
+                    marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, )
                     ))
 
                     fig.data = fig.data[-1:] + fig.data[0:-1]

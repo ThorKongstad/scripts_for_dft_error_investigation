@@ -94,6 +94,11 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                     fig.data = fig.data[-1:] + fig.data[0:-1]
                 except: pass
 
+    fig.update_layout(
+        xaxis_title='OH adsorption',
+        yaxis_title='Overpotential'
+    )
+
     folder_exist('reaction_plots')
     save_name = 'reaction_plots/vulcano_plot'
     if png_bool: fig.write_image(save_name + '.png')

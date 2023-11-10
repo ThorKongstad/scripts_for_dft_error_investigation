@@ -55,7 +55,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     for xc in functional_list:
         #marker_arg = dict(marker={'color': colour_dict[xc.name], 'size': 16}) if xc.name in colour_dict.keys() else dict(marker={'size': 16})
         for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):
-            assert (metal := oh_reac.products[0].split('_')[0]) == ooh_reac.products[0].split('_')[0]
+            assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].split('_')[0]
             marker_arg = dict(marker={'color': colour_dict_metal[metal], 'size': 16}) if metal in colour_dict_metal.keys() else dict(marker={'size': 16})
             try: fig.add_trace(go.Scatter(
                 mode='markers',

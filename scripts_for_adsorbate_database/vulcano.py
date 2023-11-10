@@ -55,7 +55,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     for xc in functional_list:
         #marker_arg = dict(marker={'color': colour_dict[xc.name], 'size': 16}) if xc.name in colour_dict.keys() else dict(marker={'size': 16})
         for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):
-            assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].split('_')[0]
+            assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]
             marker_arg = dict(marker={'color': colour_dict_metal[metal], 'size': 16}) if metal in colour_dict_metal.keys() else dict(marker={'size': 16})
             try: fig.add_trace(go.Scatter(
                 mode='markers',
@@ -67,6 +67,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                     dG_O=oh_adsorp*2
                 )],
                 hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}',
+                legendgroup=metal,
                 **marker_arg
             ))
             except: traceback.print_exc()
@@ -75,7 +76,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 try:
                     fig.add_trace(go.Scatter(
                     mode='markers',
-                    name=f'BEE for {xc.name}',
+                    name=f'BEE for {metal} {xc.name}',
                     y=list(map(lambda ooh, oh: overpotential(
                         dG_OOH=ooh,
                         dG_OH=oh,
@@ -84,7 +85,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac).tolist()),)),
                     x=oh_ensem,
                     hovertemplate=f'metal: {metal}',
-                    marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, )
+                    marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),
+                    legendgroup = metal,
                     ))
 
                     fig.data = fig.data[-1:] + fig.data[0:-1]

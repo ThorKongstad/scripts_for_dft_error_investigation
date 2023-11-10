@@ -48,15 +48,15 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         line=dict(
             color='Grey',
             #opacity=0.5
-            ),
+        ),
         showlegend=False,
     ))
 
-    for xc in functional_list:
-        #marker_arg = dict(marker={'color': colour_dict[xc.name], 'size': 16}) if xc.name in colour_dict.keys() else dict(marker={'size': 16})
-        for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):
-            assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]
-            marker_arg = dict(marker={'color': colour_dict_metal[metal], 'size': 16}) if metal in colour_dict_metal.keys() else dict(marker={'size': 16})
+    for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):
+        assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]
+        marker_arg = dict(marker={'color': colour_dict_metal[metal], 'size': 16}) if metal in colour_dict_metal.keys() else dict(marker={'size': 16})
+        for xc in functional_list:
+            #marker_arg = dict(marker={'color': colour_dict[xc.name], 'size': 16}) if xc.name in colour_dict.keys() else dict(marker={'size': 16})
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name}-{metal}',
@@ -66,7 +66,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                     dG_OH=oh_adsorp,
                     dG_O=oh_adsorp*2
                 )],
-                hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}',
+                hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
                 legendgroup=metal,
                 legendgrouptitle_text=metal,
                 **marker_arg
@@ -76,19 +76,19 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
             if xc.name in ['BEEF-vdW', "{'name':'BEEF-vdW','backend':'libvdwxc'}"]:
                 try:
                     fig.add_trace(go.Scatter(
-                    mode='markers',
-                    name=f'BEE for {metal} {xc.name}',
-                    y=list(map(lambda ooh, oh: overpotential(
-                        dG_OOH=ooh,
-                        dG_OH=oh,
-                        dG_O=oh*2),
-                        xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
-                        (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac).tolist()),)),
-                    x=oh_ensem,
-                    hovertemplate=f'metal: {metal}',
-                    marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),
-                    legendgroup = metal,
-                    legendgrouptitle_text=metal,
+                        mode='markers',
+                        name=f'BEE for {metal} {xc.name}',
+                        y=list(map(lambda ooh, oh: overpotential(
+                            dG_OOH=ooh,
+                            dG_OH=oh,
+                            dG_O=oh*2),
+                                   xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
+                                   (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac).tolist()),)),
+                        x=oh_ensem,
+                        hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
+                        marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),
+                        legendgroup = metal,
+                        legendgrouptitle_text=metal,
                     ))
 
                     fig.data = fig.data[-1:] + fig.data[0:-1]
@@ -107,8 +107,8 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
 
     functional_set = {xc for _, row in pd_adsorbate_dat.iterrows() if not pd.isna((xc := row.get('xc')))}
 
-    oh_ad_h2_water = adsorption_OH_reactions[1::3] #[1,4,7,10,13,16]
-    ooh_ad_h2_water = adsorption_OOH_reactions[1::3]
+    oh_ad_h2_water = adsorption_OH_reactions#[1::3] #[1,4,7,10,13,16]
+    ooh_ad_h2_water = adsorption_OOH_reactions#[1::3]
 
     dictionary_of_needed_strucs = {'molecule': [], 'slab': [], 'adsorbate': []}
     for reac in oh_ad_h2_water + ooh_ad_h2_water:

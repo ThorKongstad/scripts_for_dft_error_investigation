@@ -68,6 +68,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 )],
                 hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}',
                 legendgroup=metal,
+                legendgrouptitle_text=metal,
                 **marker_arg
             ))
             except: traceback.print_exc()
@@ -87,6 +88,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                     hovertemplate=f'metal: {metal}',
                     marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),
                     legendgroup = metal,
+                    legendgrouptitle_text=metal,
                     ))
 
                     fig.data = fig.data[-1:] + fig.data[0:-1]

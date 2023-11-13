@@ -5,6 +5,12 @@
 
 import argparse
 import os
+import sys
+import pathlib
+
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
+from scripts_for_molecule_database_calculations import update_db, folder_exist, sanitize
+
 #from ase.io import *
 from ase.optimize import QuasiNewton
 from ase.constraints import FixAtoms
@@ -12,7 +18,6 @@ import ase.db as db
 from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
 from ase.parallel import parprint, world, barrier
-from . import update_db, folder_exist, sanitize
 
 
 def main(db_id: int, db_dir: str = 'molreact.db'):

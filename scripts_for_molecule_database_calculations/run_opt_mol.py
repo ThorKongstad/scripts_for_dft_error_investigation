@@ -47,7 +47,7 @@ def main(db_id: int, db_dir: str = 'molreact.db'):
     if '{' in functional[0] and '}' in functional[-1] and ':' in functional: functional = eval(functional)
 
     if functional in ['TPSS', 'MGGA_X_R2SCAN+MGGA_C_R2SCAN']:
-        atoms.translate([0.1, 0.2, 0.3])
+        atoms.translate([0.8, 0.8, 0.8])
         c = FixAtoms(indices=[0])
         atoms.set_constraint(c)
 

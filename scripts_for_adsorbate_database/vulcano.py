@@ -18,7 +18,7 @@ import plotly.express as px
 def overpotential(dG_OOH: float, dG_OH: float, dG_O: float) -> float: return 1.23 - min((4.92 - dG_OOH, dG_OOH - dG_O, dG_O - dG_OH, dG_OH)) #
 
 
-def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence[adsorbate_reaction], ooh_reactions: Sequence[adsorbate_reaction], png_bool: bool = False):
+def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence[adsorbate_reaction], ooh_reactions: Sequence[adsorbate_reaction], png_bool: bool = False, shift: float = 0):
     fig = go.Figure()
 
     colour_dict_functional = {
@@ -39,7 +39,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     )
 
     line = np.linspace(0, 2, 500)
-    over_potential_line = list(map(lambda x: overpotential(dG_OOH=x + 3.2, dG_OH=x, dG_O=x * 2), line))
+    over_potential_line = list(map(lambda x: overpotential(dG_OOH=x + 3.2, dG_OH=x, dG_O=x * 2) - shift, line))
 
     fig.add_trace(go.Scatter(
         mode='lines',
@@ -79,11 +79,12 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         mode='markers',
                         name=f'BEE for {metal} {xc.name}',
                         y=list(map(lambda ooh, oh: overpotential(
-                            dG_OOH=ooh,
-                            dG_OH=oh,
-                            dG_O=oh*2),
-                                   xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
-                                   (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac).tolist()),)),
+                                dG_OOH=ooh,
+                                dG_OH=oh,
+                                dG_O=oh*2),
+                            xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
+                            (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac).tolist()),
+                            )),
                         x=oh_ensem,
                         hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
                         marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),
@@ -126,7 +127,7 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
         try: functional_list.append(Functional(functional_name=xc, slab_db=pd_slab_dat, adsorbate_db=pd_adsorbate_dat, mol_db=pd_mol_dat, needed_struc_dict=dictionary_of_needed_strucs, thermo_dynamic=thermo_dynamics))
         except: pass
 
-    vulcano_plotly(functional_list, oh_ad_h2_water, ooh_ad_h2_water)
+    vulcano_plotly(functional_list, oh_ad_h2_water, ooh_ad_h2_water, shift=[xc.calculate_reaction_enthalpy(adsorption_OH_reactions[1]) for xc in functional_set if xc.name == 'BEEF_vdW'][0])
 
 
 if __name__ == '__main__':

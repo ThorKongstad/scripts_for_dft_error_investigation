@@ -62,7 +62,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 name=f'{xc.name}-{metal}',
                 x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac))],
                 y=[overpotential(
-                    dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac)) - 3.2, # since we now scale to oh at pt from ooh at pt, assuming scalling relations.
+                    dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac)), # don't think this worked; - 3.2, # since we now scale to oh at pt from ooh at pt, assuming scalling relations.
                     dG_OH=oh_adsorp,
                     dG_O=oh_adsorp*2
                 )],
@@ -79,7 +79,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         mode='markers',
                         name=f'BEE for {metal} {xc.name}',
                         y=list(map(lambda ooh, oh: overpotential(
-                                dG_OOH=ooh - 3.2, # since we now scale to oh at pt from ooh at pt, assuming scalling relations.
+                                dG_OOH=ooh - 3.2, # don't think this worked; # since we now scale to oh at pt from ooh at pt, assuming scalling relations.
                                 dG_OH=oh,
                                 dG_O=oh*2
                                 ),

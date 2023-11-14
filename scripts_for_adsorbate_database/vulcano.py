@@ -39,7 +39,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     )
 
     line = np.linspace(0, 2, 500)
-    over_potential_line = list(map(lambda x: overpotential(dG_OOH=x + 3.2, dG_OH=x, dG_O=x * 2) - shift, line))
+    over_potential_line = list(map(lambda x: overpotential(dG_OOH=(x-shift) + 3.2, dG_OH=x-shift, dG_O=(x-shift) * 2), line))
 
     fig.add_trace(go.Scatter(
         mode='lines',
@@ -118,7 +118,7 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
     ooh_ad_h2_water = metal_ref_ractions[1::2] #adsorption_OOH_reactions[1::3]
 
     dictionary_of_needed_strucs = {'molecule': [], 'slab': [], 'adsorbate': []}
-    for reac in oh_ad_h2_water + ooh_ad_h2_water:
+    for reac in oh_ad_h2_water + ooh_ad_h2_water + (adsorption_OH_reactions[1],):
         for compo in reac.reactants + reac.products:
             dictionary_of_needed_strucs[compo.type].append(compo.name)
 
@@ -127,7 +127,7 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
         try: functional_list.append(Functional(functional_name=xc, slab_db=pd_slab_dat, adsorbate_db=pd_adsorbate_dat, mol_db=pd_mol_dat, needed_struc_dict=dictionary_of_needed_strucs, thermo_dynamic=thermo_dynamics))
         except: pass
 
-    vulcano_plotly(functional_list, oh_ad_h2_water, ooh_ad_h2_water, shift=[xc.calculate_reaction_enthalpy(adsorption_OH_reactions[1]) for xc in functional_set if xc.name == 'BEEF_vdW'][0])
+    vulcano_plotly(functional_list, oh_ad_h2_water, ooh_ad_h2_water, shift=[xc.calculate_reaction_enthalpy(adsorption_OH_reactions[1]) for xc in functional_list if xc.name == 'BEEF_vdW'][0])
 
 
 if __name__ == '__main__':

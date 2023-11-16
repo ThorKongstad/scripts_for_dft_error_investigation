@@ -35,6 +35,19 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
         Ir=px.colors.qualitative.Dark2[7]
     )
 
+    line = np.linspace(0, 2, 500)
+
+    fig.add_trace(go.Scatter(
+        mode='lines',
+        x=line,
+        y=[3.2]*len(line),
+        line=dict(
+            color='Grey',
+            #opacity=0.5
+        ),
+        showlegend=False,
+    ))
+
     for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):
         assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]
         marker_arg = dict(marker={'color': colour_dict_metal[metal], 'size': 16}) if metal in colour_dict_metal.keys() else dict(marker={'size': 16})

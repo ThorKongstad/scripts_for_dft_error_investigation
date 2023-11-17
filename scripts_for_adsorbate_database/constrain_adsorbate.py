@@ -10,6 +10,7 @@ from ase import Atoms
 def main(traj_structure: str, locked_index: tuple[int, int]):
     atoms: Atoms = read(traj_structure)
     atoms.set_constraint((Atoms.constraints if isinstance(Atoms.constraints, list) else [Atoms.constraints]) + [FixedLine(i, (0, 0, 1)) for i in locked_index])
+    assert len(atoms.constraints) > 0
     write(traj_structure, atoms)
 
 

@@ -98,12 +98,13 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
 
     fig.update_layout(
         title='ORR',
-        xaxis_title='OH adsorption energy in reference to Pt_{111} adsorption',
+        xaxis_title='OH adsorption energy',# in reference to Pt_{111} adsorption',
         yaxis_title='Overpotential'
     )
 
     folder_exist('reaction_plots')
-    save_name = 'reaction_plots/vulcano_pt_ref_plot'
+    #save_name = 'reaction_plots/vulcano_pt_ref_plot'
+    save_name = 'reaction_plots/vulcano_plot'
     if png_bool: fig.write_image(save_name + '.png')
     fig.write_html(save_name + '.html', include_mathjax='cdn')
 
@@ -115,8 +116,11 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
 
     functional_set = {xc for _, row in pd_adsorbate_dat.iterrows() if not pd.isna((xc := row.get('xc')))}
 
-    oh_ad_h2_water = metal_ref_ractions[0::2] #adsorption_OH_reactions[1::3] #[1,4,7,10,13,16]
-    ooh_ad_h2_water = metal_ref_ractions[1::2] #adsorption_OOH_reactions[1::3]
+    #oh_ad_h2_water = metal_ref_ractions[0::2] #adsorption_OH_reactions[1::3] #[1,4,7,10,13,16]
+    oh_ad_h2_water = adsorption_OH_reactions[1::3] #[1,4,7,10,13,16]
+
+    #ooh_ad_h2_water = metal_ref_ractions[1::2] #adsorption_OOH_reactions[1::3]
+    ooh_ad_h2_water = adsorption_OOH_reactions[1::3]
 
     dictionary_of_needed_strucs = {'molecule': [], 'slab': [], 'adsorbate': []}
     for reac in oh_ad_h2_water + ooh_ad_h2_water:

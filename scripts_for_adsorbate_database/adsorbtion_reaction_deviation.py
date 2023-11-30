@@ -3,6 +3,7 @@ import math
 import sys
 import pathlib
 from typing import Sequence, Optional
+from contextlib import suppress
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions
@@ -24,9 +25,14 @@ def build_latex_sd_table(reaction_seq: Sequence[adsorbate_reaction], BEEF_vdW_fu
 
     first_line_text = '    Reaction & beef_vdw & $\\mu$ (eV) & $\\sigma$ \\\\ \n  \\hline &&\\\\ \n'
 
-    main_text = '    '.join(f'{str(reac)} & {BEEF_vdW_functional.calculate_reaction_energy(reac)}  &  {mean(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  &  {sd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  \\\\ \n '
-                + ('\\rowcolor{Gray} \n' * ((i+1) % 2))
-                for i, reac in enumerate(reaction_seq))
+    #main_text = '    '.join(f'{str(reac)} & {BEEF_vdW_functional.calculate_reaction_energy(reac)}  &  {mean(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  &  {sd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  \\\\ \n '
+    #            + ('\\rowcolor{Gray} \n' * ((i+1) % 2))
+    #            for i, reac in enumerate(reaction_seq))
+    main_text = ''
+
+    for i, reac in enumerate(reaction_seq):
+        try: main_text += '    ' + f'{str(reac)} & {BEEF_vdW_functional.calculate_reaction_energy(reac)}  &  {mean(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  &  {sd(BEEF_vdW_functional.calculate_BEE_reaction_enthalpy(reac)):.3f}  \\\\ \n ' + ('\\rowcolor{Gray} \n' * ((i+1) % 2))
+        except: pass
 
     return start_of_text + first_line_text + main_text + end_of_text
 

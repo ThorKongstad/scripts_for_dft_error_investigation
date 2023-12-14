@@ -81,14 +81,29 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 except:
                     traceback.print_exc()
 
+    if len(fig.data) > 0:
+        min_value = min([min(fig.data, key=lambda d: d['x'])['x'], min(fig.data, key=lambda d: d['y'])['y']])[0]
+        max_value = min([max(fig.data, key=lambda d: d['x'])['x'], max(fig.data, key=lambda d: d['y'])['y']])[0]
+
+        fig.add_shape(type='line',
+                      xref='x', yref='y',
+                      x0=min_value, y0=min_value + 3.2,
+                      x1=max_value, y1=max_value + 3.2,
+                      line=dict(color='grey', width=3, dash='solid'),
+                      opacity=0.5,
+                      layer='below',
+                      visible=True
+                      )
+
+
     fig.update_layout(
         title='Scaling of OOH and OH',
         xaxis_title='OH adsorption energy',# in reference to Pt_{111} adsorption',
-        yaxis_title='E_OOH - E_OH (ev)'
+        yaxis_title='E_OOH'
     )
 
     folder_exist('reaction_plots')
-    save_name = 'reaction_plots/scaling_plot_gas_ref'
+    save_name = 'reaction_plots/scaling_plot_simple'
     if png_bool: fig.write_image(save_name + '.png')
     fig.write_html(save_name + '.html', include_mathjax='cdn')
 

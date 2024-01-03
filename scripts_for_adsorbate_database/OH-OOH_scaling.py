@@ -57,7 +57,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 name=f'{xc.name}-{metal}',
                 x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac))],
                 y=[xc.calculate_reaction_enthalpy(ooh_reac) - xc.calculate_reaction_enthalpy(oh_reac)],
-                hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
+                hovertemplate=f'metal: {metal}'+ '<br>' + f'XC: {xc.name}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '   %{x:.3f}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '   %{y:.3f}',
                 legendgroup=metal,
                 legendgrouptitle_text=metal,
                 **marker_arg
@@ -70,7 +70,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                         name=f'BEE for {metal}',
                         y=(xc.calculate_BEE_reaction_enthalpy(ooh_reac) - (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac))).tolist(),
                         x=oh_ensem,
-                        hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
+                        hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '   %{y:.3f}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '   %{y:.3f}',
                         marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey',
                                     opacity=0.5, ),
                         legendgroup=metal,

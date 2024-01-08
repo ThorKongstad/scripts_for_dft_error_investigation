@@ -35,7 +35,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         Pd=px.colors.qualitative.Safe[4],
         Rh=px.colors.qualitative.Vivid[5],
         Ag=px.colors.qualitative.Pastel[10],
-        Ir=px.colors.qualitative.Dark2[7]
+        Ir=px.colors.qualitative.Dark2[7],
+        Au=px.colors.qualitative.Dark2[5],
     )
 
     line = np.linspace(0, 2, 500)

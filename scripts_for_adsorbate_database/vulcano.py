@@ -99,7 +99,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
 
     fig.update_layout(
         title='ORR',
-        xaxis_title='$Delta G_*OH$',# in reference to Pt_{111} adsorption',
+        xaxis_title='$\Delta G_{*OH$}',# in reference to Pt_{111} adsorption',
         yaxis_title='Overpotential'
     )
 

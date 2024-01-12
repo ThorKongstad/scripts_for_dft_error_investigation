@@ -85,7 +85,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                                 dG_O=oh*2 + 0.05
                                 ),
                             xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
-                            (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac).tolist()),
+                            (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac)).tolist(),
                             )),
                         x=oh_ensem + 0.35 - 0.3,
                         hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',

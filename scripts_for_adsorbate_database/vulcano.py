@@ -61,11 +61,11 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name}-{metal}',
-                x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac) + 0.35 - 0.3)], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/acssuschemeng.8b04173
+                x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac)) + 0.35 - 0.3], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/acssuschemeng.8b04173
                 y=[overpotential(
-                    dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac) + 0.40 - 0.3), # don't think this worked; + 3.2, # since we now scale to oh at pt from ooh at pt, assuming scalling relations.
-                    dG_OH=oh_adsorp,
-                    dG_O=oh_adsorp*2
+                    dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac)) + 0.40 - 0.3, # don't think this worked; + 3.2, # since we now scale to oh at pt from ooh at pt, assuming scalling relations.
+                    dG_OH=oh_adsorp + 0.35 - 0.3,
+                    dG_O=oh_adsorp*2 + 0.05
                 )],
                 hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
                 legendgroup=metal,
@@ -80,12 +80,12 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         mode='markers',
                         name=f'BEE for {metal} {xc.name}',
                         y=list(map(lambda ooh, oh: overpotential(
-                                dG_OOH=ooh, # don't think this worked;  + 3.2, # since we now scale to oh at pt from ooh at pt, assuming scalling relations.
-                                dG_OH=oh,
-                                dG_O=oh*2
+                                dG_OOH=ooh + 0.40 - 0.3, # don't think this worked;  + 3.2, # since we now scale to oh at pt from ooh at pt, assuming scalling relations.
+                                dG_OH=oh + 0.35 - 0.3,
+                                dG_O=oh*2 + 0.05
                                 ),
-                            (xc.calculate_BEE_reaction_enthalpy(ooh_reac) + 0.40 - 0.3).tolist(),
-                            (oh_ensem := (xc.calculate_BEE_reaction_enthalpy(oh_reac) + 0.35 - 0.3).tolist()),
+                            xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
+                            (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac).tolist()),
                             )),
                         x=oh_ensem,
                         hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',

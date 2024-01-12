@@ -40,7 +40,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     )
 
     line = np.linspace(0, 2, 500)
-    over_potential_line = list(map(lambda x: overpotential(dG_OOH=x + 3.2 + 0.05, dG_OH=x, dG_O=x * 2), line)) # 0.05 is the difference in zpe - ts between ooh and oh
+    over_potential_line = list(map(lambda x: overpotential(dG_OOH=x + 3.2, dG_OH=x, dG_O=(x - 0.05) * 2), line))
 
     fig.add_trace(go.Scatter(
         mode='lines',

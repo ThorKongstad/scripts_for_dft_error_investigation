@@ -15,7 +15,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 
 
-def overpotential(dG_OOH: float, dG_OH: float, dG_O: float) -> float: return 1.23 - min((4.92 - dG_OOH, dG_OOH - dG_O, dG_O - dG_OH, dG_OH)) #
+def overpotential(dG_OOH: float, dG_OH: float, dG_O: float) -> float: return min((4.92 - dG_OOH, dG_OOH - dG_O, dG_O - dG_OH, dG_OH)) # 1.23 -
 
 
 def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence[adsorbate_reaction], ooh_reactions: Sequence[adsorbate_reaction], png_bool: bool = False):
@@ -61,9 +61,9 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name}-{metal}',
-                x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac))],
+                x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac) + 0.35)], # + 0.35 is dZPE - TdS from 10.1021/jp047349j
                 y=[overpotential(
-                    dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac)), # don't think this worked; + 3.2, # since we now scale to oh at pt from ooh at pt, assuming scalling relations.
+                    dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac) + 0.35), # don't think this worked; + 3.2, # since we now scale to oh at pt from ooh at pt, assuming scalling relations.
                     dG_OH=oh_adsorp,
                     dG_O=oh_adsorp*2
                 )],
@@ -84,8 +84,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                                 dG_OH=oh,
                                 dG_O=oh*2
                                 ),
-                            xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
-                            (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac).tolist()),
+                            (xc.calculate_BEE_reaction_enthalpy(ooh_reac) + 0.35).tolist(),
+                            (oh_ensem := (xc.calculate_BEE_reaction_enthalpy(oh_reac) + 0.35).tolist()),
                             )),
                         x=oh_ensem,
                         hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',

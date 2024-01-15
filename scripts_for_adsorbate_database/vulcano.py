@@ -40,7 +40,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     )
 
     line = np.linspace(0, 2, 500) # used for dG_*OH = E_*OH - 0.05
-    over_potential_line = list(map(lambda x: overpotential(dG_OOH=(x - 0.05) + 3.2 + 0.40 - 0.3, dG_OH=x, dG_O=(x - 0.05) * 2 + 0.92) + 0.05, line))
+    over_potential_line = list(map(lambda x: overpotential(dG_OOH=(x - 0.05) + 3.2 + 0.40 - 0.3, dG_OH=x, dG_O=(x - 0.05) * 2) + 0.05, line))
 
     fig.add_trace(go.Scatter(
         mode='lines',
@@ -65,7 +65,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 y=[overpotential(
                     dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac)) + 0.40 - 0.3,
                     dG_OH=oh_adsorp + 0.35 - 0.3,
-                    dG_O=(oh_adsorp*2 + 0.92) + 0.05 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
+                    dG_O=oh_adsorp*2 + 0.05 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
                 )],
                 hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
                 legendgroup=metal,
@@ -82,7 +82,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         y=list(map(lambda ooh, oh: overpotential(
                                 dG_OOH=ooh + 0.40 - 0.3,
                                 dG_OH=oh + 0.35 - 0.3,
-                                dG_O=(oh*2 + 0.92) + 0.05
+                                dG_O=oh*2 + 0.05
                                 ),
                             xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
                             (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac)).tolist(),

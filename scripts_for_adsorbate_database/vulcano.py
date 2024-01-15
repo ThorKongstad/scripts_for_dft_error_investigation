@@ -65,7 +65,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 y=[overpotential(
                     dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac)) + 0.40 - 0.3,
                     dG_OH=oh_adsorp + 0.35 - 0.3,
-                    dG_O=oh_adsorp*2 + 0.05
+                    dG_O=oh_adsorp*2 + 0.05 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
                 )],
                 hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
                 legendgroup=metal,

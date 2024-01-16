@@ -146,7 +146,7 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
         try: functional_list.append(Functional(functional_name=xc, slab_db=pd_slab_dat, adsorbate_db=pd_adsorbate_dat, mol_db=pd_mol_dat, needed_struc_dict=dictionary_of_needed_strucs, thermo_dynamic=thermo_dynamics))
         except: pass
 
-    vulcano_plotly(functional_list, oh_ad_h2_water, ooh_ad_h2_water, oh_ad_h2_water[1], ooh_ad_h2_water[1])
+    vulcano_plotly(functional_list, oh_ad_h2_water, ooh_ad_h2_water, oh_ad_h2_water[0], ooh_ad_h2_water[0])
 
 
 if __name__ == '__main__':

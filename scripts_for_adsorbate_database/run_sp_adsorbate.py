@@ -57,6 +57,7 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
 
     atoms.set_calculator(calc)
     atoms.get_potential_energy()
+    atoms.get_forces()
     # define optimizer
     #dyn = QuasiNewton(atoms, trajectory=None)
     #dyn = FIRE(atoms, trajectory=None)

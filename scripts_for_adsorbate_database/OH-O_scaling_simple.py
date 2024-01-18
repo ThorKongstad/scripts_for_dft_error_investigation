@@ -100,7 +100,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
     fig.update_layout(
         title='Scaling of OOH and OH',
         xaxis_title='OH adsorption energy',# in reference to Pt_{111} adsorption',
-        yaxis_title='E_O'
+        yaxis_title='O adsorption energy'
     )
 
     folder_exist('reaction_plots')

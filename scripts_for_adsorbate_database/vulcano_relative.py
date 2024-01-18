@@ -61,15 +61,15 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name}-{metal}',
-                x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac)) + 0.35 - 0.3 - ((oh_adsorp_relative := xc.calculate_reaction_enthalpy(oh_reaction_relative)) + 0.35 - 0.3)], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/acssuschemeng.8b04173
+                x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac)) + 0.35 - 0.3 - ((oh_adsorp_relative := xc.calculate_reaction_enthalpy(oh_reaction_relative)) + 0.35 - 0.3)], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
                 y=[overpotential(
                     dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac)) + 0.40 - 0.3,
-                    dG_OH=oh_adsorp + 0.35 - 0.3,
+                    dG_OH=oh_adsorp + 0.35 - 0.5,
                     dG_O=xc.calculate_reaction_enthalpy(o_reac) + 0.05 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
                 )
                 - overpotential(
                     dG_OOH=(xc.calculate_reaction_enthalpy(ooh_reactions_relative)) + 0.40 - 0.3,
-                    dG_OH=oh_adsorp_relative + 0.35 - 0.3,
+                    dG_OH=oh_adsorp_relative + 0.35 - 0.5,
                     dG_O=xc.calculate_reaction_enthalpy(o_reactions_relative) + 0.05 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
                 )],
                 hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '<br>' + f'O adsorption: {str(o_reac)}',
@@ -86,7 +86,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         name=f'BEE for {metal} {xc.name}',
                         y=np.array(list(map(lambda ooh, oh, o: overpotential(
                                 dG_OOH=ooh + 0.40 - 0.3,
-                                dG_OH=oh + 0.35 - 0.3,
+                                dG_OH=oh + 0.35 - 0.5,
                                 dG_O=o + 0.05
                                 ),
                             xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
@@ -95,7 +95,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                             )))
                           - np.array(list(map(lambda ooh, oh, o: overpotential(
                                 dG_OOH=ooh + 0.40 - 0.3,
-                                dG_OH=oh + 0.35 - 0.3,
+                                dG_OH=oh + 0.35 - 0.5,
                                 dG_O=o + 0.05
                                 ),
                             xc.calculate_BEE_reaction_enthalpy(ooh_reactions_relative).tolist(),

@@ -115,7 +115,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     fig.update_layout(
         title='ORR',
         xaxis_title='$\Delta G_{*OH} - \Delta G_{Pt111*OH}$',# in reference to Pt_{111} adsorption',
-        yaxis_title='Overpotential relative to Pt'
+        yaxis_title='Limiting potential relative to Pt'
     )
 
     folder_exist('reaction_plots')

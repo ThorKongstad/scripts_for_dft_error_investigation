@@ -63,7 +63,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name}-{metal}',
-                x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac)) + 0.35 - 0.3], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
+                x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac)) + 0.35 - 0.5], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
                 y=[overpotential(
                     dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac)) + 0.40 - 0.3,
                     dG_OH=oh_adsorp + 0.35 - 0.5,
@@ -90,7 +90,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                             (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac)).tolist(),
                             xc.calculate_BEE_reaction_enthalpy(o_reac).tolist()
                             )),
-                        x=oh_ensem + 0.35 - 0.3,
+                        x=oh_ensem + 0.35 - 0.5,
                         hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
                         marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),
                         legendgroup=metal,

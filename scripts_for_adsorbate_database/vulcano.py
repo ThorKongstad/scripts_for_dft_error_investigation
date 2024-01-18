@@ -51,6 +51,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
             #opacity=0.5
         ),
         showlegend=False,
+        name='expected scaling relation',
+        hovertemplate='OOH = OH + 3.2 <br> O = OH*2'
     ))
 
     for oh_reac, ooh_reac, o_reac in zip(oh_reactions, ooh_reactions, o_reactions):

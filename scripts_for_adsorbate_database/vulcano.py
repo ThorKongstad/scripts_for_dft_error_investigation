@@ -40,7 +40,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     )
 
     line = np.linspace(0, 2, 500) # used for dG_*OH = E_*OH - 0.05
-    over_potential_line = list(map(lambda x: overpotential(dG_OOH=(x - 0.15) + 3.2 + 0.40 - 0.3, dG_OH=x, dG_O=(x - 0.15) * 2) + 0.05, line))
+    over_potential_line = list(map(lambda x: overpotential(dG_OOH= x + 3.2, dG_OH=x, dG_O=x * 2) , line))
 
     fig.add_trace(go.Scatter(
         mode='lines',

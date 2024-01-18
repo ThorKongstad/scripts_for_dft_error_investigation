@@ -116,8 +116,8 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
 
     functional_set = {xc for _, row in pd_adsorbate_dat.iterrows() if not pd.isna((xc := row.get('xc')))}
 
-    oh_ad_h2_water = metal_ref_ractions[0::2] #adsorption_OH_reactions[1::3] #[1,4,7,10,13,16]
-    ooh_ad_h2_water = metal_ref_ractions[1::2] #adsorption_OOH_reactions[1::3]
+    oh_ad_h2_water = metal_ref_ractions[0::3] #adsorption_OH_reactions[1::3] #[1,4,7,10,13,16]
+    ooh_ad_h2_water = metal_ref_ractions[1::3] #adsorption_OOH_reactions[1::3]
 
     dictionary_of_needed_strucs = {'molecule': [], 'slab': [], 'adsorbate': []}
     for reac in oh_ad_h2_water + ooh_ad_h2_water:

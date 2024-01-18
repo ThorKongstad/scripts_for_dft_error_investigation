@@ -16,7 +16,7 @@ class reaction:
     experimental_ref: float
 
     def toStr(self) -> str:
-        return ' + '.join([f'{n:.2g}{smi if smi != "cid281" else "C|||O"}' for smi, n in self.reactants]) + ' ---> ' + ' + '.join([f'{n:.2g}{smi  if smi != "cid281" else "C|||O"}' for smi, n in self.products])
+        return ' + '.join([f'{n:.2g}{smi if smi != "cid281" else "C|||O"}' for smi, n in self.reactants]) + ' ---> ' + ' + '.join([f'{n:.2g}{smi if smi != "cid281" else "C|||O"}' for smi, n in self.products])
 
 
 class component(NamedTuple):
@@ -74,6 +74,7 @@ def update_db(db_dir: str, db_update_args: dict):
     with db.connect(db_dir) as db_obj:
         db_obj.update(**db_update_args)
 
+
 adsorption_OH_reactions = tuple(chain(*((
         adsorbate_reaction((('molecule', 'O=O', 0.5), ('molecule', '[HH]', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1),)),
         adsorbate_reaction((('molecule', 'O', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1), ('molecule', '[HH]', 0.5))),
@@ -86,13 +87,21 @@ adsorption_OOH_reactions = tuple(chain(*((
         adsorbate_reaction((('molecule', 'OO', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('molecule', '[HH]', 0.5))),
                         )for metal in ['Pt', 'Cu', 'Pd', 'Rh', 'Ag', 'Ir', 'Au'])))
 
+
+adsorption_O_reactions = tuple(chain(*((
+        adsorbate_reaction((('molecule', 'O=O', 1/2), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_O_fcc', 1),)),
+        adsorbate_reaction((('molecule', 'O', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_O_fcc', 1), ('molecule', '[HH]', 1))),
+        adsorbate_reaction((('molecule', 'OO', 0.5), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_O_fcc', 1), ('molecule', '[HH]', 0.5))),
+                        )for metal in ['Pt', 'Cu', 'Pd', 'Rh', 'Ag', 'Ir', 'Au'])))
+
+
 metal_ref_ractions = tuple(chain(*((
         adsorbate_reaction((('adsorbate', 'Pt_111_OH_top', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OH_top', 1), ('slab', 'Pt_111', 1))),
         adsorbate_reaction((('adsorbate', 'Pt_111_OOH_top', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_OOH_top', 1), ('slab', 'Pt_111', 1))),
+        adsorbate_reaction((('adsorbate', 'Pt_111_O_fcc', 1), ('slab', f'{metal}_111', 1)),(('adsorbate', f'{metal}_111_O_fcc', 1), ('slab', 'Pt_111', 1))),
                         )for metal in ['Cu', 'Pd', 'Rh', 'Ag', 'Ir', 'Au'])))
 
 all_adsorption_reactions = adsorption_OH_reactions + adsorption_OOH_reactions + metal_ref_ractions
-
 
 
 def build_pd(db_dir_list, select_key: Optional = None):
@@ -105,5 +114,5 @@ def build_pd(db_dir_list, select_key: Optional = None):
     return pd_dat
 
 
-__all__ = [sanitize, folder_exist, ends_with, update_db, reaction, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, all_adsorption_reactions]
+__all__ = [sanitize, folder_exist, ends_with, update_db, reaction, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, all_adsorption_reactions, adsorption_O_reactions]
 

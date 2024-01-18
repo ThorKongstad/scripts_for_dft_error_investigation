@@ -127,7 +127,7 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
     o_ad_h2_water = adsorption_O_reactions[1::3]
 
     dictionary_of_needed_strucs = {'molecule': [], 'slab': [], 'adsorbate': []}
-    for reac in oh_ad_h2_water + ooh_ad_h2_water:
+    for reac in oh_ad_h2_water + ooh_ad_h2_water + o_ad_h2_water:
         for compo in reac.reactants + reac.products:
             dictionary_of_needed_strucs[compo.type].append(compo.name)
 

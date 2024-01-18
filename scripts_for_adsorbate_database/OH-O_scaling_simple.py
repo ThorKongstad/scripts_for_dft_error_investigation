@@ -6,7 +6,7 @@ from typing import Sequence, Optional
 import traceback
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
-from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions
+from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_O_reactions, metal_ref_ractions
 from scripts_for_adsorbate_database.adsorbate_correlation_plot import Functional
 
 import numpy as np
@@ -15,7 +15,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 
 
-def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[adsorbate_reaction], ooh_reactions: Sequence[adsorbate_reaction], png_bool: bool = False):
+def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[adsorbate_reaction], o_reactions: Sequence[adsorbate_reaction], png_bool: bool = False):
     fig = go.Figure()
 
     colour_dict_functional = {
@@ -49,16 +49,16 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
     #    showlegend=False,
     #))
 
-    for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):
-        assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]
+    for oh_reac, o_reac in zip(oh_reactions, o_reactions):
+        assert (metal := oh_reac.products[0].name.split('_')[0]) == o_reac.products[0].name.split('_')[0]
         marker_arg = dict(marker={'color': colour_dict_metal[metal], 'size': 16}) if metal in colour_dict_metal.keys() else dict(marker={'size': 16})
         for xc in functional_list:
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name}-{metal}',
                 x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac))],
-                y=[xc.calculate_reaction_enthalpy(ooh_reac)],
-                hovertemplate=f'metal: {metal}' + '<br>' + f'XC: {xc.name}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '   %{x:.3f}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}'+ '   %{y:.3f}',
+                y=[xc.calculate_reaction_enthalpy(o_reac)],
+                hovertemplate=f'metal: {metal}' + '<br>' + f'XC: {xc.name}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '   %{x:.3f}' + '<br>' + f'OOH adsorption: {str(o_reac)}' + '   %{y:.3f}',
                 legendgroup=metal,
                 legendgrouptitle_text=metal,
                 **marker_arg
@@ -69,9 +69,9 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                     fig.add_trace(go.Scatter(
                         mode='markers',
                         name=f'BEE for {metal}',
-                        y=xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
+                        y=xc.calculate_BEE_reaction_enthalpy(o_reac).tolist(),
                         x=xc.calculate_BEE_reaction_enthalpy(oh_reac).tolist(),
-                        hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '   %{x:.3f}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '   %{y:.3f}',
+                        hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '   %{x:.3f}' + '<br>' + f'OOH adsorption: {str(o_reac)}' + '   %{y:.3f}',
                         marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey',
                                     opacity=0.5, ),
                         legendgroup=metal,
@@ -88,8 +88,8 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
 
         fig.add_shape(type='line',
                       xref='x', yref='y',
-                      x0=min_value, y0=min_value + 3.2,
-                      x1=max_value, y1=max_value + 3.2,
+                      x0=min_value, y0=min_value*2,
+                      x1=max_value, y1=max_value*2,
                       line=dict(color='grey', width=3, dash='solid'),
                       opacity=0.5,
                       layer='below',
@@ -100,11 +100,11 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
     fig.update_layout(
         title='Scaling of OOH and OH',
         xaxis_title='OH adsorption energy',# in reference to Pt_{111} adsorption',
-        yaxis_title='E_OOH'
+        yaxis_title='E_O'
     )
 
     folder_exist('reaction_plots')
-    save_name = 'reaction_plots/scaling_plot_OH_OOH_simple'
+    save_name = 'reaction_plots/scaling_plot_OH_O_simple'
     if png_bool: fig.write_image(save_name + '.png')
     fig.write_html(save_name + '.html', include_mathjax='cdn')
 
@@ -117,10 +117,10 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
     functional_set = {xc for _, row in pd_adsorbate_dat.iterrows() if not pd.isna((xc := row.get('xc')))}
 
     oh_ad_h2_water = adsorption_OH_reactions[1::3]# metal_ref_ractions[0::2] #adsorption_OH_reactions[1::3] #[1,4,7,10,13,16]
-    ooh_ad_h2_water = adsorption_OOH_reactions[1::3]#metal_ref_ractions[1::2] #adsorption_OOH_reactions[1::3]
+    o_ad_h2_water = adsorption_O_reactions[1::3]#metal_ref_ractions[1::2] #adsorption_OOH_reactions[1::3]
 
     dictionary_of_needed_strucs = {'molecule': [], 'slab': [], 'adsorbate': []}
-    for reac in oh_ad_h2_water + ooh_ad_h2_water:
+    for reac in oh_ad_h2_water + o_ad_h2_water:
         for compo in reac.reactants + reac.products:
             dictionary_of_needed_strucs[compo.type].append(compo.name)
 
@@ -131,7 +131,7 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
         try: functional_list.append(Functional(functional_name=xc, slab_db=pd_slab_dat, adsorbate_db=pd_adsorbate_dat, mol_db=pd_mol_dat, needed_struc_dict=dictionary_of_needed_strucs, thermo_dynamic=thermo_dynamics))
         except: pass
 
-    scaling_plot(functional_list, oh_ad_h2_water, ooh_ad_h2_water)
+    scaling_plot(functional_list, oh_ad_h2_water, o_ad_h2_water)
 
 
 if __name__ == '__main__':

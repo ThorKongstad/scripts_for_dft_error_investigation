@@ -22,3 +22,5 @@ if __name__ == '__main__':
     parser.add_argument('struc_source')
     parser.add_argument('out_traj')
     args = parser.parse_args()
+
+    main(args.struc_source, args.out_traj)

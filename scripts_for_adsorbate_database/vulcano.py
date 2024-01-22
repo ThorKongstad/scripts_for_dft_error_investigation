@@ -105,8 +105,20 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         legendgrouptitle_text=metal,
                     ))
                     fig.update_traces(selector=dict(name=f'{xc.name}-{metal}'),
-                                      error_x=dict(type='data', value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=5, width=7, visible=True),
-                                      error_y=dict(type='data', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=5, width=7, visible=True)
+                                      error_x_type='data',
+                                      error_y_type='data',
+                                      error_x_value=sd(ens_x_cloud),
+                                      error_y_value=sd(ens_y_cloud),
+                                      error_x_color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey',
+                                      error_y_color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey',
+                                      error_x_thickness=1.5,
+                                      error_y_thickness=1.5,
+                                      error_x_width=3,
+                                      error_y_width=3,
+                                      error_x_visible=True,
+                                      error_y_visible=True,
+                                      #error_x=dict(type='data', value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True),
+                                      #error_y=dict(type='data', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True)
                                       )
                     fig.data = fig.data[-1:] + fig.data[0:-1]
                 except: traceback.print_exc()

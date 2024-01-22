@@ -104,7 +104,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
     )
 
     folder_exist('reaction_plots')
-    save_name = 'reaction_plots/scaling_plot_OH_O_simple'
+    save_name = 'reaction_plots/scaling_plot_OH_O_top_simple'
     if png_bool: fig.write_image(save_name + '.png')
     fig.write_html(save_name + '.html', include_mathjax='cdn')
 

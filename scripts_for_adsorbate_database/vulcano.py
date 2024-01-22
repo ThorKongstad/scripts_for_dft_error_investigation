@@ -134,7 +134,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
             dict(
                 type='buttons',
                 direction='left',
-                boutons=[
+                buttons=[
                     dict(
                         args=[{"visible": [True]*len(fig.data)}],
                         label='ensemble',

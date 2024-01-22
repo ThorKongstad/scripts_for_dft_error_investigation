@@ -4,6 +4,7 @@ import sys
 import pathlib
 from typing import Sequence, Optional
 import traceback
+from re import match
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, adsorption_O_reactions
@@ -103,6 +104,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),
                         legendgroup=metal,
                         legendgrouptitle_text=metal,
+                        visible=False
                     ))
                     fig.update_traces(selector=dict(name=f'{xc.name}-{metal}'),
                                       error_x_type='constant',
@@ -115,8 +117,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                                       error_y_thickness=1.5,
                                       error_x_width=3,
                                       error_y_width=3,
-                                      error_x_visible=True,
-                                      error_y_visible=True,
+                                      error_x_visible=False,
+                                      error_y_visible=False,
                                       #error_x=dict(type='data', value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True),
                                       #error_y=dict(type='data', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True)
                                       )
@@ -126,7 +128,42 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     fig.update_layout(
         title='ORR',
         xaxis_title='$\Delta G_{*OH}$',# in reference to Pt_{111} adsorption',
-        yaxis_title='Limiting potential'
+        yaxis_title='Limiting potential',
+
+        updatemenus=[
+            dict(
+                type='bottons',
+                direction='left',
+                bottons=[
+                    dict(
+                        args=[{"visible": [True]*len(fig.data)}],
+                        label='ensemble',
+                        method='update',
+                    ),
+                    dict(
+                        args=[{'error_x_visible': [True if match('.+-[A-Z][a-z]', trace.name) else False for trace in fig.data],
+                               'error_y_visible': [True if match('.+-[A-Z][a-z]', trace.name) else False for trace in fig.data]
+                               }],
+                        label='error bars',
+                        method='update',
+                    ),
+                    dict(
+                        args=[{"visible": [True]*len(fig.data),
+                               'error_x_visible': [True if match('.+-[A-Z][a-z]', trace.name) else False for trace in fig.data],
+                               'error_y_visible': [True if match('.+-[A-Z][a-z]', trace.name) else False for trace in fig.data]
+                               }],
+                        label='both',
+                        method='restyle',
+                    ),
+                ],
+                pad={"r": 10, "t": 10},
+                showactive=True,
+                x=0.11,
+                xanchor="left",
+                y=0.11,
+                yanchor="top"
+            )
+        ]
     )
 
     folder_exist('reaction_plots')

@@ -104,7 +104,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),
                         legendgroup=metal,
                         legendgrouptitle_text=metal,
-                        visible=False
+                        visible=True
                     ))
                     fig.update_traces(selector=dict(name=f'{xc.name}-{metal}'),
                                       error_x_type='constant',
@@ -137,32 +137,32 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 buttons=[
                     dict(
                         args=[{"visible": [True]*len(fig.data),
-                               'error_x_visible': [False] * len(fig.data),
-                               'error_y_visible': [False] * len(fig.data)}
+                               'error_x': [dict(visible=False)] * len(fig.data),
+                               'error_y': [dict(visible=False)] * len(fig.data)}
                               ],
                         label='Ensemble',
                         method='update',
                     ),
                     dict(
                         args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name) else True for trace in fig.data],
-                               'error_x_visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data],
-                               'error_y_visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data]
+                               'error_x': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data],
+                               'error_y': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data]
                                }],
                         label='Error bars',
                         method='update',
                     ),
                     dict(
                         args=[{"visible": [True]*len(fig.data),
-                               'error_x_visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data],
-                               'error_y_visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data]
+                               'error_x': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data],
+                               'error_y': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data]
                                }],
                         label='Both',
                         method='update',
                     ),
                     dict(
                         args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name) else True for trace in fig.data],
-                               'error_x_visible': [False] * len(fig.data),
-                               'error_y_visible': [False] * len(fig.data)
+                               'error_x': [dict(visible=False)] * len(fig.data),
+                               'error_y': [dict(visible=False)] * len(fig.data)
                                }],
                         label='None',
                         method='update',
@@ -170,9 +170,9 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 ],
                 pad={"r": 10, "t": 10},
                 showactive=True,
-                x=0.11,
+                #x=0.11,
                 xanchor="left",
-                y=0.11,
+                #y=0.11,
                 yanchor="top"
             )
         ]

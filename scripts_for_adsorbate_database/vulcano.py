@@ -119,8 +119,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                                       error_y_width=3,
                                       error_x_visible=False,
                                       error_y_visible=False,
-                                      #error_x=dict(type='data', value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True),
-                                      #error_y=dict(type='data', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True)
+                                      #error_x=dict(type='constant', value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True),
+                                      #error_y=dict(type='constant', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True)
                                       )
                     fig.data = fig.data[-1:] + fig.data[0:-1]
                 except: traceback.print_exc()
@@ -136,24 +136,36 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 direction='left',
                 buttons=[
                     dict(
-                        args=[{"visible": [True]*len(fig.data)}],
-                        label='ensemble',
+                        args=[{"visible": [True]*len(fig.data),
+                               'error_x_visible': [False] * len(fig.data),
+                               'error_y_visible': [False] * len(fig.data)}
+                              ],
+                        label='Ensemble',
                         method='update',
                     ),
                     dict(
-                        args=[{'error_x_visible': [True if match('.+-[A-Z][a-z]', trace.name) else False for trace in fig.data],
-                               'error_y_visible': [True if match('.+-[A-Z][a-z]', trace.name) else False for trace in fig.data]
+                        args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdw', trace.name) else True for trace in fig.data],
+                               'error_x_visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data],
+                               'error_y_visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data]
                                }],
-                        label='error bars',
+                        label='Error bars',
                         method='update',
                     ),
                     dict(
                         args=[{"visible": [True]*len(fig.data),
-                               'error_x_visible': [True if match('.+-[A-Z][a-z]', trace.name) else False for trace in fig.data],
-                               'error_y_visible': [True if match('.+-[A-Z][a-z]', trace.name) else False for trace in fig.data]
+                               'error_x_visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data],
+                               'error_y_visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data]
                                }],
-                        label='both',
-                        method='restyle',
+                        label='Both',
+                        method='update',
+                    ),
+                    dict(
+                        args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdw', trace.name) else True for trace in fig.data],
+                               'error_x_visible': [False] * len(fig.data),
+                               'error_y_visible': [False] * len(fig.data)
+                               }],
+                        label='None',
+                        method='update',
                     ),
                 ],
                 pad={"r": 10, "t": 10},

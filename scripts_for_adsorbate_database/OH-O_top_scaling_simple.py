@@ -98,7 +98,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
 
 
     fig.update_layout(
-        title='Scaling of OOH and OH',
+        title='Scaling of O (top bound) and OH',
         xaxis_title='OH adsorption energy',# in reference to Pt_{111} adsorption',
         yaxis_title='O adsorption energy'
     )

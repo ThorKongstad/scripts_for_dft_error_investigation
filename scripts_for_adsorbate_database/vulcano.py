@@ -15,6 +15,14 @@ import plotly.graph_objects as go
 import plotly.express as px
 
 
+def mean(values: Sequence[float]) -> float: return sum(values) / len(values)
+
+
+def sd(values: Sequence[float], mean_value: Optional[float] = None) -> float:
+    if not mean_value: mean_value = mean(values)
+    return np.sqrt((1 / len(values)) * sum(((x - mean_value) ** 2 for x in values)))
+
+
 def overpotential(dG_OOH: float, dG_OH: float, dG_O: float) -> float: return min((4.92 - dG_OOH, dG_OOH - dG_O, dG_O - dG_OH, dG_OH)) # 1.23 -
 
 
@@ -81,7 +89,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                     fig.add_trace(go.Scatter(
                         mode='markers',
                         name=f'BEE for {metal} {xc.name}',
-                        y=list(map(lambda ooh, oh, o: overpotential(
+                        y=(ens_y_cloud := list(map(lambda ooh, oh, o: overpotential(
                                 dG_OOH=ooh + 0.40 - 0.3,
                                 dG_OH=oh + 0.35 - 0.5,
                                 dG_O=o + 0.05
@@ -89,14 +97,17 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                             xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
                             (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac)).tolist(),
                             xc.calculate_BEE_reaction_enthalpy(o_reac).tolist()
-                            )),
-                        x=oh_ensem + 0.35 - 0.5,
+                            ))),
+                        x=(ens_x_cloud := oh_ensem + 0.35 - 0.5),
                         hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
                         marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),
                         legendgroup=metal,
                         legendgrouptitle_text=metal,
                     ))
-
+                    fig.update_traces(selector=dict(name=f'{xc.name}-{metal}'),
+                                      error_x=dict(value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3,),
+                                      error_y=dict(value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3,)
+                                      )
                     fig.data = fig.data[-1:] + fig.data[0:-1]
                 except: pass
 

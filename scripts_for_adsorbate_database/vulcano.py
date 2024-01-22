@@ -144,7 +144,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         method='update',
                     ),
                     dict(
-                        args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdw', trace.name) else True for trace in fig.data],
+                        args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name) else True for trace in fig.data],
                                'error_x_visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data],
                                'error_y_visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data]
                                }],
@@ -160,7 +160,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         method='update',
                     ),
                     dict(
-                        args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdw', trace.name) else True for trace in fig.data],
+                        args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name) else True for trace in fig.data],
                                'error_x_visible': [False] * len(fig.data),
                                'error_y_visible': [False] * len(fig.data)
                                }],

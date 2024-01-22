@@ -105,8 +105,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         legendgrouptitle_text=metal,
                     ))
                     fig.update_traces(selector=dict(name=f'{xc.name}-{metal}'),
-                                      error_x_type='data',
-                                      error_y_type='data',
+                                      error_x_type='constant',
+                                      error_y_type='constant',
                                       error_x_value=sd(ens_x_cloud),
                                       error_y_value=sd(ens_y_cloud),
                                       error_x_color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey',

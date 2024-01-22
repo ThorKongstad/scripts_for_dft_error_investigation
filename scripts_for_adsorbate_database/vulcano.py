@@ -104,12 +104,12 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         legendgroup=metal,
                         legendgrouptitle_text=metal,
                     ))
-                    fig.update_traces(selector=dict(name=f'{xc.name}-{metal}'),
+                    fig.update_traces(selector=dict(name=f'{xc.name}-{metal}'), marker = dict(color='pink'),
                                       error_x=dict(type='data', value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True),
                                       error_y=dict(type='data', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True)
                                       )
                     fig.data = fig.data[-1:] + fig.data[0:-1]
-                except: pass
+                except: traceback.print_exc()
 
     fig.update_layout(
         title='ORR',

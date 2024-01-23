@@ -4,6 +4,7 @@ from typing import NoReturn, Sequence, Tuple, Never, Optional, NamedTuple
 from dataclasses import dataclass, field
 from itertools import chain
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
+import numpy as np
 import ase.db as db
 import pandas as pd
 from sqlite3 import OperationalError
@@ -69,6 +70,14 @@ def ends_with(string: str, end_str: str) -> str:
     return string + end_str * (end_str != string[-len(end_str):0])
 
 
+def mean(values: Sequence[float]) -> float: return sum(values) / len(values)
+
+
+def sd(values: Sequence[float], mean_value: Optional[float] = None) -> float:
+    if not mean_value: mean_value = mean(values)
+    return np.sqrt((1 / len(values)) * sum(((x - mean_value) ** 2 for x in values)))
+
+
 @retry(retry=retry_if_exception_type(OperationalError), stop=stop_after_attempt(5), wait=wait_fixed(10))
 def update_db(db_dir: str, db_update_args: dict):
     with db.connect(db_dir) as db_obj:
@@ -119,5 +128,5 @@ def build_pd(db_dir_list, select_key: Optional = None):
     return pd_dat
 
 
-__all__ = [sanitize, folder_exist, ends_with, update_db, reaction, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, all_adsorption_reactions, adsorption_O_reactions, adsorption_O_reactions_top]
+__all__ = [sanitize, folder_exist, ends_with, update_db, reaction, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, all_adsorption_reactions, adsorption_O_reactions, adsorption_O_reactions_top, mean, sd]
 

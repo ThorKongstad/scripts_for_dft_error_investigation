@@ -7,21 +7,13 @@ import traceback
 from re import match
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
-from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, adsorption_O_reactions
+from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, adsorption_O_reactions, sd
 from scripts_for_adsorbate_database.adsorbate_correlation_plot import Functional
 
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
-
-
-def mean(values: Sequence[float]) -> float: return sum(values) / len(values)
-
-
-def sd(values: Sequence[float], mean_value: Optional[float] = None) -> float:
-    if not mean_value: mean_value = mean(values)
-    return np.sqrt((1 / len(values)) * sum(((x - mean_value) ** 2 for x in values)))
 
 
 def overpotential(dG_OOH: float, dG_OH: float, dG_O: float) -> float: return min((4.92 - dG_OOH, dG_OOH - dG_O, dG_O - dG_OH, dG_OH)) # 1.23 -
@@ -170,9 +162,9 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 ],
                 pad={"r": 10, "t": 10},
                 showactive=True,
-                #x=0.11,
+                x=0.5,
                 xanchor="left",
-                #y=0.11,
+                y=1.065,
                 yanchor="top"
             )
         ]

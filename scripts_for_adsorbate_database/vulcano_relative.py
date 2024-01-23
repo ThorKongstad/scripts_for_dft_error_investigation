@@ -4,9 +4,10 @@ import sys
 import pathlib
 from typing import Sequence, Optional
 import traceback
+from re import match
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
-from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, adsorption_O_reactions
+from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, adsorption_O_reactions, sd
 from scripts_for_adsorbate_database.adsorbate_correlation_plot import Functional
 
 import numpy as np
@@ -84,7 +85,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                     fig.add_trace(go.Scatter(
                         mode='markers',
                         name=f'BEE for {metal} {xc.name}',
-                        y=np.array(list(map(lambda ooh, oh, o: overpotential(
+                        y=(ens_y_cloud := np.array(list(map(lambda ooh, oh, o: overpotential(
                                 dG_OOH=ooh + 0.40 - 0.3,
                                 dG_OH=oh + 0.35 - 0.5,
                                 dG_O=o + 0.05
@@ -101,13 +102,18 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                             xc.calculate_BEE_reaction_enthalpy(ooh_reactions_relative).tolist(),
                             (oh_ensem_relative := xc.calculate_BEE_reaction_enthalpy(oh_reaction_relative)).tolist(),
                             xc.calculate_BEE_reaction_enthalpy(o_reactions_relative).tolist(),
-                            ))),
-                        x=oh_ensem + 0.35 - 0.5 - (oh_ensem_relative + 0.35 - 0.5),
+                            )))),
+                        x=(ens_x_cloud := oh_ensem + 0.35 - 0.5 - (oh_ensem_relative + 0.35 - 0.5)),
                         hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '<br>' + f'O adsorption: {str(o_reac)}',
                         marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),
                         legendgroup=metal,
                         legendgrouptitle_text=metal,
                     ))
+
+                    fig.update_traces(selector=dict(name=f'{xc.name}-{metal}'),
+                                      error_x=dict(type='constant', value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True),
+                                      error_y=dict(type='constant', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True)
+                                      )
 
                     fig.data = fig.data[-1:] + fig.data[0:-1]
                 except: pass
@@ -115,7 +121,54 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     fig.update_layout(
         title='ORR',
         xaxis_title='$\Delta G_{*OH} - \Delta G_{Pt111*OH}$',# in reference to Pt_{111} adsorption',
-        yaxis_title='Limiting potential relative to Pt'
+        yaxis_title='Limiting potential relative to Pt',
+
+        updatemenus = [
+            dict(
+                type='buttons',
+                direction='left',
+                buttons=[
+                    dict(
+                        args=[{"visible": [True] * len(fig.data),
+                               'error_x': [dict(visible=False)] * len(fig.data),
+                               'error_y': [dict(visible=False)] * len(fig.data)}
+                              ],
+                        label='Ensemble',
+                        method='update',
+                    ),
+                    dict(
+                        args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name) else True for trace in fig.data],
+                               'error_x': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data],
+                               'error_y': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data]
+                               }],
+                        label='Error bars',
+                        method='update',
+                    ),
+                    dict(
+                        args=[{"visible": [True] * len(fig.data),
+                               'error_x': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data],
+                               'error_y': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data]
+                               }],
+                        label='Both',
+                        method='update',
+                    ),
+                    dict(
+                        args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name) else True for trace in fig.data],
+                               'error_x': [dict(visible=False)] * len(fig.data),
+                               'error_y': [dict(visible=False)] * len(fig.data)
+                               }],
+                        label='None',
+                        method='update',
+                    ),
+                ],
+                pad={"r": 10, "t": 10},
+                showactive=True,
+                x=0.5,
+                xanchor="left",
+                y=1.065,
+                yanchor="top"
+            )
+        ]
     )
 
     folder_exist('reaction_plots')

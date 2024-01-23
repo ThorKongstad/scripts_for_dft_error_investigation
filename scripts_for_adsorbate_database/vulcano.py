@@ -122,39 +122,39 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         xaxis_title='$\Delta G_{*OH}$',# in reference to Pt_{111} adsorption',
         yaxis_title='Limiting potential',
 
-        updatemenus=[
+        updatemenus = [
             dict(
                 type='buttons',
                 direction='left',
                 buttons=[
                     dict(
-                        args=[{"visible": [True]*len(fig.data),
-                               'error_x': [dict(visible=False)] * len(fig.data),
-                               'error_y': [dict(visible=False)] * len(fig.data)}
+                        args=[{"visible": [True] * len(fig.data),
+                               'error_x.visible': [False] * len(fig.data),
+                               'error_y.visible': [False] * len(fig.data)}
                               ],
                         label='Ensemble',
                         method='update',
                     ),
                     dict(
                         args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name) else True for trace in fig.data],
-                               'error_x': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data],
-                               'error_y': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data]
+                               'error_x.visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data],
+                               'error_y.visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data]
                                }],
                         label='Error bars',
                         method='update',
                     ),
                     dict(
-                        args=[{"visible": [True]*len(fig.data),
-                               'error_x': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data],
-                               'error_y': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data]
+                        args=[{"visible": [True] * len(fig.data),
+                               'error_x.visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data],
+                               'error_y.visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data]
                                }],
                         label='Both',
                         method='update',
                     ),
                     dict(
                         args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name) else True for trace in fig.data],
-                               'error_x': [dict(visible=False)] * len(fig.data),
-                               'error_y': [dict(visible=False)] * len(fig.data)
+                               'error_x.visible': [False] * len(fig.data),
+                               'error_y.visible': [False] * len(fig.data)
                                }],
                         label='None',
                         method='update',

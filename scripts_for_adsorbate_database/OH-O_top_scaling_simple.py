@@ -69,7 +69,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 try:
                     fig.add_trace(go.Scatter(
                         mode='markers',
-                        name=f'BEE for {metal}',
+                        name=f'BEE for {metal} {xc.name}',
                         y=(ens_y_cloud := xc.calculate_BEE_reaction_enthalpy(o_reac).tolist()),
                         x=(ens_x_cloud := xc.calculate_BEE_reaction_enthalpy(oh_reac).tolist()),
                         hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '   %{x:.3f}' + '<br>' + f'OOH adsorption: {str(o_reac)}' + '   %{y:.3f}',
@@ -80,8 +80,8 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                     ))
 
                     fig.update_traces(selector=dict(name=f'{xc.name}-{metal}'),
-                                      error_x=dict(type='constant', value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True),
-                                      error_y=dict(type='constant', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True)
+                                      error_x=dict(type='constant', value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=False),
+                                      error_y=dict(type='constant', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=False)
                                       )
 
                     fig.data = fig.data[-1:] + fig.data[0:-1]
@@ -115,32 +115,32 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 buttons=[
                     dict(
                         args=[{"visible": [True] * len(fig.data),
-                               'error_x': [dict(visible=False)] * len(fig.data),
-                               'error_y': [dict(visible=False)] * len(fig.data)}
+                               'error_x.visible': [False] * len(fig.data),
+                               'error_y.visible': [False] * len(fig.data)}
                               ],
                         label='Ensemble',
                         method='update',
                     ),
                     dict(
                         args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name) else True for trace in fig.data],
-                               'error_x': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data],
-                               'error_y': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data]
+                               'error_x.visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data],
+                               'error_y.visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data]
                                }],
                         label='Error bars',
                         method='update',
                     ),
                     dict(
                         args=[{"visible": [True] * len(fig.data),
-                               'error_x': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data],
-                               'error_y': [dict(visible=True) if match('BEEF-vdW-[A-Z][a-z]', trace.name) else dict(visible=False) for trace in fig.data]
+                               'error_x.visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data],
+                               'error_y.visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data]
                                }],
                         label='Both',
                         method='update',
                     ),
                     dict(
                         args=[{"visible": [False if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name) else True for trace in fig.data],
-                               'error_x': [dict(visible=False)] * len(fig.data),
-                               'error_y': [dict(visible=False)] * len(fig.data)
+                               'error_x.visible': [False] * len(fig.data),
+                               'error_y.visible': [False] * len(fig.data)
                                }],
                         label='None',
                         method='update',

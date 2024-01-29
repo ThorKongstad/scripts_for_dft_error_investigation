@@ -65,7 +65,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                                      x=list(line),
                                      y=list(map(lambda x: liniar_func(x, fit_obj.slope, fit_obj.intercept), line)),
                                      name='linier scalling fit of' + xc.name,
-                                     hoverinfo=f'XC: {xc.name}<br>Slobe: {fit_obj.slope:.3f} +- {fit_obj.stderr:.3f}<br>Intercept: {fit_obj.intercept:.3f} +- {fit_obj.intercept_stderr:.3f}<br>R-square: {fit_obj.rvalue:.3f}',
+                                     hoverinfo=f'XC: {xc.name}'+'<br>'+f'Slope: {fit_obj.slope:.3f} +- {fit_obj.stderr:.3f}<br>Intercept: {fit_obj.intercept:.3f} +- {fit_obj.intercept_stderr:.3f}'+'<br>'+f'R-square: {fit_obj.rvalue:.3f}',
                                      **line_arg
                                      ))
 
@@ -81,7 +81,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                                              y=list(map(lambda x: liniar_func(x, fit.slope, fit.intercept), line)),
                                              legendgroup='BEE fits for ' + xc.name,
                                              legendgrouptitle='BEE fits for ' + xc.name,
-                                             hoverinfo=f'XC: BEE No. {i} for {xc.name}<br>Slobe: {fit.slope:.3f} +- {fit.stderr:.3f}<br>Intercept: {fit.intercept:.3f} +- {fit.intercept_stderr:.3f}<br>R-square: {fit.rvalue:.3f}',
+                                             hoverinfo=f'XC: BEE No. {i} for {xc.name}'+'<br>'+f'Slope: {fit.slope:.3f} +- {fit.stderr:.3f}<br>Intercept: {fit.intercept:.3f} +- {fit.intercept_stderr:.3f}'+'<br>'+f'R-square: {fit.rvalue:.3f}',
                                              line=dict(color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'Grey', opacity=0.5, ),
                                              ))
                 fig.data = fig.data[-1:] + fig.data[0:-1]

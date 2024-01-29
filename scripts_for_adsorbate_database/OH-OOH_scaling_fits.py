@@ -73,7 +73,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
 
         if xc.has_BEE:
             try:
-                fit_ens_objs = [stats.linregress(x=OH_vals, y=OOH_vals) for OH_vals, OOH_vals in zip(*zip(list(map(xc.calculate_BEE_reaction_enthalpy, oh_reactions))), *zip(list(map(xc.calculate_BEE_reaction_enthalpy, ooh_reactions))))]
+                fit_ens_objs = [stats.linregress(x=OH_vals, y=OOH_vals) for OH_vals, OOH_vals in zip(*zip(list(map(xc.calculate_BEE_reaction_enthalpy, oh_reactions)), list(map(xc.calculate_BEE_reaction_enthalpy, ooh_reactions))))]
 
                 for i, fit in enumerate(fit_ens_objs):
                     fig.add_trace(go.Scatter(mode='lines',

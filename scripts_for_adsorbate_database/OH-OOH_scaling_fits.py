@@ -63,9 +63,9 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
 
             fig.add_trace(go.Scatter(mode='line',
                                      x=list(line),
-                                     y=list(map(lambda x: liniar_func(x, fit_obj.slobe, fit_obj.intercept), line)),
+                                     y=list(map(lambda x: liniar_func(x, fit_obj.slope, fit_obj.intercept), line)),
                                      name='linier scalling fit of' + xc.name,
-                                     hoverinfo=f'XC: {xc.name}<br>Slobe: {fit_obj.slobe:.3f} +- {fit_obj.stderr:.3f}<br>Intercept: {fit_obj.intercept:.3f} +- {fit_obj.intercept_stderr:.3f}<br>R-square: {fit_obj.rvalue:.3f}',
+                                     hoverinfo=f'XC: {xc.name}<br>Slobe: {fit_obj.slope:.3f} +- {fit_obj.stderr:.3f}<br>Intercept: {fit_obj.intercept:.3f} +- {fit_obj.intercept_stderr:.3f}<br>R-square: {fit_obj.rvalue:.3f}',
                                      **line_arg
                                      ))
 
@@ -78,10 +78,10 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 for i, fit in enumerate(fit_ens_objs):
                     fig.add_trace(go.Scatter(mode='line',
                                              x=list(line),
-                                             y=list(map(lambda x: liniar_func(x, fit.slobe, fit.intercept), line)),
+                                             y=list(map(lambda x: liniar_func(x, fit.slope, fit.intercept), line)),
                                              legendgroup='BEE fits for ' + xc.name,
                                              legendgrouptitle='BEE fits for ' + xc.name,
-                                             hoverinfo=f'XC: BEE No. {i} for {xc.name}<br>Slobe: {fit.slobe:.3f} +- {fit.stderr:.3f}<br>Intercept: {fit.intercept:.3f} +- {fit.intercept_stderr:.3f}<br>R-square: {fit.rvalue:.3f}',
+                                             hoverinfo=f'XC: BEE No. {i} for {xc.name}<br>Slobe: {fit.slope:.3f} +- {fit.stderr:.3f}<br>Intercept: {fit.intercept:.3f} +- {fit.intercept_stderr:.3f}<br>R-square: {fit.rvalue:.3f}',
                                              line=dict(color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'Grey', opacity=0.5, ),
                                              ))
                 fig.data = fig.data[-1:] + fig.data[0:-1]
@@ -151,33 +151,33 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 direction='left',
                 buttons=[
                     dict(
-                        args=[{"visible": True}, [i for i, trace in enumerate(fig.data) if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name)],
-                              {'error_x.visible': False}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)],
-                              {'error_y.visible': False}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)],
+                        args=[({"visible": True}, [i for i, trace in enumerate(fig.data) if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name)]),
+                              ({'error_x.visible': False}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)]),
+                              ({'error_y.visible': False}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)]),
                               ],
                         label='Ensemble',
                         method='update',
                     ),
                     dict(
-                        args=[{"visible": False}, [i for i, trace in enumerate(fig.data) if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name)],
-                              {'error_x.visible': True}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)],
-                              {'error_y.visible': True}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)],
+                        args=[({"visible": False}, [i for i, trace in enumerate(fig.data) if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name)]),
+                              ({'error_x.visible': True}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)]),
+                              ({'error_y.visible': True}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)]),
                               ],
                         label='Error bars',
                         method='update',
                     ),
                     dict(
-                        args=[{"visible": True}, [i for i,trace in enumerate(fig.data) if trace.mode == 'markers'],
-                              {'error_x.visible': True}, [i for i,trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)],
-                              {'error_y.visible': True}, [i for i,trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)]
+                        args=[({"visible": True}, [i for i,trace in enumerate(fig.data) if trace.mode == 'markers']),
+                              ({'error_x.visible': True}, [i for i,trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)]),
+                              ({'error_y.visible': True}, [i for i,trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)])
                               ],
                         label='Both',
                         method='update',
                     ),
                     dict(
-                        args=[{"visible": False}, [i for i, trace in enumerate(fig.data) if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name)],
-                              {'error_x.visible': False}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)],
-                              {'error_y.visible': False}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)]
+                        args=[({"visible": False}, [i for i, trace in enumerate(fig.data) if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name)]),
+                              ({'error_x.visible': False}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)]),
+                              ({'error_y.visible': False}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)])
                               ],
                         label='None',
                         method='update',
@@ -195,20 +195,20 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 direction='left',
                 buttons=[
                     dict(
-                        args=[{"visible": True}, [i for i, trace in enumerate(fig.data) if 'fit' in trace.name],
+                        args=[({"visible": True}, [i for i, trace in enumerate(fig.data) if 'fit' in trace.name]),
                               ],
                         label='Show all fits',
                         method='update',
                     ),
                     dict(
-                        args=[{"visible": True}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name)],
-                              {"visible": False}, [i for i, trace in enumerate(fig.data) if match('BEE fits for .+', trace.name)],
+                        args=[({"visible": True}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name)]),
+                              ({"visible": False}, [i for i, trace in enumerate(fig.data) if match('BEE fits for .+', trace.name)]),
                               ],
                         label='Show xc fits only',
                         method='update',
                     ),
                     dict(
-                        args=[{"visible": False}, [i for i,trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name) or match('BEE fits for .+', trace.name)],
+                        args=[({"visible": False}, [i for i,trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name) or match('BEE fits for .+', trace.name)]),
                               ],
                         label='Hide all fits',
                         method='update',

@@ -80,12 +80,12 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                                              x=list(line),
                                              y=list(map(lambda x: liniar_func(x, fit.slope, fit.intercept), line)),
                                              legendgroup='BEE fits for ' + xc.name,
-                                             legendgrouptitle='BEE fits for ' + xc.name,
+                                             legendgrouptitle_text='BEE fits for ' + xc.name,
                                              hovertemplate=f'XC: BEE No. {i} for {xc.name}'+'<br>'+f'Slope: {fit.slope:.3f} +- {fit.stderr:.3f}'+'<br>'+f'Intercept: {fit.intercept:.3f} +- {fit.intercept_stderr:.3f}'+'<br>'+f'R-square: {fit.rvalue:.3f}',
                                              line=dict(color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'Grey', opacity=0.5, ),
                                              ))
                 fig.data = fig.data[-1:] + fig.data[0:-1]
-            except: pass
+            except: traceback.print_exc()
 
     for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):
         assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]

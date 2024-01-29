@@ -157,7 +157,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                               ({'error_y.visible': False}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)]),
                               ],
                         label='Ensemble',
-                        method='update',
+                        method='restyle',
                     ),
                     dict(
                         args=[({"visible": False}, [i for i, trace in enumerate(fig.data) if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name)]),
@@ -165,7 +165,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                               ({'error_y.visible': True}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)]),
                               ],
                         label='Error bars',
-                        method='update',
+                        method='restyle',
                     ),
                     dict(
                         args=[({"visible": True}, [i for i, trace in enumerate(fig.data) if trace.mode == 'markers']),
@@ -173,7 +173,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                               ({'error_y.visible': True}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)])
                               ],
                         label='Both',
-                        method='update',
+                        method='restyle',
                     ),
                     dict(
                         args=[({"visible": False}, [i for i, trace in enumerate(fig.data) if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name)]),
@@ -181,7 +181,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                               ({'error_y.visible': False}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)])
                               ],
                         label='None',
-                        method='update',
+                        method='restyle',
                     ),
                 ],
                 pad={"r": 10, "t": 10},
@@ -199,20 +199,20 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                         args=[({"visible": True}, [i for i, trace in enumerate(fig.data) if 'fit' in trace.name]),
                               ],
                         label='Show all fits',
-                        method='update',
+                        method='restyle',
                     ),
                     dict(
                         args=[({"visible": True}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name)]),
                               ({"visible": False}, [i for i, trace in enumerate(fig.data) if match('BEE fits No\. \d for .+', trace.name)]),
                               ],
                         label='Show xc fits only',
-                        method='update',
+                        method='restyle',
                     ),
                     dict(
                         args=[({"visible": False}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name) or match('BEE fits No\. \d for .+', trace.name)]),
                               ],
                         label='Hide all fits',
-                        method='update',
+                        method='restyle',
                     ),
                 ],
                 pad={"r": 10, "t": 10},

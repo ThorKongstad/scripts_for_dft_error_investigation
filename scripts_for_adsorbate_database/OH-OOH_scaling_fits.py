@@ -124,8 +124,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                                       )
 
                     fig.data = fig.data[-1:] + fig.data[0:-1]
-                except:
-                    traceback.print_exc()
+                except: traceback.print_exc()
 
     if len(fig.data) > 0:
         min_value = min([min(fig.data, key=lambda d: d['x'])['x'], min(fig.data, key=lambda d: d['y'])['y']])[0]
@@ -220,7 +219,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 showactive=True,
                 x=0.5,
                 xanchor="left",
-                y=1.055,
+                y=1.005,
                 yanchor="top"
             )
         ]

@@ -61,7 +61,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
             fit_obj = stats.linregress(x=(oh_adsor := list(map(xc.calculate_reaction_enthalpy, oh_reactions))),
                                        y=(ooh_adsor := list(map(xc.calculate_reaction_enthalpy, ooh_reactions))),)
 
-            fig.add_trace(go.Scatter(mode='line',
+            fig.add_trace(go.Scatter(mode='lines',
                                      x=list(line),
                                      y=list(map(lambda x: liniar_func(x, fit_obj.slope, fit_obj.intercept), line)),
                                      name='linier scalling fit of' + xc.name,
@@ -76,7 +76,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 fit_ens_objs = [stats.linregress(x=OH_vals, y=OOH_vals) for OH_vals, OOH_vals in zip(list(map(xc.calculate_BEE_reaction_enthalpy, oh_reactions)), list(map(xc.calculate_BEE_reaction_enthalpy, ooh_reactions)))]
 
                 for i, fit in enumerate(fit_ens_objs):
-                    fig.add_trace(go.Scatter(mode='line',
+                    fig.add_trace(go.Scatter(mode='lines',
                                              x=list(line),
                                              y=list(map(lambda x: liniar_func(x, fit.slope, fit.intercept), line)),
                                              legendgroup='BEE fits for ' + xc.name,

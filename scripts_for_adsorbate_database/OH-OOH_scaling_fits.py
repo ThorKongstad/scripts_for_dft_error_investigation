@@ -168,9 +168,9 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                         method='update',
                     ),
                     dict(
-                        args=[({"visible": True}, [i for i,trace in enumerate(fig.data) if trace.mode == 'markers']),
-                              ({'error_x.visible': True}, [i for i,trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)]),
-                              ({'error_y.visible': True}, [i for i,trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)])
+                        args=[({"visible": True}, [i for i, trace in enumerate(fig.data) if trace.mode == 'markers']),
+                              ({'error_x.visible': True}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)]),
+                              ({'error_y.visible': True}, [i for i, trace in enumerate(fig.data) if match('BEEF-vdW-[A-Z][a-z]', trace.name)])
                               ],
                         label='Both',
                         method='update',
@@ -202,14 +202,14 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                         method='update',
                     ),
                     dict(
-                        args=[("visible", True, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name)]),
-                              ("visible", False, [i for i, trace in enumerate(fig.data) if match('BEE fits No\. \d for .+', trace.name)]),
+                        args=[({"visible": True}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name)]),
+                              ({"visible": False}, [i for i, trace in enumerate(fig.data) if match('BEE fits No\. \d for .+', trace.name)]),
                               ],
                         label='Show xc fits only',
                         method='update',
                     ),
                     dict(
-                        args=[("visible", False, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name) or match('BEE fits No\. \d for .+', trace.name)]),
+                        args=[({"visible": False}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name) or match('BEE fits No\. \d for .+', trace.name)]),
                               ],
                         label='Hide all fits',
                         method='update',
@@ -219,7 +219,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 showactive=True,
                 x=0.5,
                 xanchor="left",
-                y=0.5,
+                y=1.1,
                 yanchor="top"
             )
         ]

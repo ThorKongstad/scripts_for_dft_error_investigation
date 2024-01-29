@@ -85,6 +85,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                                              hovertemplate=f'XC: BEE No. {i} for {xc.name}'+'<br>'+f'Slope: {fit.slope:.3f} +- {fit.stderr:.3f}'+'<br>'+f'Intercept: {fit.intercept:.3f} +- {fit.intercept_stderr:.3f}'+'<br>'+f'R-square: {fit.rvalue:.3f}',
                                              line=dict(color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'Grey',),
                                              opacity=0.5,
+                                             showlegend=False
                                              ))
                     fig.data = fig.data[-1:] + fig.data[0:-1]
             except: traceback.print_exc()
@@ -196,7 +197,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 direction='left',
                 buttons=[
                     dict(
-                        args=[({"visible": True}, [i for i, trace in enumerate(fig.data) if 'fit' in trace.name]),
+                        args=[{"visible": True}, [i for i, trace in enumerate(fig.data) if 'fit' in trace.name],
                               ],
                         label='Show all fits',
                         method='restyle',
@@ -209,7 +210,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                         method='restyle',
                     ),
                     dict(
-                        args=[({"visible": False}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name) or match('BEE fits No\. \d for .+', trace.name)]),
+                        args=[{"visible": False}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name) or match('BEE fits No\. \d for .+', trace.name)],
                               ],
                         label='Hide all fits',
                         method='restyle',

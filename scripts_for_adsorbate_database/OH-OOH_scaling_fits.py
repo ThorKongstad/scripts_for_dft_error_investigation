@@ -64,7 +64,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
             fig.add_trace(go.Scatter(mode='lines',
                                      x=list(line),
                                      y=list(map(lambda x: liniar_func(x, fit_obj.slope, fit_obj.intercept), line)),
-                                     name='linier scalling fit of' + xc.name,
+                                     name='linier scalling fit of ' + xc.name,
                                      hovertemplate=f'XC: {xc.name}'+'<br>'+f'Slope: {fit_obj.slope:.3f} +- {fit_obj.stderr:.3f}'+'<br>'+f'Intercept: {fit_obj.intercept:.3f} +- {fit_obj.intercept_stderr:.3f}'+'<br>'+f'R-square: {fit_obj.rvalue:.3f}',
                                      **line_arg
                                      ))
@@ -210,7 +210,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                         method='restyle',
                     ),
                     dict(
-                        args=[{"visible": False}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name) or match('BEE fits No\. \d for .+', trace.name)],
+                        args=[{"visible": False}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name) or match('BEE fits No\. \d+ for .+', trace.name)],
                               ],
                         label='Hide all fits',
                         method='restyle',

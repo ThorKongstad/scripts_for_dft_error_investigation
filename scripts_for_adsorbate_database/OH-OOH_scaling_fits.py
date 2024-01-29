@@ -86,7 +86,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                                              line=dict(color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'Grey',),
                                              opacity=0.5,
                                              ))
-                fig.data = fig.data[-1:] + fig.data[0:-1]
+                    fig.data = fig.data[-1:] + fig.data[0:-1]
             except: traceback.print_exc()
 
     for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):

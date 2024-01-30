@@ -116,8 +116,8 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
         line=dict(color='Black',)
     ))
 
-    alpha_mean, alpha_stderr = sum(fit_i.slope/(fit_i.stderr**2) for fit_i in fit_all_obj)/sum(1/(fit_i.stderr**2) for fit_i in fit_all_obj), 1/sum(1/(fit_i.stderr**2) for fit_i in fit_all_obj)
-    beta_mean, beta_stderr = sum(fit_i.intercept/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj)/sum(1/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj), 1/sum(1/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj)
+    alpha_mean, alpha_stderr = sum(fit_i.slope/(fit_i.stderr**2) for fit_i in fit_all_obj)/sum(1/(fit_i.stderr**2) for fit_i in fit_all_obj), np.sqrt(1/sum(1/(fit_i.stderr**2) for fit_i in fit_all_obj))
+    beta_mean, beta_stderr = sum(fit_i.intercept/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj)/sum(1/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj), np.sqrt(1/sum(1/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj))
 
     fig.add_trace(go.Scatter(
         mode='lines',

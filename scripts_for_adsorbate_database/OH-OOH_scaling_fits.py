@@ -84,7 +84,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                                              legendgrouptitle_text='BEE fits for ' + xc.name,
                                              hovertemplate=f'XC: BEE No. {i} for {xc.name}'+'<br>'+f'Slope: {fit.slope:.3f} +- {fit.stderr:.3f}'+'<br>'+f'Intercept: {fit.intercept:.3f} +- {fit.intercept_stderr:.3f}'+'<br>'+f'R-square: {fit.rvalue:.3f}',
                                              line=dict(color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'Grey',),
-                                             opacity=0.5,
+                                             opacity=0.05,
                                              showlegend=False
                                              ))
                     fig.data = fig.data[-1:] + fig.data[0:-1]
@@ -203,8 +203,8 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                         method='restyle',
                     ),
                     dict(
-                        args=[{"visible": True}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name)],
-                              {"visible": False}, [i for i, trace in enumerate(fig.data) if match('BEE fits No\. \d+ for .+', trace.name)],
+                        args=[{"visible": [True if match('linier scalling fit of .+', trace.name) else False if match('BEE fits No\. \d+ for .+', trace.name) else 'undefined' for i, trace in enumerate(fig.data)]},#  [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name)],
+                              #{"visible": False}, [i for i, trace in enumerate(fig.data) if match('BEE fits No\. \d+ for .+', trace.name)],
                               ],
                         label='Show xc fits only',
                         method='restyle',

@@ -203,8 +203,8 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                         method='restyle',
                     ),
                     dict(
-                        args=[[{"visible": True}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name)]],
-                              [{"visible": False}, [i for i, trace in enumerate(fig.data) if match('BEE fits No\. \d+ for .+', trace.name)]],
+                        args=[{"visible": True}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name)],
+                              {"visible": False}, [i for i, trace in enumerate(fig.data) if match('BEE fits No\. \d+ for .+', trace.name)],
                               ],
                         label='Show xc fits only',
                         method='restyle',

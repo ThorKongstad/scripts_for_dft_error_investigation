@@ -54,6 +54,9 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
     #    showlegend=False,
     #))
 
+    OH_adsorption_values = []
+    OOH_adsorption_values = []
+
 
     for xc in functional_list:
         line_arg = dict(line=dict(color=colour_dict_functional[xc.name],)) if xc.name in colour_dict_functional.keys() else dict(line=dict(color='DarkSlateGrey'))
@@ -69,11 +72,16 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                                      **line_arg
                                      ))
 
+            OH_adsorption_values += [oh_adsor]
+            OOH_adsorption_values += [ooh_adsor]
+
         except: traceback.print_exc()
 
         if xc.has_BEE:
             try:
-                fit_ens_objs = [stats.linregress(x=OH_vals, y=OOH_vals) for OH_vals, OOH_vals in zip(zip(*list(map(xc.calculate_BEE_reaction_enthalpy, oh_reactions))), zip(*list(map(xc.calculate_BEE_reaction_enthalpy, ooh_reactions))))]
+                oh_ensamble = list(map(xc.calculate_BEE_reaction_enthalpy, oh_reactions)) # is a nested matrix like object, with rows corresponding the metals and col as each ensamble function
+                ooh_ensamble = list(map(xc.calculate_BEE_reaction_enthalpy, ooh_reactions))
+                fit_ens_objs = [stats.linregress(x=OH_vals, y=OOH_vals) for OH_vals, OOH_vals in zip(zip(*oh_ensamble), zip(*ooh_ensamble))]
 
                 for i, fit in enumerate(fit_ens_objs):
                     fig.add_trace(go.Scatter(mode='lines',
@@ -88,7 +96,22 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                                              showlegend=False
                                              ))
                     fig.data = fig.data[-1:] + fig.data[0:-1]
+
+                    for oh_row, ooh_row in zip(oh_ensamble,ooh_ensamble):
+                        oh_ensamble += oh_row
+                        ooh_ensamble += ooh_row
+
             except: traceback.print_exc()
+
+    Concatenated_fit = stats.linregress(x=OH_adsorption_values, y=OOH_adsorption_values)
+    fig.add_trace(go.Scatter(
+        mode='lines',
+        x=list(line),
+        y=list(map(lambda x: liniar_func(x, Concatenated_fit.slope, Concatenated_fit.intercept), line)),
+        name=f'Concatenated fit of all data points',
+        hovertemplate=f'Concatenated fit' + '<br>' + f'Slope: {Concatenated_fit.slope:.3f} +- {Concatenated_fit.stderr:.3f}' + '<br>' + f'Intercept: {Concatenated_fit.intercept:.3f} +- {Concatenated_fit.intercept_stderr:.3f}' + '<br>' + f'R-square: {Concatenated_fit.rvalue:.3f}',
+        line=dict(line=dict(color='Black',))
+    ))
 
     for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):
         assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]
@@ -203,13 +226,13 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                         method='restyle',
                     ),
                     dict(
-                        args=[{"visible": [True if match('linier scalling fit of .+', trace.name) else False if match('BEE fits No\. \d+ for .+', trace.name) else 'undefined' for i, trace in enumerate(fig.data)]},
+                        args=[{"visible": [True if match('linier scalling fit of .+', trace.name) or trace.name == f'Concatenated fit of all data points' else False if match('BEE fits No\. \d+ for .+', trace.name)  else 'undefined' for i, trace in enumerate(fig.data)]},
                               ],
                         label='Show xc fits only',
                         method='restyle',
                     ),
                     dict(
-                        args=[{"visible": False}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name) or match('BEE fits No\. \d+ for .+', trace.name)],
+                        args=[{"visible": False}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name) or match('BEE fits No\. \d+ for .+', trace.name) or trace.name == f'Concatenated fit of all data points'],
                               ],
                         label='Hide all fits',
                         method='restyle',

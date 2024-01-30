@@ -7,7 +7,7 @@ import traceback
 from re import match
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
-from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, sd
+from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, sd, mean
 from scripts_for_adsorbate_database.adsorbate_correlation_plot import Functional
 
 import numpy as np
@@ -56,6 +56,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
 
     OH_adsorption_values = []
     OOH_adsorption_values = []
+    fit_all_obj = []
 
 
     for xc in functional_list:
@@ -74,6 +75,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
 
             OH_adsorption_values.extend(oh_adsor)
             OOH_adsorption_values.extend(ooh_adsor)
+            fit_all_obj.append(fit_obj)
 
         except: traceback.print_exc()
 
@@ -97,6 +99,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                                              ))
                     fig.data = fig.data[-1:] + fig.data[0:-1]
 
+                    fit_all_obj.extend(fit_ens_objs)
                     for oh_row, ooh_row in zip(oh_ensamble,ooh_ensamble):
                         OH_adsorption_values.extend(oh_row)
                         OOH_adsorption_values.extend(ooh_row)
@@ -111,6 +114,18 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
         name=f'Concatenated fit of all data points',
         hovertemplate=f'Concatenated fit' + '<br>' + f'Slope: {Concatenated_fit.slope:.3f} +- {Concatenated_fit.stderr:.3f}' + '<br>' + f'Intercept: {Concatenated_fit.intercept:.3f} +- {Concatenated_fit.intercept_stderr:.3f}' + '<br>' + f'R-square: {Concatenated_fit.rvalue:.3f}',
         line=dict(color='Black',)
+    ))
+
+    alpha_mean, alpha_stderr = sum(fit_i.slope/(fit_i.stderr**2) for fit_i in fit_all_obj)/sum(1/(fit_i.stderr**2) for fit_i in fit_all_obj), 1/sum(1/(fit_i.stderr**2) for fit_i in fit_all_obj)
+    beta_mean, beta_stderr = sum(fit_i.intercept/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj)/sum(1/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj), 1/sum(1/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj)
+
+    fig.add_trace(go.Scatter(
+        mode='lines',
+        x=list(line),
+        y=list(map(lambda x: liniar_func(x, alpha_mean, beta_mean), line)),
+        name=f'Averaged fit of all fits',
+        hovertemplate=f'Averaged fit' + '<br>' + f'Slope: {alpha_mean:.3f} +- {alpha_stderr:.3f}' + '<br>' + f'Intercept: {beta_mean:.3f} +- {beta_stderr:.3f}' + '<br>',
+        line=dict(color='DarkSlateGrey', )
     ))
 
     for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):
@@ -164,7 +179,6 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                       visible=True
                       )
 
-
     fig.update_layout(
         title='Scaling of OOH and OH',
         xaxis_title='OH adsorption energy',# in reference to Pt_{111} adsorption',
@@ -176,9 +190,9 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 direction='left',
                 buttons=[
                     dict(
-                        args=[{"visible": [True if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name) else 'undefined' for i, trace in enumerate(fig.data)],
-                               'error_x.visible': [False if match('BEEF-vdW-[A-Z][a-z]', trace.name) else 'undefined' for i, trace in enumerate(fig.data)],
-                               'error_y.visible': [False if match('BEEF-vdW-[A-Z][a-z]', trace.name) else 'undefined' for i, trace in enumerate(fig.data)],
+                        args=[{"visible": [True if match(f'BEE for [A-Z][a-z] BEEF-vdW', trace.name) else 'undefined' for i, trace in enumerate(fig.data) if 'fit' not in trace.name],
+                               'error_x.visible': [False if match('BEEF-vdW-[A-Z][a-z]', trace.name) else 'undefined' for i, trace in enumerate(fig.data) if 'fit' not in trace.name],
+                               'error_y.visible': [False if match('BEEF-vdW-[A-Z][a-z]', trace.name) else 'undefined' for i, trace in enumerate(fig.data) if 'fit' not in trace.name],
                                }, [i for i, trace in enumerate(fig.data) if 'fit' not in trace.name]],
                         label='Ensemble',
                         method='restyle',

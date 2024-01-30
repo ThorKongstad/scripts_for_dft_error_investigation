@@ -72,8 +72,8 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                                      **line_arg
                                      ))
 
-            OH_adsorption_values += [oh_adsor]
-            OOH_adsorption_values += [ooh_adsor]
+            OH_adsorption_values += oh_adsor
+            OOH_adsorption_values += ooh_adsor
 
         except: traceback.print_exc()
 

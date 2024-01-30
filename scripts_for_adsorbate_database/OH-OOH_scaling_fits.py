@@ -110,7 +110,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
         y=list(map(lambda x: liniar_func(x, Concatenated_fit.slope, Concatenated_fit.intercept), line)),
         name=f'Concatenated fit of all data points',
         hovertemplate=f'Concatenated fit' + '<br>' + f'Slope: {Concatenated_fit.slope:.3f} +- {Concatenated_fit.stderr:.3f}' + '<br>' + f'Intercept: {Concatenated_fit.intercept:.3f} +- {Concatenated_fit.intercept_stderr:.3f}' + '<br>' + f'R-square: {Concatenated_fit.rvalue:.3f}',
-        line=dict(line=dict(color='Black',))
+        line=dict(color='Black',)
     ))
 
     for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):

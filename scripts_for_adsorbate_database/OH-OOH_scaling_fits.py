@@ -221,19 +221,19 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 buttons=[
                     dict(
                         args=[{"visible": True}, [i for i, trace in enumerate(fig.data) if 'fit' in trace.name],
-                              [i for i, trace in enumerate(fig.data) if 'fit' in trace.name]],
+                              ],
                         label='Show all fits',
                         method='restyle',
                     ),
                     dict(
-                        args=[{"visible": [True if match('linier scalling fit of .+', trace.name) or trace.name == f'Concatenated fit of all data points' else False if match('BEE fits No\. \d+ for .+', trace.name)  else 'undefined' for i, trace in enumerate(fig.data)]},
+                        args=[{"visible": [True if match('linier scalling fit of .+', trace.name) or trace.name == f'Concatenated fit of all data points' else False if match('BEE fits No\. \d+ for .+', trace.name) else 'undefined' for i, trace in enumerate(fig.data) if 'fit' in trace.name]},
                               [i for i, trace in enumerate(fig.data) if 'fit' in trace.name]],
                         label='Show xc fits only',
                         method='restyle',
                     ),
                     dict(
                         args=[{"visible": False}, [i for i, trace in enumerate(fig.data) if match('linier scalling fit of .+', trace.name) or match('BEE fits No\. \d+ for .+', trace.name) or trace.name == f'Concatenated fit of all data points'],
-                              [i for i, trace in enumerate(fig.data) if 'fit' in trace.name]],
+                              ],
                         label='Hide all fits',
                         method='restyle',
                     ),

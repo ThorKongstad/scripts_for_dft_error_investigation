@@ -78,11 +78,11 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
                                      name='linier scalling fit of ' + xc.name,
                                      hovertemplate=f'XC: {xc.name}',
                                      **line_arg,
-                                     marker=dict(visible=False)
+                                     marker=dict(opacity=0)
                                      ))
 
             fig.update_traces(selector=dict(name=f'stderr_{xc.name}'),
-                                      error_x=dict(type='data',
+                                      error_y=dict(type='data',
                                                    array=list(map(lambda o,o_sigma, oh, oh_sigma, ooh, ooh_sigma: np.sqrt(overpotential_err_square(
                                                        dG_O=o+0.05, #0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
                                                        dG_OH=oh + 0.35 - 0.5, #+ 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s

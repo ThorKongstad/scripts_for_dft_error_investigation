@@ -67,7 +67,7 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
                 OOH_ads_e=(ooh_adsor := list(map(xc.calculate_reaction_enthalpy, ooh_reactions)))
             )
 
-            fig.add_trace(go.Scatter(mode='lines',
+            fig.add_trace(go.Scatter(mode='lines+markers',
                                      x=list(line + 0.35 - 0.5),
                                      y=list(map(lambda o, oh, ooh: overpotential(dG_O=o+ 0.05, #0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
                                                                                  dG_OH=oh + 0.35 - 0.5, #+ 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
@@ -77,7 +77,8 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
                                                 map(lambda x: liniar_func(x, oh_ooh_fit.slope, oh_ooh_fit.intercept), list(line)))),
                                      name='linier scalling fit of ' + xc.name,
                                      hovertemplate=f'XC: {xc.name}',
-                                     **line_arg
+                                     **line_arg,
+                                     marker=dict(visible=False)
                                      ))
 
             fig.update_traces(selector=dict(name=f'stderr_{xc.name}'),

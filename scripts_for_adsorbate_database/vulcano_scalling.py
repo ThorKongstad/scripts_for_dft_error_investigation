@@ -5,6 +5,7 @@ import pathlib
 from typing import Sequence, Optional
 import traceback
 from re import match
+from operator import itemgetter
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, adsorption_O_reactions, metal_ref_ractions, sd, mean, overpotential
@@ -21,6 +22,15 @@ def scaling_fits(O_ads_e: Sequence[float], OH_ads_e: Sequence[float], OOH_ads_e:
     OH_O_fits = stats.linregress(x=OH_ads_e, y=O_ads_e)
     OH_OOH_fits = stats.linregress(x=OH_ads_e, y=OOH_ads_e)
     return OH_O_fits, OH_OOH_fits
+
+def linier_func_err_square(x: float, x_sigma: float, a: float, a_sigma: float, b: float, b_sigma: float) -> float:
+    return a**2 * x_sigma**2 + x**2 * a_sigma**2 + b_sigma**2
+
+
+def overpotential_err_square(dG_OOH: float, dG_OOH_sigma: float, dG_OH: float, dG_OH_sigma: float, dG_O: float, dG_O_sigma: float) -> float:
+    return min((
+        (dG_OOH_sigma**2, 4.92 - dG_OOH), (dG_OOH_sigma**2 + dG_O_sigma**2, dG_OOH - dG_O), (dG_O_sigma**2 + dG_OH_sigma**2, dG_O - dG_OH), (dG_OH_sigma**2, dG_OH)
+    ), key=itemgetter(1))[0]
 
 
 def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence[adsorbate_reaction], oh_reactions: Sequence[adsorbate_reaction], ooh_reactions: Sequence[adsorbate_reaction], png_bool: bool = False):
@@ -69,6 +79,24 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
                                      hovertemplate=f'XC: {xc.name}',
                                      **line_arg
                                      ))
+
+            fig.update_traces(selector=dict(name=f'stderr_{xc.name}'),
+                                      error_x=dict(type='data',
+                                                   array=list(map(lambda o,o_sigma, oh, oh_sigma, ooh, ooh_sigma: overpotential_err_square(
+                                                       dG_O=o+0.05, #0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
+                                                       dG_OH=oh + 0.35 - 0.5, #+ 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
+                                                       dG_OOH=ooh + 0.40 - 0.3,# same source as OH
+                                                       dG_O_sigma=o_sigma,
+                                                       dG_OH_sigma=oh_sigma,
+                                                       dG_OOH_sigma=ooh_sigma),
+                                                map(lambda x: liniar_func(x, oh_o_fit.slope, oh_o_fit.intercept), list(line)), # the O fit
+                                                map(lambda x: linier_func_err_square(x, 0, oh_o_fit.slope, oh_o_fit.stderr, oh_o_fit.intercept, oh_o_fit.intercept_stderr), line),
+                                                list(line),
+                                                [0]*len(line), # assuming that all the error is on the O and OOH relative to OH
+                                                map(lambda x: liniar_func(x, oh_ooh_fit.slope, oh_ooh_fit.intercept), list(line)),
+                                                map(lambda x: linier_func_err_square(x, 0, oh_ooh_fit.slope, oh_ooh_fit.stderr, oh_ooh_fit.intercept, oh_ooh_fit.intercept_stderr), line))),
+                                      color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'DarkSlateGrey', thickness=1.5, width=3, visible=True),
+                                      )
 
         except: traceback.print_exc()
 

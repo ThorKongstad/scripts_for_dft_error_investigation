@@ -62,9 +62,9 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
                                      y=list(map(lambda o, oh, ooh: overpotential(dG_O=o+ 0.05, #0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
                                                                                  dG_OH=oh + 0.35 - 0.5, #+ 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
                                                                                  dG_OOH=ooh + 0.40 - 0.3), # same source as OH
-                                                map(lambda x: liniar_func(x, oh_o_fit.slobe, oh_o_fit.intercept), list(line)),
+                                                map(lambda x: liniar_func(x, oh_o_fit.slope, oh_o_fit.intercept), list(line)),
                                                 list(line),
-                                                map(lambda x: liniar_func(x, oh_ooh_fit.slobe, oh_ooh_fit.intercept), list(line)))),
+                                                map(lambda x: liniar_func(x, oh_ooh_fit.slope, oh_ooh_fit.intercept), list(line)))),
                                      name='linier scalling fit of ' + xc.name,
                                      hovertemplate=f'XC: {xc.name}',
                                      **line_arg
@@ -74,9 +74,8 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
 
     for oh_reac, ooh_reac, o_reac in zip(oh_reactions, ooh_reactions, o_reactions):
         assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]
-        marker_arg = dict(marker=dict(color=colour_dict_metal[metal], size=16, line=dict(width=2, color='DarkSlateGrey'))) if metal in colour_dict_metal.keys() else dict(marker=dict(size=16, line=dict(width=2, color='DarkSlateGrey')))
         for xc in functional_list:
-            #marker_arg = dict(marker={'color': colour_dict[xc.name], 'size': 16}) if xc.name in colour_dict.keys() else dict(marker={'size': 16})
+            marker_arg = dict(marker=dict(color=colour_dict_metal[metal], size=16, line=dict(width=2,color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'DarkSlateGrey'))) if metal in colour_dict_metal.keys() else dict(marker=dict(size=16, line=dict(width=2, color='DarkSlateGrey')))
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name}-{metal}',
@@ -99,14 +98,14 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
                         mode='markers',
                         name=f'BEE for {metal} {xc.name}',
                         y=(ens_y_cloud := list(map(lambda ooh, oh, o: overpotential(
-                                dG_OOH=ooh + 0.40 - 0.3,
-                                dG_OH=oh + 0.35 - 0.5,
-                                dG_O=o + 0.05
-                                ),
-                            xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
-                            (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac)).tolist(),
-                            xc.calculate_BEE_reaction_enthalpy(o_reac).tolist()
-                            ))),
+                            dG_OOH=ooh + 0.40 - 0.3,
+                            dG_OH=oh + 0.35 - 0.5,
+                            dG_O=o + 0.05
+                        ),
+                                                   xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
+                                                   (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac)).tolist(),
+                                                   xc.calculate_BEE_reaction_enthalpy(o_reac).tolist()
+                                                   ))),
                         x=(ens_x_cloud := oh_ensem + 0.35 - 0.5),
                         hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
                         marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),

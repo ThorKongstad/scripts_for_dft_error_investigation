@@ -70,6 +70,9 @@ def ends_with(string: str, end_str: str) -> str:
     return string + end_str * (end_str != string[-len(end_str):0])
 
 
+def overpotential(dG_OOH: float, dG_OH: float, dG_O: float) -> float: return min((4.92 - dG_OOH, dG_OOH - dG_O, dG_O - dG_OH, dG_OH)) # 1.23 -
+
+
 def mean(values: Sequence[float]) -> float: return sum(values) / len(values)
 
 
@@ -128,5 +131,5 @@ def build_pd(db_dir_list, select_key: Optional = None):
     return pd_dat
 
 
-__all__ = [sanitize, folder_exist, ends_with, update_db, reaction, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, all_adsorption_reactions, adsorption_O_reactions, adsorption_O_reactions_top, mean, sd]
+__all__ = [sanitize, folder_exist, ends_with, update_db, reaction, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, all_adsorption_reactions, adsorption_O_reactions, adsorption_O_reactions_top, mean, sd, overpotential]
 

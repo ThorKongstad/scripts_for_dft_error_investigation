@@ -81,7 +81,7 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
                                      marker=dict(opacity=0)
                                      ))
 
-            fig.update_traces(selector=dict(name=f'stderr_{xc.name}'),
+            fig.update_traces(selector=dict(name='linier scalling fit of ' + xc.name),
                                       error_y=dict(type='data',
                                                    array=list(map(lambda o,o_sigma, oh, oh_sigma, ooh, ooh_sigma: np.sqrt(overpotential_err_square(
                                                        dG_O=o+0.05, #0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
@@ -90,13 +90,13 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
                                                        dG_O_sigma=np.sqrt(o_sigma),
                                                        dG_OH_sigma=np.sqrt(oh_sigma),
                                                        dG_OOH_sigma=np.sqrt(ooh_sigma))),
-                                                map(lambda x: liniar_func(x, oh_o_fit.slope, oh_o_fit.intercept), list(line)), # the O fit
-                                                map(lambda x: linier_func_err_square(x, 0, oh_o_fit.slope, oh_o_fit.stderr, oh_o_fit.intercept, oh_o_fit.intercept_stderr), line),
-                                                list(line),
-                                                [0]*len(line), # assuming that all the error is on the O and OOH relative to OH
-                                                map(lambda x: liniar_func(x, oh_ooh_fit.slope, oh_ooh_fit.intercept), list(line)),
-                                                map(lambda x: linier_func_err_square(x, 0, oh_ooh_fit.slope, oh_ooh_fit.stderr, oh_ooh_fit.intercept, oh_ooh_fit.intercept_stderr), line))),
-                                      color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'DarkSlateGrey', thickness=1.5, width=3, visible=True),
+                                                       map(lambda x: liniar_func(x, oh_o_fit.slope, oh_o_fit.intercept), list(line)), # the O fit
+                                                       map(lambda x: linier_func_err_square(x, 0, oh_o_fit.slope, oh_o_fit.stderr, oh_o_fit.intercept, oh_o_fit.intercept_stderr), line),
+                                                       list(line),
+                                                       [0]*len(line), # assuming that all the error is on the O and OOH relative to OH
+                                                       map(lambda x: liniar_func(x, oh_ooh_fit.slope, oh_ooh_fit.intercept), list(line)),
+                                                       map(lambda x: linier_func_err_square(x, 0, oh_ooh_fit.slope, oh_ooh_fit.stderr, oh_ooh_fit.intercept, oh_ooh_fit.intercept_stderr), line))),
+                                                color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'DarkSlateGrey', thickness=1.5, width=3, visible=True),
                                       )
 
         except: traceback.print_exc()

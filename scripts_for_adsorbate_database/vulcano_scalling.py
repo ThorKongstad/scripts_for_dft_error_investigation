@@ -31,11 +31,11 @@ def scaling_fits(O_ads_e: Sequence[float], OH_ads_e: Sequence[float], OOH_ads_e:
 
         fitting_model = odr.Model(lambda beta, x: Linear_func(x, a=beta[0], b=beta[1]))
         OH_O_odr_dat = odr.Data(x=OH_ads_e, wd=1/(np.power(OH_ads_e_sigma, 2)), y=O_ads_e, we=1/(np.power(O_ads_e_sigma, 2))) #stats.linregress(x=OH_ads_e, y=O_ads_e)
-        OH_O_odr_fit = odr.ODR(OH_O_odr_dat, fitting_model, beta0=[2, 0.5]).set_job(fit_type=2, ).run() # beta0 is the initial guess for the scalling relation
+        OH_O_odr_fit = odr.ODR(OH_O_odr_dat, fitting_model, beta0=[2, 0.5]).run() # beta0 is the initial guess for the scalling relation
         OH_O_fit_result = odr_linear_fitting_results(slope=OH_O_odr_fit.beta[0], intercept=OH_O_odr_fit.beta[1], stderr=OH_O_odr_fit.sd_beta[0], intercept_stderr=OH_O_odr_fit.sd_beta[1])
 
         OH_OOH_odr_dat = odr.Data(x=OH_ads_e, wd=1 / (np.power(OH_ads_e_sigma, 2)), y=OOH_ads_e, we=1 / (np.power(OOH_ads_e_sigma, 2)))
-        OH_OOH_odr_fit = odr.ODR(OH_OOH_odr_dat, fitting_model, beta0=[2, 0.5]).set_job(fit_type=2, ).run()  # beta0 is the initial guess for the scalling relation
+        OH_OOH_odr_fit = odr.ODR(OH_OOH_odr_dat, fitting_model, beta0=[2, 0.5]).run()  # beta0 is the initial guess for the scalling relation
         OH_OOH_fit_result = odr_linear_fitting_results(slope=OH_OOH_odr_fit.beta[0], intercept=OH_OOH_odr_fit.beta[1], stderr=OH_OOH_odr_fit.sd_beta[0], intercept_stderr=OH_OOH_odr_fit.sd_beta[1])
     else:
         OH_O_fit_result = stats.linregress(x=OH_ads_e, y=O_ads_e)

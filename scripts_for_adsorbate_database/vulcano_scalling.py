@@ -5,25 +5,48 @@ import pathlib
 from typing import Sequence, Optional
 import traceback
 from re import match
-from operator import itemgetter
+from operator import itemgetter, attrgetter
+from dataclasses import dataclass, field
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, adsorption_O_reactions, metal_ref_ractions, sd, mean, overpotential
 from scripts_for_adsorbate_database.adsorbate_correlation_plot import Functional
 
 import numpy as np
-from scipy import stats
+from scipy import stats, odr
+from scipy.optimize import curve_fit
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
 
 
-def scaling_fits(O_ads_e: Sequence[float], OH_ads_e: Sequence[float], OOH_ads_e: Sequence[float]):
-    OH_O_fits = stats.linregress(x=OH_ads_e, y=O_ads_e)
-    OH_OOH_fits = stats.linregress(x=OH_ads_e, y=OOH_ads_e)
-    return OH_O_fits, OH_OOH_fits
+def scaling_fits(O_ads_e: Sequence[float], OH_ads_e: Sequence[float], OOH_ads_e: Sequence[float], O_ads_e_sigma: Optional[Sequence[float]] = None, OH_ads_e_sigma: Optional[Sequence[float]] = None, OOH_ads_e_sigma: Optional[Sequence[float]] = None):
+    if any(sigma_val is not None for sigma_val in (O_ads_e_sigma, OH_ads_e_sigma, OOH_ads_e_sigma)):
+        @dataclass
+        class odr_linear_fitting_results:
+            slope: float
+            stderr: float
+            intercept: float
+            intercept_stderr: float
 
-def linier_func_err_square(x: float, x_sigma: float, a: float, a_sigma: float, b: float, b_sigma: float) -> float:
+        fitting_model = odr.Model(lambda beta, x: Linear_func(x, a=beta[0], b=beta[1]))
+        OH_O_odr_dat = odr.Data(x=OH_ads_e, wd=1/(np.power(OH_ads_e_sigma, 2)), y=O_ads_e, we=1/(np.power(O_ads_e_sigma, 2))) #stats.linregress(x=OH_ads_e, y=O_ads_e)
+        OH_O_odr_fit = odr.ODR(OH_O_odr_dat, fitting_model, beta0=[2, 0.5]).set_job(fit_type=2, ).run() # beta0 is the initial guess for the scalling relation
+        OH_O_fit_result = odr_linear_fitting_results(slope=OH_O_odr_fit.beta[0], intercept=OH_O_odr_fit.beta[1], stderr=OH_O_odr_fit.sd_beta[0], intercept_stderr=OH_O_odr_fit.sd_beta[1])
+
+        OH_OOH_odr_dat = odr.Data(x=OH_ads_e, wd=1 / (np.power(OH_ads_e_sigma, 2)), y=OOH_ads_e, we=1 / (np.power(OOH_ads_e_sigma, 2)))
+        OH_OOH_odr_fit = odr.ODR(OH_OOH_odr_dat, fitting_model, beta0=[2, 0.5]).set_job(fit_type=2, ).run()  # beta0 is the initial guess for the scalling relation
+        OH_OOH_fit_result = odr_linear_fitting_results(slope=OH_OOH_odr_fit.beta[0], intercept=OH_OOH_odr_fit.beta[1], stderr=OH_OOH_odr_fit.sd_beta[0], intercept_stderr=OH_OOH_odr_fit.sd_beta[1])
+    else:
+        OH_O_fit_result = stats.linregress(x=OH_ads_e, y=O_ads_e)
+        OH_OOH_fit_result = stats.linregress(x=OH_ads_e, y=OOH_ads_e)
+    return OH_O_fit_result, OH_OOH_fit_result
+
+
+def Linear_func(x: float, a: float, b: float) -> float: return a*x+b
+
+
+def Linear_func_err_square(x: float, x_sigma: float, a: float, a_sigma: float, b: float, b_sigma: float) -> float:
     return a**2 * x_sigma**2 + x**2 * a_sigma**2 + b_sigma**2
 
 
@@ -34,7 +57,6 @@ def overpotential_err_square(dG_OOH: float, dG_OOH_sigma: float, dG_OH: float, d
 
 
 def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence[adsorbate_reaction], oh_reactions: Sequence[adsorbate_reaction], ooh_reactions: Sequence[adsorbate_reaction], png_bool: bool = False):
-    def liniar_func(x: float, a: float, b: float) -> float: return a*x+b
     fig = go.Figure()
 
     colour_dict_functional = {
@@ -64,17 +86,21 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
             oh_o_fit, oh_ooh_fit = scaling_fits(
                 O_ads_e=(o_adsor := list(map(xc.calculate_reaction_enthalpy, o_reactions))),
                 OH_ads_e=(oh_adsor := list(map(xc.calculate_reaction_enthalpy, oh_reactions))),
-                OOH_ads_e=(ooh_adsor := list(map(xc.calculate_reaction_enthalpy, ooh_reactions)))
+                OOH_ads_e=(ooh_adsor := list(map(xc.calculate_reaction_enthalpy, ooh_reactions))),
+                O_ads_e_sigma=[sd(ens) for ens in map(xc.calculate_BEE_reaction_enthalpy, o_reactions)] if xc.has_BEE else None,
+                OH_ads_e_sigma=[sd(ens) for ens in map(xc.calculate_BEE_reaction_enthalpy, oh_reactions)] if xc.has_BEE else None,
+                OOH_ads_e_sigma=[sd(ens) for ens in map(xc.calculate_BEE_reaction_enthalpy, ooh_reactions)] if xc.has_BEE else None
+
             )
 
             fig.add_trace(go.Scatter(mode='lines+markers',
                                      x=list(line + 0.35 - 0.5),
                                      y=list(map(lambda o, oh, ooh: overpotential(dG_O=o+ 0.05, #0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
                                                                                  dG_OH=oh + 0.35 - 0.5, #+ 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
-                                                                                 dG_OOH=ooh + 0.40 - 0.3), # same source as OH
-                                                map(lambda x: liniar_func(x, oh_o_fit.slope, oh_o_fit.intercept), list(line)),
+                                                                                 dG_OOH=ooh + 0.40 - 0.3),  # same source as OH
+                                                map(lambda x: Linear_func(x, oh_o_fit.slope, oh_o_fit.intercept), list(line)),
                                                 list(line),
-                                                map(lambda x: liniar_func(x, oh_ooh_fit.slope, oh_ooh_fit.intercept), list(line)))),
+                                                map(lambda x: Linear_func(x, oh_ooh_fit.slope, oh_ooh_fit.intercept), list(line)))),
                                      name='linier scalling fit of ' + xc.name,
                                      hovertemplate=f'XC: {xc.name}',
                                      **line_arg,
@@ -90,16 +116,41 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
                                                        dG_O_sigma=np.sqrt(o_sigma),
                                                        dG_OH_sigma=np.sqrt(oh_sigma),
                                                        dG_OOH_sigma=np.sqrt(ooh_sigma))),
-                                                       map(lambda x: liniar_func(x, oh_o_fit.slope, oh_o_fit.intercept), list(line)), # the O fit
-                                                       map(lambda x: linier_func_err_square(x, 0, oh_o_fit.slope, oh_o_fit.stderr, oh_o_fit.intercept, oh_o_fit.intercept_stderr), line),
-                                                       list(line),
-                                                       [0]*len(line), # assuming that all the error is on the O and OOH relative to OH
-                                                       map(lambda x: liniar_func(x, oh_ooh_fit.slope, oh_ooh_fit.intercept), list(line)),
-                                                       map(lambda x: linier_func_err_square(x, 0, oh_ooh_fit.slope, oh_ooh_fit.stderr, oh_ooh_fit.intercept, oh_ooh_fit.intercept_stderr), line))),
-                                                color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'DarkSlateGrey', thickness=1.5, width=3, visible=True),
+                                                                  map(lambda x: Linear_func(x, oh_o_fit.slope,
+                                                                                            oh_o_fit.intercept), list(line)),  # the O fit
+                                                                  map(lambda x: Linear_func_err_square(x, 0,
+                                                                                                       oh_o_fit.slope,
+                                                                                                       oh_o_fit.stderr,
+                                                                                                       oh_o_fit.intercept,
+                                                                                                       oh_o_fit.intercept_stderr), line),
+                                                                  list(line),
+                                                                  [0] * len(line),  # assuming that all the error is on the O and OOH relative to OH
+                                                                  map(lambda x: Linear_func(x, oh_ooh_fit.slope,
+                                                                                            oh_ooh_fit.intercept), list(line)),
+                                                                  map(lambda x: Linear_func_err_square(x, 0,
+                                                                                                       oh_ooh_fit.slope,
+                                                                                                       oh_ooh_fit.stderr,
+                                                                                                       oh_ooh_fit.intercept,
+                                                                                                       oh_ooh_fit.intercept_stderr), line))),
+                                                   color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'DarkSlateGrey', thickness=1.5, width=3, visible=True),
                                       )
 
         except: traceback.print_exc()
+
+        #if xc.has_BEE:
+        #    try:
+        #        o_ensemble = map(xc.calculate_BEE_reaction_enthalpy, o_reactions)
+        #        oh_ensemble = map(xc.calculate_BEE_reaction_enthalpy, oh_reactions)  # is a nested matrix like object, with rows corresponding the metals and col as each ensamble function
+        #        ooh_ensemble = map(xc.calculate_BEE_reaction_enthalpy, ooh_reactions)
+
+        #        ensemble_fits_oh_o, ensemble_fits_oh_ooh = tuple(zip(map(scaling_fits, o_ensemble, oh_ensemble, ooh_ensemble)))
+
+        #        for scalling in (ensemble_fits_oh_o, ensemble_fits_oh_ooh):
+
+        #            ens_slope_bins = np.histogram(map(attrgetter('slope'), scalling), bins='auto')
+        #            ens_intercept_bins = np.histogram(map(attrgetter('intercept'), scalling), bins='auto')
+
+        #    except: traceback.print_exc()
 
     for oh_reac, ooh_reac, o_reac in zip(oh_reactions, ooh_reactions, o_reactions):
         assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]

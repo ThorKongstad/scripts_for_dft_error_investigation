@@ -99,10 +99,10 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                                              ))
                     fig.data = fig.data[-1:] + fig.data[0:-1]
 
-                    fit_all_obj.extend(fit_ens_objs)
-                    for oh_row, ooh_row in zip(oh_ensamble,ooh_ensamble):
-                        OH_adsorption_values.extend(oh_row)
-                        OOH_adsorption_values.extend(ooh_row)
+                fit_all_obj.extend(fit_ens_objs)
+                for oh_row, ooh_row in zip(oh_ensamble,ooh_ensamble):
+                    OH_adsorption_values.extend(oh_row)
+                    OOH_adsorption_values.extend(ooh_row)
 
             except: traceback.print_exc()
 

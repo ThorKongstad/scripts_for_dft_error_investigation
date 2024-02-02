@@ -35,7 +35,7 @@ def scaling_fits(O_ads_e: Sequence[float], OH_ads_e: Sequence[float], OOH_ads_e:
         OH_O_fit_result = odr_linear_fitting_results(slope=OH_O_odr_fit.beta[0], intercept=OH_O_odr_fit.beta[1], stderr=OH_O_odr_fit.sd_beta[0], intercept_stderr=OH_O_odr_fit.sd_beta[1])
 
         OH_OOH_odr_dat = odr.Data(x=OH_ads_e, wd=1 / (np.power(OH_ads_e_sigma, 2)), y=OOH_ads_e, we=1 / (np.power(OOH_ads_e_sigma, 2)))
-        OH_OOH_odr_fit = odr.ODR(OH_OOH_odr_dat, fitting_model, beta0=[2, 0.5]).run()  # beta0 is the initial guess for the scalling relation
+        OH_OOH_odr_fit = odr.ODR(OH_OOH_odr_dat, fitting_model, beta0=[1, 3.2]).run()  # beta0 is the initial guess for the scalling relation
         OH_OOH_fit_result = odr_linear_fitting_results(slope=OH_OOH_odr_fit.beta[0], intercept=OH_OOH_odr_fit.beta[1], stderr=OH_OOH_odr_fit.sd_beta[0], intercept_stderr=OH_OOH_odr_fit.sd_beta[1])
     else:
         OH_O_fit_result = stats.linregress(x=OH_ads_e, y=O_ads_e)
@@ -108,32 +108,31 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
                                      ))
 
             fig.update_traces(selector=dict(name='linier scalling fit of ' + xc.name),
-                                      error_y=dict(type='data',
-                                                   array=list(map(lambda o,o_sigma, oh, oh_sigma, ooh, ooh_sigma: np.sqrt(overpotential_err_square(
-                                                       dG_O=o+0.05, #0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
-                                                       dG_OH=oh + 0.35 - 0.5, #+ 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
-                                                       dG_OOH=ooh + 0.40 - 0.3,# same source as OH
-                                                       dG_O_sigma=np.sqrt(o_sigma),
-                                                       dG_OH_sigma=np.sqrt(oh_sigma),
-                                                       dG_OOH_sigma=np.sqrt(ooh_sigma))),
-                                                                  map(lambda x: Linear_func(x, oh_o_fit.slope,
-                                                                                            oh_o_fit.intercept), list(line)),  # the O fit
-                                                                  map(lambda x: Linear_func_err_square(x, 0,
-                                                                                                       oh_o_fit.slope,
-                                                                                                       oh_o_fit.stderr,
-                                                                                                       oh_o_fit.intercept,
-                                                                                                       oh_o_fit.intercept_stderr), line),
-                                                                  list(line),
-                                                                  [0] * len(line),  # assuming that all the error is on the O and OOH relative to OH
-                                                                  map(lambda x: Linear_func(x, oh_ooh_fit.slope,
-                                                                                            oh_ooh_fit.intercept), list(line)),
-                                                                  map(lambda x: Linear_func_err_square(x, 0,
-                                                                                                       oh_ooh_fit.slope,
-                                                                                                       oh_ooh_fit.stderr,
-                                                                                                       oh_ooh_fit.intercept,
-                                                                                                       oh_ooh_fit.intercept_stderr), line))),
-                                                   color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'DarkSlateGrey', thickness=1.5, width=3, visible=True),
-                                      )
+                              error_y=dict(type='data',
+                                           array=list(map(lambda o, o_sigma, oh, oh_sigma, ooh, ooh_sigma: np.sqrt(overpotential_err_square(
+                                               dG_O=o+0.05, #0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
+                                               dG_OH=oh + 0.35 - 0.5, #+ 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
+                                               dG_OOH=ooh + 0.40 - 0.3,# same source as OH
+                                               dG_O_sigma=np.sqrt(o_sigma),
+                                               dG_OH_sigma=np.sqrt(oh_sigma),
+                                               dG_OOH_sigma=np.sqrt(ooh_sigma))),
+                                               map(lambda x: Linear_func(x, oh_o_fit.slope,
+                                                                         oh_o_fit.intercept), list(line)),  # the O fit
+                                               map(lambda x: Linear_func_err_square(x, 0,
+                                                                                    oh_o_fit.slope,
+                                                                                    oh_o_fit.stderr,
+                                                                                    oh_o_fit.intercept,
+                                                                                    oh_o_fit.intercept_stderr), line),
+                                               list(line),
+                                               [0] * len(line),  # assuming that all the error is on the O and OOH relative to OH
+                                               map(lambda x: Linear_func(x, oh_ooh_fit.slope,oh_ooh_fit.intercept), list(line)),
+                                               map(lambda x: Linear_func_err_square(x, 0,
+                                                                                    oh_ooh_fit.slope,
+                                                                                    oh_ooh_fit.stderr,
+                                                                                    oh_ooh_fit.intercept,
+                                                                                    oh_ooh_fit.intercept_stderr), line))),
+                                           color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'DarkSlateGrey', thickness=1.5, width=3, visible=True),
+                              )
 
         except: traceback.print_exc()
 
@@ -261,7 +260,39 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
                 xanchor="left",
                 y=1.065,
                 yanchor="top"
-            ),])
+            ),
+            dict(
+                type='buttons',
+                direction='left',
+                buttons=[
+                    dict(
+                        args=[{'error_x.visible': True, 'error_y.visible': True},
+                              [i for i, trace in enumerate(fig.data) if 'fit' in trace.name]],
+                        label='Show all error bars',
+                        method='restyle',
+                    ),
+                    dict(
+                        args=[{'error_x.visible': [True if 'BEE' in trace.name else False for i, trace in enumerate(fig.data) if 'fit' in trace.name],
+                               'error_y.visible': [True if 'BEE' in trace.name else False for i, trace in enumerate(fig.data) if 'fit' in trace.name]},
+                              [i for i, trace in enumerate(fig.data) if 'fit' in trace.name]],
+                        label='Show BEE errors only',
+                        method='restyle',
+                    ),
+                    dict(
+                        args=[{'error_x.visible': False, 'error_y.visible': False},
+                              [i for i, trace in enumerate(fig.data) if 'fit' in trace.name]],
+                        label='Hide all error bars',
+                        method='restyle',
+                    ),
+                ],
+                pad={"r": 10, "t": 10},
+                showactive=True,
+                x=0.5,
+                xanchor="left",
+                y=1.1,
+                yanchor="top"
+            )
+        ])
 
     folder_exist('reaction_plots')
     save_name = 'reaction_plots/vulcano_fitted_plot'

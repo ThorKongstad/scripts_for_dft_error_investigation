@@ -266,20 +266,21 @@ def scaling_vulcano(functional_list: Sequence[Functional], o_reactions: Sequence
                 direction='left',
                 buttons=[
                     dict(
-                        args=[{'error_x.visible': True, 'error_y.visible': True},
+                        args=[{#'error_x.visible': True,
+                              'error_y.visible': True},
                               [i for i, trace in enumerate(fig.data) if 'fit' in trace.name]],
                         label='Show all error bars',
                         method='restyle',
                     ),
                     dict(
-                        args=[{'error_x.visible': [True if 'BEE' in trace.name else False for i, trace in enumerate(fig.data) if 'fit' in trace.name],
+                        args=[{#'error_x.visible': [True if 'BEE' in trace.name else False for i, trace in enumerate(fig.data) if 'fit' in trace.name],
                                'error_y.visible': [True if 'BEE' in trace.name else False for i, trace in enumerate(fig.data) if 'fit' in trace.name]},
                               [i for i, trace in enumerate(fig.data) if 'fit' in trace.name]],
                         label='Show BEE errors only',
                         method='restyle',
                     ),
                     dict(
-                        args=[{'error_x.visible': False, 'error_y.visible': False},
+                        args=[{'error_y.visible': False},
                               [i for i, trace in enumerate(fig.data) if 'fit' in trace.name]],
                         label='Hide all error bars',
                         method='restyle',

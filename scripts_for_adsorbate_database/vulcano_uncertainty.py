@@ -83,7 +83,7 @@ def uncertainty_vulcano(functional_list: Sequence[Functional], oh_reactions_gas_
         hoverinfo='skip',
     ))
 
-    beef = [xc for xc in functional_list if xc.name == 'BEEF_vdW'][0]
+    beef = [xc for xc in functional_list if xc.name == 'BEEF-vdW'][0]
 
     OH_OOH_scalling_fit = scaling_fit([beef.calculate_reaction_enthalpy(OH_reac) for OH_reac in oh_reactions_gas_ref],
                                       [beef.calculate_reaction_enthalpy(OOH_reac) for OOH_reac in ooh_reactions_gas_ref],

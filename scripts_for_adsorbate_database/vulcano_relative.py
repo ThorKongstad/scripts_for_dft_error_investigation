@@ -5,6 +5,7 @@ import pathlib
 from typing import Sequence, Optional
 import traceback
 from re import match
+from dataclasses import dataclass, field
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, adsorption_O_reactions, sd
@@ -12,8 +13,31 @@ from scripts_for_adsorbate_database.adsorbate_correlation_plot import Functional
 
 import numpy as np
 import pandas as pd
+from scipy import stats, odr
 import plotly.graph_objects as go
 import plotly.express as px
+
+
+def scaling_fit(reac_1_Energies: Sequence[float], reac_2_Energies: Sequence[float], reac_1_Energies_sigma: Optional[Sequence[float]] = None, reac_2_Energies_sigma: Optional[Sequence[float]] = None):
+    if any(sigma_val is not None for sigma_val in (reac_1_Energies_sigma, reac_2_Energies_sigma)):
+        @dataclass
+        class odr_linear_fitting_results:
+            slope: float
+            stderr: float
+            intercept: float
+            intercept_stderr: float
+
+        fitting_model = odr.Model(lambda beta, x: Linear_func(x, a=1, b=beta[0]))
+
+        fit_odr_dat = odr.Data(x=reac_1_Energies, wd=1 / (np.power(reac_1_Energies_sigma, 2)), y=reac_2_Energies, we=1 / (np.power(reac_2_Energies_sigma, 2)))
+        odr_fit_obj = odr.ODR(fit_odr_dat, fitting_model, beta0=[3.2]).run()  # beta0 is the initial guess for the scalling relation
+        fit_result = odr_linear_fitting_results(slope=1, intercept=odr_fit_obj.beta[0], stderr=0, intercept_stderr=odr_fit_obj.sd_beta[0])
+    else:
+        fit_result = stats.linregress(x=reac_1_Energies, y=reac_2_Energies)
+    return fit_result
+
+
+def Linear_func(x: float, a: float, b: float) -> float: return a*x+b
 
 
 def overpotential(dG_OOH: float, dG_OH: float, dG_O: float) -> float: return min((4.92 - dG_OOH, dG_OOH - dG_O, dG_O - dG_OH, dG_OH)) # 1.23 -
@@ -53,6 +77,35 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
 #      ),
 #      showlegend=False,
 #    ))
+
+    fig.add_trace(go.Scatter(
+        x=[0],
+        y=[0],
+        name='Pt reference',
+        hoverinfo='skip',
+    ))
+
+    beef = [xc for xc in functional_list if xc.name == 'BEEF-vdW'][0]
+
+    OH_OOH_scalling_fit = scaling_fit([beef.calculate_reaction_enthalpy(OH_reac) for OH_reac in oh_reactions],
+                                      [beef.calculate_reaction_enthalpy(OOH_reac) for OOH_reac in ooh_reactions],
+                                      [sd(beef.calculate_BEE_reaction_enthalpy(OH_reac)) for OH_reac in oh_reactions],
+                                      [sd(beef.calculate_BEE_reaction_enthalpy(OOH_reac)) for OOH_reac in ooh_reactions])
+
+    fig.add_vline(
+        x=0.11,
+        line_dash='dash',
+        annotation_text="Uncertainty of Vulcano location", annotation_position="top left"
+    )
+
+    fig.add_vrect(
+        x=0.11,
+        x0=0.11 - OH_OOH_scalling_fit.intercept_stderr / 2, x1=0.11 + OH_OOH_scalling_fit.intercept_stderr / 2,
+        fillcolor="green",
+        opacity=0.25,
+        annotation_text="Uncertainty of Vulcano location", annotation_position="top left"
+    )
+
 
     for oh_reac, ooh_reac, o_reac in zip(oh_reactions, ooh_reactions, o_reactions):
         assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]
@@ -147,7 +200,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                     dict(
                         args=[{"visible": [True] * len(fig.data),
                                'error_x.visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data],
-                               'error_y.visible': [True if match('BEEF-vdW-[A-Z][a-z]', trace.name) else False for trace in fig.data]
+                               'error_y.visible': [True if match('BEEF-vdW-[A   -Z][a-z]', trace.name) else False for trace in fig.data]
                                }],
                         label='Both',
                         method='update',

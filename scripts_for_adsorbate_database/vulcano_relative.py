@@ -54,6 +54,15 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         "{'name':'BEEF-vdW','backend':'libvdwxc'}": 'mediumpurple'
     }
 
+    marker_dict_functional = {
+        'PBE': 'square',
+        'RPBE': 'star-square',
+        'PBE-PZ-SIC': '#FF8C00',
+        'BEEF-vdW': 'circle',
+        "{'name':'BEEF-vdW','backend':'libvdwxc'}": 'octagon',
+        'TPSS': 'diamond'
+    }
+
     colour_dict_metal = dict(
         Pt=px.colors.qualitative.Prism[1],
         Cu=px.colors.qualitative.Plotly[1],
@@ -109,9 +118,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
 
     for oh_reac, ooh_reac, o_reac in zip(oh_reactions, ooh_reactions, o_reactions):
         assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]
-        marker_arg = dict(marker=dict(color=colour_dict_metal[metal], size=16, line=dict(width=2, color='DarkSlateGrey'))) if metal in colour_dict_metal.keys() else dict(marker=dict(size=16, line=dict(width=2, color='DarkSlateGrey')))
         for xc in functional_list:
-            #marker_arg = dict(marker={'color': colour_dict[xc.name], 'size': 16}) if xc.name in colour_dict.keys() else dict(marker={'size': 16})
+            marker_arg = dict(marker=dict(size=16, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'DarkSlateGrey', symbol=marker_dict_functional[xc.name] if xc.name in marker_dict_functional.keys() else 'circle'))
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name}-{metal}',

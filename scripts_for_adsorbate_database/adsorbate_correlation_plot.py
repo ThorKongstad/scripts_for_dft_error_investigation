@@ -22,7 +22,7 @@ import plotly.graph_objects as go
 
 
 class Functional:
-    def __init__(self, functional_name: str, slab_db: pd.DataFrame, adsorbate_db: pd.DataFrame, mol_db: pd.DataFrame, needed_struc_dict: Optional[dict[str, list[str]]] = None, thermo_dynamic: bool = True):
+    def __init__(self, functional_name: str, slab_db: pd.DataFrame, adsorbate_db: pd.DataFrame, mol_db: pd.DataFrame, needed_struc_dict: Optional[dict[str, Iterable[str]]] = None, thermo_dynamic: bool = True):
         energy_type = 'enthalpy' if thermo_dynamic else 'energy'
         self.name = functional_name
         self.molecule = {}

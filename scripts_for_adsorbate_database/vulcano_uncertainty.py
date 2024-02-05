@@ -42,7 +42,7 @@ def scaling_fit(reac_1_Energies: Sequence[float], reac_2_Energies: Sequence[floa
 def Linear_func(x: float, a: float, b: float) -> float: return a*x+b
 
 
-def limiting_potential_Pt_ref(dG_OOH: float, dG_OH: float) -> float: return dG_OH if dG_OH <= 1.1 else 4.92 - dG_OOH
+def limiting_potential_Pt_ref(dG_OOH: float, dG_OH: float) -> float: return dG_OH if dG_OH <= 0.11 else 4.92 - dG_OOH
 
 
 def uncertainty_vulcano(functional_list: Sequence[Functional], oh_reactions_gas_ref: Sequence[adsorbate_reaction], ooh_reactions_gas_ref: Sequence[adsorbate_reaction], oh_reactions: Sequence[adsorbate_reaction], ooh_reactions: Sequence[adsorbate_reaction], png_bool: bool = False):
@@ -91,9 +91,14 @@ def uncertainty_vulcano(functional_list: Sequence[Functional], oh_reactions_gas_
                                       [sd(beef.calculate_BEE_reaction_enthalpy(OOH_reac)) for OOH_reac in ooh_reactions_gas_ref])
 
     fig.add_vline(
-        x=1.1,
-        x0=1.1 - OH_OOH_scalling_fit.intercept_stderr/2, x1=1.1 + OH_OOH_scalling_fit.intercept_stderr/2,
+        x=0.11,
         line_dash='dash',
+        annotation_text="Uncertainty of Vulcano location", annotation_position="top left"
+    )
+
+    fig.add_vline(
+        x=0.11,
+        x0=0.11 - OH_OOH_scalling_fit.intercept_stderr/2, x1=0.11 + OH_OOH_scalling_fit.intercept_stderr/2,
         fillcolor="green",
         opacity=0.25,
         annotation_text="Uncertainty of Vulcano location", annotation_position="top left"

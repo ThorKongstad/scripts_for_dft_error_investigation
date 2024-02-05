@@ -80,7 +80,7 @@ def uncertainty_vulcano(functional_list: Sequence[Functional], oh_reactions_gas_
         x=[0],
         y=[0],
         name='Pt reference',
-        hoveron=False,
+        hoverinfo='skip',
     ))
 
     beef = [xc for xc in functional_list if xc.name == 'BEEF_vdW'][0]
@@ -157,8 +157,8 @@ def uncertainty_vulcano(functional_list: Sequence[Functional], oh_reactions_gas_
 
     fig.update_layout(
         title='ORR',
-        xaxis_title='$\Delta G_{*OH}$',  # in reference to Pt_{111} adsorption',
-        yaxis_title='Limiting potential',
+        xaxis_title=r'$\Delta G_{*OH}-\Delta G_{Pt*OH}$',  # in reference to Pt_{111} adsorption',
+        yaxis_title='Limiting potential in reference to Pt',
 
         updatemenus=[
             dict(
@@ -213,6 +213,7 @@ def uncertainty_vulcano(functional_list: Sequence[Functional], oh_reactions_gas_
     save_name = 'reaction_plots/vulcano_plot_pt_ref'
     if png_bool: fig.write_image(save_name + '.png')
     fig.write_html(save_name + '.html', include_mathjax='cdn')
+
 
 def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[str], thermo_dynamics: bool = False):
     pd_adsorbate_dat = build_pd(adsorbate_db_dir)

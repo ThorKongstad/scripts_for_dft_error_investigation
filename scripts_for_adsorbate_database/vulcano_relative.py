@@ -97,14 +97,13 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     fig.add_vline(
         x=0.11,
         line_dash='dash',
-        annotation_text="Uncertainty of Vulcano location", annotation_position="top left"
+        annotation_text="Vulcano top location", annotation_position="top left"
     )
 
     fig.add_vrect(
         x0=0.11 - OH_OOH_scalling_fit.intercept_stderr / 2, x1=0.11 + OH_OOH_scalling_fit.intercept_stderr / 2,
         fillcolor="green",
         opacity=0.25,
-        annotation_text="Uncertainty of Vulcano location", annotation_position="top left"
     )
 
 

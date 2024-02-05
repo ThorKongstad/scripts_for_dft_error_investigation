@@ -108,7 +108,6 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     )
 
     fig.add_vrect(
-        x=0.11,
         x0=0.11 - OH_OOH_scalling_fit.intercept_stderr / 2, x1=0.11 + OH_OOH_scalling_fit.intercept_stderr / 2,
         fillcolor="green",
         opacity=0.25,

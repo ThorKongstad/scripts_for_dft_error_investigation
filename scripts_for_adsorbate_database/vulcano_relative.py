@@ -87,13 +87,6 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
 #      showlegend=False,
 #    ))
 
-    fig.add_trace(go.Scatter(
-        x=[0],
-        y=[0],
-        name='Pt reference',
-        hoverinfo='skip',
-    ))
-
     beef = [xc for xc in functional_list if xc.name == 'BEEF-vdW'][0]
 
     OH_OOH_scalling_fit = scaling_fit([beef.calculate_reaction_enthalpy(OH_reac) for OH_reac in oh_reactions],

@@ -2,19 +2,48 @@ import argparse
 import math
 import sys
 import pathlib
-from typing import Sequence, Optional
+from typing import Sequence, Optional, Iterable
 import traceback
 from re import match
+from dataclasses import dataclass, field
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, sd, mean
 from scripts_for_adsorbate_database.adsorbate_correlation_plot import Functional
 
 import numpy as np
-from scipy import stats
+from scipy import stats, odr
 import pandas as pd
 import plotly.graph_objects as go
 import plotly.express as px
+
+
+def pearson_corr_coef(reac_1_Energies: Sequence[float], reac_2_Energies: Sequence[float], reac_1_Energies_sigma: Optional[Sequence[float]] = None, reac_2_Energies_sigma: Optional[Sequence[float]] = None) -> float:
+    pass
+
+
+def weighted_mean(x_arr: Iterable, x_sigma_arr: Iterable) -> float: return sum(x/(sigma**2) for x, sigma in zip(x_arr, x_sigma_arr))
+def weighted_stderr(x_arr: Iterable, x_sigma_arr: Iterable, mean: Optional[float] = None) -> float:
+    if mean is None: mean = weighted_mean(x_arr,x_sigma_arr)
+    return np.sqrt(sum(((x-mean)**2)/sigma**2 for x, sigma in zip(x_arr, x_sigma_arr))/sum(1/sigma**2 for x, sigma in zip(x_arr, x_sigma_arr)))
+
+
+
+def ode_1par_linear(reac_1_Energies: Sequence[float], reac_2_Energies: Sequence[float], reac_1_Energies_sigma: Optional[Sequence[float]] = None, reac_2_Energies_sigma: Optional[Sequence[float]] = None) -> 'odr_linear_fitting_results':
+    @dataclass
+    class odr_linear_fitting_results:
+        slope: float
+        stderr: float
+        intercept: float
+        intercept_stderr: float
+
+    fitting_model = odr.Model(lambda beta, x: x+beta[0])
+
+    fit_odr_dat = odr.Data(x=reac_1_Energies, wd=(1 / (np.power(reac_1_Energies_sigma, 2))) if reac_1_Energies_sigma is not None else None,
+                           y=reac_2_Energies, we=(1 / (np.power(reac_2_Energies_sigma, 2))) if reac_1_Energies_sigma is not None else None)
+    odr_fit_obj = odr.ODR(fit_odr_dat, fitting_model, beta0=[3.2]).run()  # beta0 is the initial guess for the scalling relation
+    fit_result = odr_linear_fitting_results(slope=1, intercept=odr_fit_obj.beta[0], stderr=0, intercept_stderr=odr_fit_obj.sd_beta[0])
+    return fit_result
 
 
 def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[adsorbate_reaction], ooh_reactions: Sequence[adsorbate_reaction], png_bool: bool = False):
@@ -28,6 +57,15 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
         'BEEF-vdW': '#0000CD',
         "{'name':'BEEF-vdW','backend':'libvdwxc'}": '#9370DB',
         'TPSS': px.colors.qualitative.Dark2[5]
+    }
+
+    marker_dict_functional = {
+        'PBE': 'square',
+        'RPBE': 'star-square',
+        'PBE-PZ-SIC': '#FF8C00',
+        'BEEF-vdW': 'circle',
+        "{'name':'BEEF-vdW','backend':'libvdwxc'}": 'octagon',
+        'TPSS': 'diamond'
     }
 
     colour_dict_metal = dict(
@@ -62,20 +100,24 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
     for xc in functional_list:
         line_arg = dict(line=dict(color=colour_dict_functional[xc.name],)) if xc.name in colour_dict_functional.keys() else dict(line=dict(color='DarkSlateGrey'))
         try:
-            fit_obj = stats.linregress(x=(oh_adsor := list(map(xc.calculate_reaction_enthalpy, oh_reactions))),
-                                       y=(ooh_adsor := list(map(xc.calculate_reaction_enthalpy, ooh_reactions))),)
+            if not xc.has_BEE:
+                #fit_obj = stats.linregress(x=(oh_adsor := list(map(xc.calculate_reaction_enthalpy, oh_reactions))),
+                #                           y=(ooh_adsor := list(map(xc.calculate_reaction_enthalpy, ooh_reactions))),)
+                fit_obj = ode_1par_linear(reac_1_Energies=(oh_adsor := list(map(xc.calculate_reaction_enthalpy, oh_reactions))),
+                                          reac_2_Energies=(ooh_adsor := list(map(xc.calculate_reaction_enthalpy, ooh_reactions))),
+                                          )
 
-            fig.add_trace(go.Scatter(mode='lines',
-                                     x=list(line),
-                                     y=list(map(lambda x: liniar_func(x, fit_obj.slope, fit_obj.intercept), line)),
-                                     name='linier scalling fit of ' + xc.name,
-                                     hovertemplate=f'XC: {xc.name}'+'<br>'+f'Slope: {fit_obj.slope:.3f} +- {fit_obj.stderr:.3f}'+'<br>'+f'Intercept: {fit_obj.intercept:.3f} +- {fit_obj.intercept_stderr:.3f}'+'<br>'+f'R-square: {fit_obj.rvalue:.3f}',
-                                     **line_arg
-                                     ))
+                fig.add_trace(go.Scatter(mode='lines',
+                                         x=list(line),
+                                         y=list(map(lambda x: liniar_func(x, fit_obj.slope, fit_obj.intercept), line)),
+                                         name='linier scalling fit of ' + xc.name,
+                                         hovertemplate=f'XC: {xc.name}'+'<br>'+f'Slope: {fit_obj.slope:.3f} +- {fit_obj.stderr:.3f}'+'<br>'+f'Intercept: {fit_obj.intercept:.3f} +- {fit_obj.intercept_stderr:.3f}'+'<br>',
+                                         **line_arg
+                                         ))
 
-            OH_adsorption_values.extend(oh_adsor)
-            OOH_adsorption_values.extend(ooh_adsor)
-            fit_all_obj.append(fit_obj)
+                OH_adsorption_values.extend(oh_adsor)
+                OOH_adsorption_values.extend(ooh_adsor)
+                fit_all_obj.append(fit_obj)
 
         except: traceback.print_exc()
 
@@ -83,7 +125,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
             try:
                 oh_ensamble = list(map(xc.calculate_BEE_reaction_enthalpy, oh_reactions)) # is a nested matrix like object, with rows corresponding the metals and col as each ensamble function
                 ooh_ensamble = list(map(xc.calculate_BEE_reaction_enthalpy, ooh_reactions))
-                fit_ens_objs = [stats.linregress(x=OH_vals, y=OOH_vals) for OH_vals, OOH_vals in zip(zip(*oh_ensamble), zip(*ooh_ensamble))]
+                fit_ens_objs = [ode_1par_linear(reac_1_Energies=OH_vals, reac_2_Energies=OOH_vals) for OH_vals, OOH_vals in zip(zip(*oh_ensamble), zip(*ooh_ensamble))]#[stats.linregress(x=OH_vals, y=OOH_vals) for OH_vals, OOH_vals in zip(zip(*oh_ensamble), zip(*ooh_ensamble))]
 
                 for i, fit in enumerate(fit_ens_objs):
                     fig.add_trace(go.Scatter(mode='lines',
@@ -92,7 +134,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                                              name=f'BEE fits No. {i} for ' + xc.name,
                                              legendgroup='BEE fits for ' + xc.name,
                                              legendgrouptitle_text='BEE fits for ' + xc.name,
-                                             hovertemplate=f'XC: BEE No. {i} for {xc.name}'+'<br>'+f'Slope: {fit.slope:.3f} +- {fit.stderr:.3f}'+'<br>'+f'Intercept: {fit.intercept:.3f} +- {fit.intercept_stderr:.3f}'+'<br>'+f'R-square: {fit.rvalue:.3f}',
+                                             hovertemplate=f'XC: BEE No. {i} for {xc.name}'+'<br>'+f'Slope: {fit.slope:.3f} +- {fit.stderr:.3f}'+'<br>'+f'Intercept: {fit.intercept:.3f} +- {fit.intercept_stderr:.3f}'+'<br>',
                                              line=dict(color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'Grey',),
                                              opacity=0.05,
                                              showlegend=False
@@ -104,34 +146,52 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                     OH_adsorption_values.extend(oh_row)
                     OOH_adsorption_values.extend(ooh_row)
 
+                fit_obj = ode_1par_linear(
+                    reac_1_Energies=(oh_adsor := list(map(xc.calculate_reaction_enthalpy, oh_reactions))),
+                    reac_1_Energies_sigma=[sd(ens) for ens in oh_ensamble],
+                    reac_2_Energies=(ooh_adsor := list(map(xc.calculate_reaction_enthalpy, ooh_reactions))),
+                    reac_2_Energies_sigma=[sd(ens) for ens in ooh_ensamble],
+                )
+
+                fig.add_trace(go.Scatter(mode='lines',
+                                         x=list(line),
+                                         y=list(map(lambda x: liniar_func(x, fit_obj.slope, fit_obj.intercept), line)),
+                                         name='linier scalling fit of ' + xc.name,
+                                         hovertemplate=f'XC: {xc.name}'+'<br>'+f'Slope: {fit_obj.slope:.3f} +- {fit_obj.stderr:.3f}'+'<br>'+f'Intercept: {fit_obj.intercept:.3f} +- {fit_obj.intercept_stderr:.3f}'+'<br>',
+                                         **line_arg
+                                         ))
+                OH_adsorption_values.extend(oh_adsor)
+                OOH_adsorption_values.extend(ooh_adsor)
+                fit_all_obj.append(fit_obj)
+
             except: traceback.print_exc()
 
-    Concatenated_fit = stats.linregress(x=OH_adsorption_values, y=OOH_adsorption_values)
-    fig.add_trace(go.Scatter(
-        mode='lines',
-        x=list(line),
-        y=list(map(lambda x: liniar_func(x, Concatenated_fit.slope, Concatenated_fit.intercept), line)),
-        name=f'Concatenated fit of all data points',
-        hovertemplate=f'Concatenated fit' + '<br>' + f'Slope: {Concatenated_fit.slope:.3f} +- {Concatenated_fit.stderr:.3f}' + '<br>' + f'Intercept: {Concatenated_fit.intercept:.3f} +- {Concatenated_fit.intercept_stderr:.3f}' + '<br>' + f'R-square: {Concatenated_fit.rvalue:.3f}',
-        line=dict(color='Black',)
-    ))
+    #Concatenated_fit = stats.linregress(x=OH_adsorption_values, y=OOH_adsorption_values)
+    #fig.add_trace(go.Scatter(
+    #    mode='lines',
+    #    x=list(line),
+    #    y=list(map(lambda x: liniar_func(x, Concatenated_fit.slope, Concatenated_fit.intercept), line)),
+    #    name=f'Concatenated fit of all data points',
+    #    hovertemplate=f'Concatenated fit' + '<br>' + f'Slope: {Concatenated_fit.slope:.3f} +- {Concatenated_fit.stderr:.3f}' + '<br>' + f'Intercept: {Concatenated_fit.intercept:.3f} +- {Concatenated_fit.intercept_stderr:.3f}' + '<br>' + f'R-square: {Concatenated_fit.rvalue:.3f}',
+    #    line=dict(color='Black',)
+    #))
 
-    alpha_mean, alpha_stderr = sum(fit_i.slope/(fit_i.stderr**2) for fit_i in fit_all_obj)/sum(1/(fit_i.stderr**2) for fit_i in fit_all_obj), np.sqrt(1/sum(1/(fit_i.stderr**2) for fit_i in fit_all_obj))
-    beta_mean, beta_stderr = sum(fit_i.intercept/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj)/sum(1/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj), np.sqrt(1/sum(1/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj))
+    #alpha_mean, alpha_stderr = sum(fit_i.slope/(fit_i.stderr**2) for fit_i in fit_all_obj)/sum(1/(fit_i.stderr**2) for fit_i in fit_all_obj), np.sqrt(1/sum(1/(fit_i.stderr**2) for fit_i in fit_all_obj))
+    #beta_mean, beta_stderr = sum(fit_i.intercept/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj)/sum(1/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj), np.sqrt(1/sum(1/(fit_i.intercept_stderr**2) for fit_i in fit_all_obj))
 
-    fig.add_trace(go.Scatter(
-        mode='lines',
-        x=list(line),
-        y=list(map(lambda x: liniar_func(x, alpha_mean, beta_mean), line)),
-        name=f'Averaged fit of all fits',
-        hovertemplate=f'Averaged fit' + '<br>' + f'Slope: {alpha_mean:.3f} +- {alpha_stderr:.3f}' + '<br>' + f'Intercept: {beta_mean:.3f} +- {beta_stderr:.3f}' + '<br>',
-        line=dict(color='DarkSlateGrey', )
-    ))
+    #fig.add_trace(go.Scatter(
+    #    mode='lines',
+    #    x=list(line),
+    #    y=list(map(lambda x: liniar_func(x, alpha_mean, beta_mean), line)),
+    #    name=f'Averaged fit of all fits',
+    #    hovertemplate=f'Averaged fit' + '<br>' + f'Slope: {alpha_mean:.3f} +- {alpha_stderr:.3f}' + '<br>' + f'Intercept: {beta_mean:.3f} +- {beta_stderr:.3f}' + '<br>',
+    #    line=dict(color='DarkSlateGrey', )
+    #))
 
     for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):
         assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]
         for xc in functional_list:
-            marker_arg = dict(marker=dict(color=colour_dict_metal[metal], size=16, line=dict(width=2, color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'DarkSlateGrey'))) if metal in colour_dict_metal.keys() else dict(marker=dict(size=16, line=dict(width=2, color='DarkSlateGrey')))
+            marker_arg = dict(marker=dict(size=16, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'DarkSlateGrey', symbol=marker_dict_functional[xc.name] if xc.name in marker_dict_functional.keys() else 'circle'))
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name}-{metal}',

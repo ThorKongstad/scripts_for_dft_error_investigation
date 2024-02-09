@@ -18,15 +18,24 @@ import plotly.graph_objects as go
 import plotly.express as px
 
 
-def pearson_corr_coef(reac_1_Energies: Sequence[float], reac_2_Energies: Sequence[float], reac_1_Energies_sigma: Optional[Sequence[float]] = None, reac_2_Energies_sigma: Optional[Sequence[float]] = None) -> float:
-    pass
+def pearson_corr_coef(reac_1_Energies: Sequence[float], reac_2_Energies: Sequence[float], reac_1_Energies_sigma: Sequence[float],  reac_2_Energies_sigma: Sequence[float]) -> float:
+    return covariance(reac_1_Energies, reac_2_Energies, (r1_Wmean := weighted_mean(reac_1_Energies, reac_1_Energies_sigma)), (r2_Wmean := weighted_mean(reac_2_Energies, reac_2_Energies_sigma))) \
+           / (weighted_stderr(reac_1_Energies, reac_1_Energies_sigma, r1_Wmean) * weighted_stderr(reac_2_Energies, reac_2_Energies_sigma, r2_Wmean))
 
 
-def weighted_mean(x_arr: Iterable, x_sigma_arr: Iterable) -> float: return sum(x/(sigma**2) for x, sigma in zip(x_arr, x_sigma_arr))
-def weighted_stderr(x_arr: Iterable, x_sigma_arr: Iterable, mean: Optional[float] = None) -> float:
-    if mean is None: mean = weighted_mean(x_arr,x_sigma_arr)
-    return np.sqrt(sum(((x-mean)**2)/sigma**2 for x, sigma in zip(x_arr, x_sigma_arr))/sum(1/sigma**2 for x, sigma in zip(x_arr, x_sigma_arr)))
+def weighted_mean(x_arr: Iterable[float], x_sigma_arr: Iterable[float]) -> float: return sum(x/(sigma**2) for x, sigma in zip(x_arr, x_sigma_arr))
 
+
+def weighted_stderr(x_arr: Iterable[float], x_sigma_arr: Iterable[float], x_mean: Optional[float] = None) -> float:
+    if x_mean is None: x_mean = weighted_mean(x_arr, x_sigma_arr)
+    return np.sqrt(sum(((x-x_mean)**2)/sigma**2 for x, sigma in zip(x_arr, x_sigma_arr))/sum(1/sigma**2 for x, sigma in zip(x_arr, x_sigma_arr)))
+
+
+def covariance(x_arr: Sequence[float], y_arr: Sequence[float], x_mean: Optional[float] = None, y_mean: Optional[float] = None) -> float:
+    if x_mean is None: x_mean = mean(x_arr)
+    if y_mean is None: y_mean = mean(y_arr)
+    assert len(x_arr) == len(y_arr)
+    return 1/len(x_arr) * sum((x - x_mean)*(y - y_mean) for x, y in zip(x_arr, y_arr))
 
 
 def ode_1par_linear(reac_1_Energies: Sequence[float], reac_2_Energies: Sequence[float], reac_1_Energies_sigma: Optional[Sequence[float]] = None, reac_2_Energies_sigma: Optional[Sequence[float]] = None) -> 'odr_linear_fitting_results':
@@ -44,6 +53,24 @@ def ode_1par_linear(reac_1_Energies: Sequence[float], reac_2_Energies: Sequence[
     odr_fit_obj = odr.ODR(fit_odr_dat, fitting_model, beta0=[3.2]).run()  # beta0 is the initial guess for the scalling relation
     fit_result = odr_linear_fitting_results(slope=1, intercept=odr_fit_obj.beta[0], stderr=0, intercept_stderr=odr_fit_obj.sd_beta[0])
     return fit_result
+
+
+def ensemble_histogram(data: Sequence[float], name, x_axis_title, marker_dict):
+    fig = go.Figure()
+
+    #bins, count = np.histogram(data,)
+    #bins = 0.5 * (bins[:-1] + bins[1:])
+
+    fig.add_trace(go.Histogram(x=data, name=name, marker=marker_dict))
+    #fig.add_trace(go.Bar(x=bins, y=count, name=name, marker=marker_dict))
+
+    fig.update_layout(
+        xaxis_title=x_axis_title,
+        yaxis_title='Count',)
+
+    fig.add_annotation(text=f'Mean: {mean(data)}<br>Stderr: {sd(data)}', xref="paper", yref="paper", showarrow=False)
+
+    return fig
 
 
 def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[adsorbate_reaction], ooh_reactions: Sequence[adsorbate_reaction], png_bool: bool = False):
@@ -164,6 +191,8 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 OOH_adsorption_values.extend(ooh_adsor)
                 fit_all_obj.append(fit_obj)
 
+                ens_figure = ensemble_histogram(list(fit.intercept for fit in fit_ens_objs), f'{xc.name} bee histogram', f'intercept values: {xc.name} bee', marker_dict=dict(color=colour_dict_functional[xc.name] if xc.name in colour_dict_functional.keys() else 'DarkSlateGrey'))
+
             except: traceback.print_exc()
 
     #Concatenated_fit = stats.linregress(x=OH_adsorption_values, y=OOH_adsorption_values)
@@ -197,7 +226,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                 name=f'{xc.name}-{metal}',
                 x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac))],
                 y=[xc.calculate_reaction_enthalpy(ooh_reac)],
-                hovertemplate=f'metal: {metal}' + '<br>' + f'XC: {xc.name}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '   %{x:.3f}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}'+ '   %{y:.3f}',
+                hovertemplate=f'metal: {metal}' + '<br>' + f'XC: {xc.name}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '   %{x:.3f}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '   %{y:.3f}',
                 legendgroup=metal,
                 legendgrouptitle_text=metal,
                 **marker_arg
@@ -321,6 +350,11 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
             )
         ]
     )
+
+    fig.set_subplots(rows=2, cols=1, )
+    fig.add_traces(ens_figure.data, rows=2, cols=1)
+    fig.update_layout(**ens_figure.layout.__dict__, rows=2, cols=1)
+
 
     folder_exist('reaction_plots')
     save_name = 'reaction_plots/scaling_plot_OH_OOH_fits'

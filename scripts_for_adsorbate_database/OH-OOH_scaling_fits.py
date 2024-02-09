@@ -61,14 +61,14 @@ def ensemble_histogram(data: Sequence[float], name, x_axis_title, marker_dict):
     #bins, count = np.histogram(data,)
     #bins = 0.5 * (bins[:-1] + bins[1:])
 
-    fig.add_trace(go.Histogram(x=data, name=name, marker=marker_dict))
+    fig.add_trace(go.Histogram(x=data, name=name, marker=marker_dict, hovertemplate=f'Mean: {mean(data)}<br>Stderr: {sd(data)}'))
     #fig.add_trace(go.Bar(x=bins, y=count, name=name, marker=marker_dict))
 
-    fig.update_layout(
-        xaxis_title=x_axis_title,
-        yaxis_title='Count',)
+    #fig.update_layout(
+    #    xaxis_title=x_axis_title,
+    #    yaxis_title='Count',)
 
-    fig.add_annotation(text=f'Mean: {mean(data)}<br>Stderr: {sd(data)}', xref="paper", yref="paper", showarrow=False)
+    #fig.add_annotation(text=f'Mean: {mean(data)}<br>Stderr: {sd(data)}', xref="paper", yref="paper", showarrow=False)
 
     return fig
 
@@ -351,9 +351,9 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
         ]
     )
 
-    fig.set_subplots(rows=2, cols=1, )
+    fig.set_subplots(rows=2, cols=1,row_heights=[0.7, 0.3])
     fig.add_traces(ens_figure.data, rows=2, cols=1)
-    fig.update_layout(**ens_figure.layout.__dict__, rows=2, cols=1)
+    #fig.update_layout(**ens_figure.layout.__dict__, rows=2, cols=1)
 
 
     folder_exist('reaction_plots')

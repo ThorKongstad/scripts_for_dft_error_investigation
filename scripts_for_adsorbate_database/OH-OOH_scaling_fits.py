@@ -220,7 +220,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
     for oh_reac, ooh_reac in zip(oh_reactions, ooh_reactions):
         assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]
         for xc in functional_list:
-            marker_arg = dict(marker=dict(size=16, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'DarkSlateGrey', symbol=marker_dict_functional[xc.name] if xc.name in marker_dict_functional.keys() else 'circle'))
+            marker_arg = dict(marker=dict(size=16, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'DarkSlateGrey', symbol=marker_dict_functional[xc.name] if xc.name in marker_dict_functional.keys() else 'circle', line=dict(color='Black', width=1)))
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name}-{metal}',

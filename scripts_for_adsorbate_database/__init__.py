@@ -118,6 +118,12 @@ metal_ref_ractions = tuple(chain(*((
         adsorbate_reaction((('adsorbate', 'Pt_111_O_fcc', 1), ('slab', f'{metal}_111', 1)), (('adsorbate', f'{metal}_111_O_fcc', 1), ('slab', 'Pt_111', 1))),
                         )for metal in ['Cu', 'Pd', 'Rh', 'Ag', 'Ir', 'Au'])))
 
+
+metal_OOH_OH_ref_ractions = tuple(chain(*((
+        adsorbate_reaction((('adsorbate', 'Pt_111_OH_top', 1), ('slab', f'{metal}_111', 1), ('molecule', 'O', 1),), (('adsorbate', f'{metal}_111_OOH_top', 1), ('slab', 'Pt_111', 1), ('molecule', '[HH]', 1))),
+                        )for metal in ['Cu', 'Pd', 'Rh', 'Ag', 'Ir', 'Au'])))
+
+
 all_adsorption_reactions = adsorption_OH_reactions + adsorption_OOH_reactions + metal_ref_ractions
 
 
@@ -131,5 +137,5 @@ def build_pd(db_dir_list, select_key: Optional = None):
     return pd_dat
 
 
-__all__ = [sanitize, folder_exist, ends_with, update_db, reaction, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, all_adsorption_reactions, adsorption_O_reactions, adsorption_O_reactions_top, mean, sd, overpotential]
+__all__ = [sanitize, folder_exist, ends_with, update_db, reaction, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, all_adsorption_reactions, adsorption_O_reactions, adsorption_O_reactions_top, mean, sd, overpotential, metal_OOH_OH_ref_ractions]
 

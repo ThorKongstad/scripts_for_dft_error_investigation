@@ -312,6 +312,9 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
         ]
     )
 
+    fig.set_subplots(rows=2, cols=1, row_heights=[0.7, 0.3])
+    fig.add_traces(ens_figure.data, rows=2, cols=1)
+
     folder_exist('reaction_plots')
     save_name = 'reaction_plots/scaling_plot_OH-OOH_pt-ref_simple'
     if png_bool: fig.write_image(save_name + '.png')

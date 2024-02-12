@@ -8,7 +8,7 @@ from re import match
 from dataclasses import dataclass, field
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
-from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, sd
+from scripts_for_adsorbate_database import sanitize, folder_exist, build_pd, adsorbate_reaction, adsorption_OH_reactions, adsorption_OOH_reactions, metal_ref_ractions, sd, mean
 from scripts_for_adsorbate_database.adsorbate_correlation_plot import Functional
 
 import numpy as np
@@ -97,7 +97,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
     #    showlegend=False,
     #))
 
-    line = np.linspace(0, 2, 500)
+    line = np.linspace(-1, 1, 500)
 
     OH_adsorption_values = []
     OOH_adsorption_values = []
@@ -313,7 +313,7 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
     )
 
     folder_exist('reaction_plots')
-    save_name = 'reaction_plots/scaling_plot_pt-ref_simple'
+    save_name = 'reaction_plots/scaling_plot_OH-OOH_pt-ref_simple'
     if png_bool: fig.write_image(save_name + '.png')
     fig.write_html(save_name + '.html', include_mathjax='cdn')
 

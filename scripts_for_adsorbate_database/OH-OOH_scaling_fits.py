@@ -130,8 +130,8 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
             if not xc.has_BEE:
                 #fit_obj = stats.linregress(x=(oh_adsor := list(map(xc.calculate_reaction_enthalpy, oh_reactions))),
                 #                           y=(ooh_adsor := list(map(xc.calculate_reaction_enthalpy, ooh_reactions))),)
-                fit_obj = ode_1par_linear(reac_1_Energies=(oh_adsor := list(map(xc.calculate_reaction_enthalpy, oh_reactions))),
-                                          reac_2_Energies=(ooh_adsor := list(map(xc.calculate_reaction_enthalpy, ooh_reactions))),
+                fit_obj = ode_1par_linear(reac_1_Energies=(oh_adsor := list(map(lambda reac: xc.calculate_reaction_enthalpy(reac) + 0.35 - 0.5, oh_reactions))),
+                                          reac_2_Energies=(ooh_adsor := list(map(lambda  reac: xc.calculate_reaction_enthalpy(reac) + 0.40 - 0.5, ooh_reactions))),
                                           )
 
                 fig.add_trace(go.Scatter(mode='lines',
@@ -150,8 +150,8 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
 
         if xc.has_BEE:
             try:
-                oh_ensamble = list(map(xc.calculate_BEE_reaction_enthalpy, oh_reactions)) # is a nested matrix like object, with rows corresponding the metals and col as each ensamble function
-                ooh_ensamble = list(map(xc.calculate_BEE_reaction_enthalpy, ooh_reactions))
+                oh_ensamble = list(map(lambda reac: xc.calculate_BEE_reaction_enthalpy(reac) + 0.35 - 0.5, oh_reactions)) # is a nested matrix like object, with rows corresponding the metals and col as each ensamble function
+                ooh_ensamble = list(map(lambda reac: xc.calculate_BEE_reaction_enthalpy(reac) + 0.4 - 0.5, ooh_reactions))
                 fit_ens_objs = [ode_1par_linear(reac_1_Energies=OH_vals, reac_2_Energies=OOH_vals) for OH_vals, OOH_vals in zip(zip(*oh_ensamble), zip(*ooh_ensamble))]#[stats.linregress(x=OH_vals, y=OOH_vals) for OH_vals, OOH_vals in zip(zip(*oh_ensamble), zip(*ooh_ensamble))]
 
                 for i, fit in enumerate(fit_ens_objs):
@@ -174,9 +174,9 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                     OOH_adsorption_values.extend(ooh_row)
 
                 fit_obj = ode_1par_linear(
-                    reac_1_Energies=(oh_adsor := list(map(xc.calculate_reaction_enthalpy, oh_reactions))),
+                    reac_1_Energies=(oh_adsor := list(map(lambda reac: xc.calculate_reaction_enthalpy(reac) + 0.35 - 0.5, oh_reactions))),
                     reac_1_Energies_sigma=[sd(ens) for ens in oh_ensamble],
-                    reac_2_Energies=(ooh_adsor := list(map(xc.calculate_reaction_enthalpy, ooh_reactions))),
+                    reac_2_Energies=(ooh_adsor := list(map(lambda reac: xc.calculate_reaction_enthalpy(reac) + 0.4 - 0.5, ooh_reactions))),
                     reac_2_Energies_sigma=[sd(ens) for ens in ooh_ensamble],
                 )
 
@@ -224,8 +224,8 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name}-{metal}',
-                x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac))],
-                y=[xc.calculate_reaction_enthalpy(ooh_reac)],
+                x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac) + 0.35 - 0.5)],
+                y=[xc.calculate_reaction_enthalpy(ooh_reac)+ 0.4 - 0.5],
                 hovertemplate=f'metal: {metal}' + '<br>' + f'XC: {xc.name}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '   %{x:.3f}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '   %{y:.3f}',
                 legendgroup=metal,
                 legendgrouptitle_text=metal,
@@ -237,8 +237,8 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
                     fig.add_trace(go.Scatter(
                         mode='markers',
                         name=f'BEE for {metal} {xc.name}',
-                        y=(ens_y_cloud := xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist()),
-                        x=(ens_x_cloud := xc.calculate_BEE_reaction_enthalpy(oh_reac).tolist()),
+                        y=(ens_y_cloud := (xc.calculate_BEE_reaction_enthalpy(ooh_reac) + 0.35 - 0.5).tolist()),
+                        x=(ens_x_cloud := (xc.calculate_BEE_reaction_enthalpy(oh_reac) + 0.4 - 0.5).tolist()),
                         hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '   %{x:.3f}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '   %{y:.3f}',
                         marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey',
                                     opacity=0.5, ),
@@ -270,8 +270,8 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
 
     fig.update_layout(
         title='Scaling of OOH and OH',
-        xaxis_title='OH adsorption energy',# in reference to Pt_{111} adsorption',
-        yaxis_title='OOH adsorption energy',
+        xaxis_title='$\Delta G_{*OH}$', #'OH adsorption energy',# in reference to Pt_{111} adsorption',
+        yaxis_title='$\Delta G_{*OOH}$',#'OOH adsorption energy',
 
         updatemenus=[
             dict(

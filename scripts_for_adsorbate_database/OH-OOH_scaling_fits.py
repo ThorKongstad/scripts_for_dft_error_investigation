@@ -248,7 +248,8 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
 
                     fig.update_traces(selector=dict(name=f'{xc.name}-{metal}'),
                                       error_x=dict(type='constant', value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=False),
-                                      error_y=dict(type='constant', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=False)
+                                      error_y=dict(type='constant', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=False),
+                                      hovertemplate=f'metal: {metal}' + '<br>' + f'XC: {xc.name}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '   %{x:.3f} $\pm$ %{error_x.value:.3f}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '   %{y:.3f} $\pm$ %{error_x.value:.3f}',
                                       )
 
                     fig.data = fig.data[-1:] + fig.data[0:-1]

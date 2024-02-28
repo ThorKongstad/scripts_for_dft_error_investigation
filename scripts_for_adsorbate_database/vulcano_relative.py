@@ -126,7 +126,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     volcano_peak_mean = (4.92 - beta_G_mean) / 2
     volcano_peak_sd = beta_G_SD/2
 
-    for ens_peak in volcano_peak_ens:
+    for i, ens_peak in enumerate(volcano_peak_ens):
+        if i % 100 == 0: print(f'plotting volcano ens peaks {i} out of 2000')
         fig.add_vline(
             x=ens_peak,
             line_color='#0000CD',
@@ -139,12 +140,13 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     )
 
     fig.add_vrect(
-        x0=volcano_peak_mean - volcano_peak_sd, x1=0.11 + volcano_peak_sd,
+        x0=volcano_peak_mean - volcano_peak_sd, x1=volcano_peak_mean + volcano_peak_sd,
         fillcolor="green",
         opacity=0.25,
-        annotation_text=f"Vulcano top location <br> stderr: {volcano_peak_sd:.3f} eV", annotation_position="top left"
+        annotation_text=f"V0lcano top location {volcano_peak_mean} <br> stderr: {volcano_peak_sd:.3f} eV", annotation_position="top left"
     )
 
+    print('plotting Pt')
     beef_pt_OH = volcano_peak_mean - 0.11
     fig.add_trace(go.Scatter(
         mode='markers',
@@ -173,16 +175,17 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
 
     for oh_reac, ooh_reac in zip(oh_reaction_relative, ooh_reactions_relative,):
         assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]
+        print(f'plotting {metal}')
         xc = beef
         marker_arg = dict(marker=dict(size=16, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'DarkSlateGrey', symbol=marker_dict_functional[xc.name] if xc.name in marker_dict_functional.keys() else 'circle'))
         try: fig.add_trace(go.Scatter(
             mode='markers',
             name=f'{xc.name}-{metal}',
-            x=[beef_pt_OH + xc.calculate_reaction_enthalpy(oh_reac)], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
+            x=[beef_pt_OH + (OH_ad := xc.calculate_reaction_enthalpy(oh_reac))], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
             y=[overpotential(
-                dG_OOH=(ooh_adsorp := beef_pt_OH + xc.calculate_reaction_enthalpy(oh_reac) + beta_G_mean),
-                dG_OH=beef_pt_OH + xc.calculate_reaction_enthalpy(oh_reac),
-                dG_O=beef_pt_OH + xc.calculate_reaction_enthalpy(oh_reac) * 2 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
+                dG_OOH=(ooh_adsorp := beef_pt_OH + OH_ad + beta_G_mean),
+                dG_OH=beef_pt_OH + OH_ad,
+                dG_O=beef_pt_OH + OH_ad * 2 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
             )],
             hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
             legendgroup=metal,
@@ -196,17 +199,17 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 fig.add_trace(go.Scatter(
                     mode='markers',
                     name=f'BEE for {metal} {xc.name}',
+                    x=(ens_x_cloud := (volcano_peak_ens - 0.11) + xc.calculate_BEE_reaction_enthalpy(oh_reac)),
                     y=(ens_y_cloud := np.array(list(map(lambda ooh, oh, o: overpotential(
                             dG_OOH=ooh,
                             dG_OH=oh,
                             dG_O=o
                             ),
-                        ((volcano_peak_ens - 0.11) + xc.calculate_BEE_reaction_enthalpy(oh_reac) + intercept_ens).tolist(),
-                        ((volcano_peak_ens - 0.11) + xc.calculate_BEE_reaction_enthalpy(oh_reac)).tolist(),
-                        ((volcano_peak_ens - 0.11) + xc.calculate_BEE_reaction_enthalpy(oh_reac) * 2).tolist()
+                        (ens_x_cloud + intercept_ens).tolist(),
+                        (ens_x_cloud).tolist(),
+                        (ens_x_cloud * 2).tolist()
                         )))),
-                    x=(ens_x_cloud := (volcano_peak_ens - 0.11) + xc.calculate_BEE_reaction_enthalpy(oh_reac)),
-                    hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '<br>' + f'O adsorption: {str(o_reac)}',
+                    hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
                     marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),
                     legendgroup=metal,
                     legendgrouptitle_text=metal,

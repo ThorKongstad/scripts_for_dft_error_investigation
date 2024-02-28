@@ -148,6 +148,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
 
     print('plotting Pt')
     beef_pt_OH = volcano_peak_mean - 0.11
+
     fig.add_trace(go.Scatter(
         mode='markers',
         name=f'BEEF-vdW-Pt',
@@ -216,8 +217,9 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 ))
 
                 fig.update_traces(selector=dict(name=f'{xc.name}-{metal}'),
-                                  error_x=dict(type='constant', value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=False),
-                                  error_y=dict(type='constant', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=False)
+                                  error_x=dict(type='constant', value=(err_x := sd(ens_x_cloud)), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=False),
+                                  error_y=dict(type='constant', value=(err_y := sd(ens_y_cloud)), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=False),
+                                  hovertemplate=f'metal: {metal}' + '<br>' + f'XC: {xc.name}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '   %{x:.3f} +- ' + f'{err_x:.3f}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '   %{y:.3f} +- ' + f'{err_y:.3f}',
                                   )
 
                 fig.data = fig.data[-1:] + fig.data[0:-1]

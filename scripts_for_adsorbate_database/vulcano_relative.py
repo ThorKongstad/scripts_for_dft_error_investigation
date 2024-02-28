@@ -119,8 +119,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     fit_ens_objs = [ode_1par_linear(reac_1_Energies=OH_vals, reac_2_Energies=OOH_vals) for OH_vals, OOH_vals in zip(zip(*oh_ensamble), zip(*ooh_ensamble))]#[stats.linregress(x=OH_vals, y=OOH_vals) for OH_vals, OOH_vals in zip(zip(*oh_ensamble), zip(*ooh_ensamble))]
     intercept_ens = np.array(tuple(fit.intercept for fit in fit_ens_objs))
 
-    beta_G_mean = mean(tuple(fit.intercept for fit in fit_ens_objs))
-    beta_G_SD = sd(tuple(fit.intercept for fit in fit_ens_objs), beta_G_mean)
+    beta_G_mean = mean(intercept_ens)
+    beta_G_SD = sd(intercept_ens, beta_G_mean)
 
     volcano_peak_ens = (4.92 - intercept_ens)/2
     volcano_peak_mean = (4.92 - beta_G_mean) / 2

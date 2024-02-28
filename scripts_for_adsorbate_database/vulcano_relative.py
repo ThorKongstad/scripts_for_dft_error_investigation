@@ -126,13 +126,13 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     volcano_peak_mean = (4.92 - beta_G_mean) / 2
     volcano_peak_sd = beta_G_SD/2
 
-    for i, ens_peak in enumerate(volcano_peak_ens):
-        if i % 100 == 0: print(f'plotting volcano ens peaks {i} out of 2000')
-        fig.add_vline(
-            x=ens_peak,
-            line_color='#0000CD',
-            opacity=0.2
-        )
+    #for i, ens_peak in enumerate(volcano_peak_ens):
+    #    if i % 100 == 0: print(f'plotting volcano ens peaks {i} out of 2000')
+    #    fig.add_vline(
+    #        x=ens_peak,
+    #        line_color='#0000CD',
+    #        opacity=0.2
+    #    )
 
     fig.add_vline(
         x=volcano_peak_mean,
@@ -290,12 +290,12 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
 
     functional_set = {xc for _, row in pd_adsorbate_dat.iterrows() if not pd.isna((xc := row.get('xc')))}
 
-    #oh_ad_h2_water = metal_ref_ractions[0::2] #adsorption_OH_reactions[1::3] #[1,4,7,10,13,16]
+    oh_ad_metal_ref = metal_ref_ractions[0::2] #adsorption_OH_reactions[1::3] #[1,4,7,10,13,16]
     oh_ad_h2_water = adsorption_OH_reactions[1::3] #[1,4,7,10,13,16]
 
     o_ad_h2_water = adsorption_O_reactions[1::3] #[1,4,7,10,13,16]
 
-    #ooh_ad_h2_water = metal_ref_ractions[1::2] #adsorption_OOH_reactions[1::3]
+    ooh_ad_metal_ref = metal_ref_ractions[1::2] #adsorption_OOH_reactions[1::3]
     ooh_ad_h2_water = adsorption_OOH_reactions[1::3]
 
     dictionary_of_needed_strucs = {'molecule': [], 'slab': [], 'adsorbate': []}
@@ -312,8 +312,8 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
                    oh_reactions=oh_ad_h2_water,
                    ooh_reactions=ooh_ad_h2_water,
                    o_reactions=o_ad_h2_water,
-                   oh_reaction_relative=oh_ad_h2_water,
-                   ooh_reactions_relative=ooh_ad_h2_water,
+                   oh_reaction_relative=oh_ad_metal_ref,
+                   ooh_reactions_relative=ooh_ad_metal_ref,
                    o_reactions_relative=o_ad_h2_water)
 
 

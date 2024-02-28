@@ -101,8 +101,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                     fig.update_traces(selector=dict(name=f'{xc.name}-{metal}'),
                                       error_x_type='constant',
                                       error_y_type='constant',
-                                      error_x_value=sd(ens_x_cloud),
-                                      error_y_value=sd(ens_y_cloud),
+                                      error_x_value=(err_x := sd(ens_x_cloud)),
+                                      error_y_value=(err_y := sd(ens_y_cloud)),
                                       error_x_color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey',
                                       error_y_color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey',
                                       error_x_thickness=1.5,
@@ -113,6 +113,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                                       error_y_visible=False,
                                       #error_x=dict(type='constant', value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True),
                                       #error_y=dict(type='constant', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True)
+                                      hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '<br>' + f'O adsorption: {str(o_reac)}' + '<br>' + f'G_OH:' + '   %{x:.3f} +- ' + f'{err_x:.3f}' + '<br>' + f'limiting potential: ' + '   %{y:.3f} +- ' + f'{err_y:.3f}'
                                       )
                     fig.data = fig.data[-1:] + fig.data[0:-1]
                 except: traceback.print_exc()
@@ -168,6 +169,11 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 yanchor="top"
             )
         ]
+    )
+
+    fig.update_yaxes(
+        scaleanchor="x",
+        scaleratio=1
     )
 
     folder_exist('reaction_plots')

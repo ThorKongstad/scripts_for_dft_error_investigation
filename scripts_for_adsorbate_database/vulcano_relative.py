@@ -117,7 +117,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     oh_ensamble = list(map(lambda reac: beef.calculate_BEE_reaction_enthalpy(reac) + OH_corr, oh_reactions)) # is a nested matrix like object, with rows corresponding the metals and col as each ensamble function
     ooh_ensamble = list(map(lambda reac: beef.calculate_BEE_reaction_enthalpy(reac) + OOH_corr, ooh_reactions))
     fit_ens_objs = [ode_1par_linear(reac_1_Energies=OH_vals, reac_2_Energies=OOH_vals) for OH_vals, OOH_vals in zip(zip(*oh_ensamble), zip(*ooh_ensamble))]#[stats.linregress(x=OH_vals, y=OOH_vals) for OH_vals, OOH_vals in zip(zip(*oh_ensamble), zip(*ooh_ensamble))]
-    intercept_ens = np.array([fit.intercept for fit in fit_ens_objs])
+    intercept_ens = np.array(tuple(fit.intercept for fit in fit_ens_objs))
 
     beta_G_mean = mean(tuple(fit.intercept for fit in fit_ens_objs))
     beta_G_SD = sd(tuple(fit.intercept for fit in fit_ens_objs), beta_G_mean)

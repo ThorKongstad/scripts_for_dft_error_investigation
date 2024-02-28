@@ -126,9 +126,6 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     volcano_peak_mean = (4.92 - beta_G_mean) / 2
     volcano_peak_sd = beta_G_SD/2
 
-    beef_pt_OH = volcano_peak_mean - 0.11
-
-
     #for i, ens_peak in enumerate(volcano_peak_ens):
     #    if i % 100 == 0: print(f'plotting volcano ens peaks {i} out of 2000')
     #    fig.add_vline(
@@ -138,24 +135,25 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     #    )
 
     fig.add_vline(
-        x=volcano_peak_mean - beef_pt_OH,
+        x=volcano_peak_mean,
         line_dash='dash',
     )
 
     fig.add_vrect(
-        x0=volcano_peak_mean - volcano_peak_sd - beef_pt_OH, x1=volcano_peak_mean + volcano_peak_sd - beef_pt_OH,
+        x0=volcano_peak_mean - volcano_peak_sd, x1=volcano_peak_mean + volcano_peak_sd,
         fillcolor="green",
         opacity=0.25,
         annotation_text=f"Volcano top location {volcano_peak_mean} <br> stderr: {volcano_peak_sd:.3f} eV", annotation_position="top left"
     )
 
     print('plotting Pt')
+    beef_pt_OH = volcano_peak_mean - 0.11
 
     fig.add_trace(go.Scatter(
         mode='markers',
         name=f'BEEF-vdW-Pt',
-        x=[beef_pt_OH - beef_pt_OH],
-        y=[beef_pt_OH - beef_pt_OH],
+        x=[beef_pt_OH],
+        y=[beef_pt_OH],
         hovertemplate=f'functional: BEEF-vdW' + '<br>' + f'metal: Pt' + '<br>' + '   %{x:.3f}',
         error_x=dict(type='constant', value=volcano_peak_sd,
                      color=colour_dict_metal['Pt'], thickness=1.5,
@@ -168,8 +166,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     fig.add_trace(go.Scatter(
         mode='markers',
         name=f'BEE for Pt BEEF-vdW',
-        y=volcano_peak_ens - 0.11 - (volcano_peak_ens - 0.11),
-        x=volcano_peak_ens - 0.11 - (volcano_peak_ens - 0.11),
+        y=volcano_peak_ens - 0.11,
+        x=volcano_peak_ens - 0.11,
         hovertemplate=f'metal: Pt',
         marker=dict(color=colour_dict_metal['Pt'], opacity=0.5, ),
         legendgroup='Pt',
@@ -184,7 +182,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         try: fig.add_trace(go.Scatter(
             mode='markers',
             name=f'{xc.name}-{metal}',
-            x=[(OH_ad := beef_pt_OH + xc.calculate_reaction_enthalpy(oh_reac)) - beef_pt_OH], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
+            x=[(OH_ad := beef_pt_OH + xc.calculate_reaction_enthalpy(oh_reac))], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
             y=[overpotential(
                 dG_OOH=(ooh_adsorp := OH_ad + beta_G_mean),
                 dG_OH=OH_ad,
@@ -202,15 +200,15 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 fig.add_trace(go.Scatter(
                     mode='markers',
                     name=f'BEE for {metal} {xc.name}',
-                    x=(ens_x_cloud := xc.calculate_BEE_reaction_enthalpy(oh_reac)),
+                    x=(ens_x_cloud := (volcano_peak_ens - 0.11) + xc.calculate_BEE_reaction_enthalpy(oh_reac)),
                     y=(ens_y_cloud := np.array(list(map(lambda ooh, oh, o: overpotential(
                             dG_OOH=ooh,
                             dG_OH=oh,
                             dG_O=o
                             ),
-                        ((volcano_peak_ens - 0.11) + ens_x_cloud + intercept_ens).tolist(),
-                        ((volcano_peak_ens - 0.11) + ens_x_cloud).tolist(),
-                        (((volcano_peak_ens - 0.11) + ens_x_cloud) * 2).tolist()
+                        (ens_x_cloud + intercept_ens).tolist(),
+                        (ens_x_cloud).tolist(),
+                        (ens_x_cloud * 2).tolist()
                         )))),
                     hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
                     marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),
@@ -230,7 +228,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     fig.update_layout(
         title='ORR',
         xaxis_title='$\Delta G_{*OH} - \Delta G_{Pt111*OH}$',# in reference to Pt_{111} adsorption',
-        yaxis_title='Limiting potential',
+        yaxis_title='Limiting potential relative to Pt',
 
         updatemenus = [
             dict(

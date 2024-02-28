@@ -143,7 +143,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         x0=volcano_peak_mean - volcano_peak_sd, x1=volcano_peak_mean + volcano_peak_sd,
         fillcolor="green",
         opacity=0.25,
-        annotation_text=f"V0lcano top location {volcano_peak_mean} <br> stderr: {volcano_peak_sd:.3f} eV", annotation_position="top left"
+        annotation_text=f"Volcano top location {volcano_peak_mean} <br> stderr: {volcano_peak_sd:.3f} eV", annotation_position="top left"
     )
 
     print('plotting Pt')
@@ -154,7 +154,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         name=f'BEEF-vdW-Pt',
         x=[beef_pt_OH],
         y=[beef_pt_OH],
-        hovertemplate=f'functional: BEEF-vdW' + '<br>' + f'metal: Pt' + '<br>',
+        hovertemplate=f'functional: BEEF-vdW' + '<br>' + f'metal: Pt' + '<br>' + '   %{x:.3f}',
         error_x=dict(type='constant', value=volcano_peak_sd,
                      color=colour_dict_metal['Pt'], thickness=1.5,
                      width=3, visible=False),
@@ -276,6 +276,11 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 yanchor="top"
             )
         ]
+    )
+
+    fig.update_yaxes(
+        scaleanchor="x",
+        scaleratio=1
     )
 
     folder_exist('reaction_plots')

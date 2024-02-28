@@ -181,11 +181,11 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         try: fig.add_trace(go.Scatter(
             mode='markers',
             name=f'{xc.name}-{metal}',
-            x=[beef_pt_OH + (OH_ad := xc.calculate_reaction_enthalpy(oh_reac))], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
+            x=[beef_pt_OH + (OH_ad := beef_pt_OH + xc.calculate_reaction_enthalpy(oh_reac))], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
             y=[overpotential(
-                dG_OOH=(ooh_adsorp := beef_pt_OH + OH_ad + beta_G_mean),
-                dG_OH=beef_pt_OH + OH_ad,
-                dG_O=beef_pt_OH + OH_ad * 2 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
+                dG_OOH=(ooh_adsorp := OH_ad + beta_G_mean),
+                dG_OH=OH_ad,
+                dG_O=OH_ad * 2 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
             )],
             hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
             legendgroup=metal,

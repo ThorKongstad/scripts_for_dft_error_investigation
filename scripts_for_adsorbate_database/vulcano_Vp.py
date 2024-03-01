@@ -154,7 +154,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         name=f'BEEF-vdW-Pt',
         x=[beef_pt_OH],
         y=[beef_pt_OH],
-        hovertemplate=f'functional: BEEF-vdW' + '<br>' + f'metal: Pt' + '<br>' + '   %{x:.3f}',
+        hovertemplate=f'functional: BEEF-vdW' + '<br>' + f'metal: Pt' + '<br>' + 'G_(Pt*OH)   %{x:.3f}',
         error_x=dict(type='constant', value=volcano_peak_sd,
                      color=colour_dict_metal['Pt'], thickness=1.5,
                      width=3, visible=False),
@@ -227,8 +227,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
 
     fig.update_layout(
         title='ORR',
-        xaxis_title='$\Delta G_{*OH} - \Delta G_{Pt111*OH}$',# in reference to Pt_{111} adsorption',
-        yaxis_title='Limiting potential relative to Pt',
+        xaxis_title='$\Delta G_{*OH}$',# in reference to Pt_{111} adsorption',
+        yaxis_title='Limiting potential',
 
         updatemenus = [
             dict(

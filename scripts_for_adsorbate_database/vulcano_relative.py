@@ -168,8 +168,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     fig.add_trace(go.Scatter(
         mode='markers',
         name=f'BEE for Pt BEEF-vdW',
-        y=volcano_peak_ens - 0.11 - (volcano_peak_ens - 0.11),
-        x=volcano_peak_ens - 0.11,
+        y=volcano_peak_ens - 0.11 ,
+        x=volcano_peak_ens - 0.11- (volcano_peak_ens - 0.11),
         hovertemplate=f'metal: Pt',
         marker=dict(color=colour_dict_metal['Pt'], opacity=0.5, ),
         legendgroup='Pt',

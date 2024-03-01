@@ -285,7 +285,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
 
     folder_exist('reaction_plots')
     #save_name = 'reaction_plots/vulcano_pt_ref_plot'
-    save_name = 'reaction_plots/vulcano_plot_relative'
+    save_name = 'reaction_plots/vulcano_plot_Vp'
     if png_bool: fig.write_image(save_name + '.png')
     fig.write_html(save_name + '.html', include_mathjax='cdn')
 

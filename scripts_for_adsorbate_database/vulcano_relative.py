@@ -156,7 +156,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         name=f'BEEF-vdW-Pt',
         x=[beef_pt_OH - beef_pt_OH],
         y=[beef_pt_OH],
-        hovertemplate=f'functional: BEEF-vdW' + '<br>' + f'metal: Pt' + '<br>' + '   %{x:.3f}',
+        hovertemplate=f'functional: BEEF-vdW' + '<br>' + f'metal: Pt' + '<br>' + 'limiting potential:   %{y:.3f}',
         error_x=dict(type='constant', value=volcano_peak_sd,
                      color=colour_dict_metal['Pt'], thickness=1.5,
                      width=3, visible=False),
@@ -168,13 +168,19 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
     fig.add_trace(go.Scatter(
         mode='markers',
         name=f'BEE for Pt BEEF-vdW',
-        y=volcano_peak_ens - 0.11 ,
-        x=volcano_peak_ens - 0.11- (volcano_peak_ens - 0.11),
+        y=(ens_y_cloud := volcano_peak_ens - 0.11),
+        x=(ens_x_cloud := volcano_peak_ens - 0.11 - (volcano_peak_ens - 0.11)),
         hovertemplate=f'metal: Pt',
         marker=dict(color=colour_dict_metal['Pt'], opacity=0.5, ),
         legendgroup='Pt',
         legendgrouptitle_text='Pt',
     ))
+
+    fig.update_traces(selector=dict(name=f'BEEF-vdW-Pt'),
+                      error_x=dict(type='constant', value=(err_x := sd(ens_x_cloud)),color=colour_dict_metal['Pt'],thickness=1.5, width=3, visible=False),
+                      error_y=dict(type='constant', value=(err_y := sd(ens_y_cloud)), color=colour_dict_metal['Pt'],thickness=1.5, width=3, visible=False),
+                      hovertemplate=f'functional: BEEF-vdW' + '<br>' + f'metal: Pt' + '<br>' + 'limiting potential:   %{y:.3f}  +-  ' + f'{err_y} eV'
+                      )
 
     for oh_reac, ooh_reac in zip(oh_reaction_relative, ooh_reactions_relative,):
         assert (metal := oh_reac.products[0].name.split('_')[0]) == ooh_reac.products[0].name.split('_')[0]

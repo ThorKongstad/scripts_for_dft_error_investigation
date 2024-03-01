@@ -142,12 +142,12 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         line_dash='dash',
     )
 
-    fig.add_vrect(
-        x0=volcano_peak_mean - volcano_peak_sd - beef_pt_OH, x1=volcano_peak_mean + volcano_peak_sd - beef_pt_OH,
-        fillcolor="green",
-        opacity=0.25,
-        annotation_text=f"Volcano top location {volcano_peak_mean} <br> stderr: {volcano_peak_sd:.3f} eV", annotation_position="top left"
-    )
+    #fig.add_vrect(
+    #    x0=volcano_peak_mean - volcano_peak_sd - beef_pt_OH, x1=volcano_peak_mean + volcano_peak_sd - beef_pt_OH,
+    #    fillcolor="green",
+    #    opacity=0.25,
+    #    annotation_text=f"Volcano top location {volcano_peak_mean} <br> stderr: {volcano_peak_sd:.3f} eV", annotation_position="top left"
+    #)
 
     print('plotting Pt')
 

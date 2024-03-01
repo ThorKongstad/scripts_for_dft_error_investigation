@@ -96,8 +96,7 @@ def uncertainty_vulcano(functional_list: Sequence[Functional], oh_reactions_gas_
         annotation_text="Uncertainty of Vulcano location", annotation_position="top left"
     )
 
-    fig.add_vline(
-        x=0.11,
+    fig.add_vrect(
         x0=0.11 - OH_OOH_scalling_fit.intercept_stderr/2, x1=0.11 + OH_OOH_scalling_fit.intercept_stderr/2,
         fillcolor="green",
         opacity=0.25,

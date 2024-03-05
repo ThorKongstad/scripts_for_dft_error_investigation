@@ -118,7 +118,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                                 dG_O=2*oh + 0.05
                                 ),
                             xc.calculate_BEE_reaction_enthalpy(Pt_OOH_reac).tolist(),
-                            (Pt_oh_ensem := xc.calculate_BEE_reaction_enthalpy(Pt_OH_reac))).tolist())) if pt_rel_bool else 0)),
+                            (Pt_oh_ensem := xc.calculate_BEE_reaction_enthalpy(Pt_OH_reac)).tolist()))) if pt_rel_bool else 0)),
                         x=(ens_x_cloud := oh_ensem + OH_corr - (Pt_oh_ensem + OH_corr if pt_rel_bool else 0)),
                         hovertemplate=f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}',
                         marker=dict(color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', opacity=0.5, ),

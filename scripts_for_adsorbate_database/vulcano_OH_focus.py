@@ -84,12 +84,12 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 y=[overpotential(
                     dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac)) + OOH_corr,
                     dG_OH=oh_adsorp + OH_corr,
-                    dG_O=2*oh_adsorp + 0.05# oh_adsorp*2 + 0.05 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
+                    dG_O=2*(oh_adsorp + OH_corr) # + 0.05# oh_adsorp*2 + 0.05 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
                 )
                   -(overpotential(
                     dG_OOH=(pt_ooh_adsorp := xc.calculate_reaction_enthalpy(Pt_OOH_reac)) + OOH_corr,
                     dG_OH=pt_oh_adsorp + OH_corr,
-                    dG_O=2*pt_oh_adsorp + 0.05# oh_adsorp*2 + 0.05 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
+                    dG_O=2*(pt_oh_adsorp + OH_corr)# + 0.05# oh_adsorp*2 + 0.05 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
                 ) if pt_rel_bool else 0)],
                 hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '<br>' + f'O adsorption: 2*E_OH ' + '<br> G_OH: %{x:.3f} eV' + '<br> Limiting Potential: %{y:.3f} eV',
                 legendgroup=metal,
@@ -106,7 +106,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                         y=(ens_y_cloud := np.array(list(map(lambda ooh, oh: overpotential(
                                 dG_OOH=ooh + OOH_corr,
                                 dG_OH=oh + OH_corr,
-                                dG_O=2*oh + 0.05
+                                dG_O=2*(oh + OH_corr)
                                 ),
                             xc.calculate_BEE_reaction_enthalpy(ooh_reac).tolist(),
                             (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac)).tolist(),
@@ -115,7 +115,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                                           - (np.array(list(map(lambda ooh, oh: overpotential(
                                 dG_OOH=ooh + OOH_corr,
                                 dG_OH=oh + OH_corr,
-                                dG_O=2*oh + 0.05
+                                dG_O=2*(oh + OH_corr)
                                 ),
                             xc.calculate_BEE_reaction_enthalpy(Pt_OOH_reac).tolist(),
                             (Pt_oh_ensem := xc.calculate_BEE_reaction_enthalpy(Pt_OH_reac)) .tolist()))) if pt_rel_bool else 0)),
@@ -139,7 +139,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                                       error_y_width=3,
                                       error_x_visible=False,
                                       error_y_visible=False,
-                                      hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '<br>' + f'O adsorption: 2*E_OH ' + '<br> G_OH: %{x:.3f}  +- ' + f'{x_err} eV' + '<br> Limiting Potential: %{y:.3f}  +- ' + f'{y_err} eV',
+                                      hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '<br>' + f'O adsorption: 2*E_OH ' + '<br> G_OH: %{x:.3f}  +- ' + f'{x_err:.3f} eV' + '<br> Limiting Potential: %{y:.3f}  +- ' + f'{y_err:.3f} eV',
                                       #error_x=dict(type='constant', value=sd(ens_x_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True),
                                       #error_y=dict(type='constant', value=sd(ens_y_cloud), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True)
                                       )

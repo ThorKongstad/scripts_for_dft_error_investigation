@@ -103,7 +103,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                     fig.add_trace(go.Scatter(
                         mode='markers',
                         name=f'BEE for {metal} {xc.name}',
-                        y=(ens_y_cloud := np.array(list(map(lambda ooh, oh, o: overpotential(
+                        y=(ens_y_cloud := np.array(list(map(lambda ooh, oh: overpotential(
                                 dG_OOH=ooh + OOH_corr,
                                 dG_OH=oh + OH_corr,
                                 dG_O=2*oh + 0.05
@@ -112,7 +112,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                             (oh_ensem := xc.calculate_BEE_reaction_enthalpy(oh_reac)).tolist(),
                             #xc.calculate_BEE_reaction_enthalpy(o_reac).tolist()
                             )))
-                                          - (np.array(list(map(lambda ooh, oh, o: overpotential(
+                                          - (np.array(list(map(lambda ooh, oh: overpotential(
                                 dG_OOH=ooh + OOH_corr,
                                 dG_OH=oh + OH_corr,
                                 dG_O=2*oh + 0.05

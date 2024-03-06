@@ -352,6 +352,11 @@ def scaling_plot(functional_list: Sequence[Functional], oh_reactions: Sequence[a
         ]
     )
 
+    fig.update_yaxes(
+        scaleanchor="x",
+        scaleratio=1
+    )
+
     fig.set_subplots(rows=2, cols=1,row_heights=[0.7, 0.3])
     fig.add_traces(ens_figure.data, rows=2, cols=1)
     #fig.update_layout(**ens_figure.layout.__dict__, rows=2, cols=1)

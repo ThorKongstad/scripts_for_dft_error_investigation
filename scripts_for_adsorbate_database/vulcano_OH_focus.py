@@ -100,9 +100,9 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
 
                 if metal == 'Pt':
                     fig.add_vline(
-                        x=oh_adsorp + 0.11,
+                        x=(0 if pt_rel_bool else oh_adsorp) + 0.11,
                         line_dash='dash',
-                        annotation_text='Expected volcano peak'
+                        annotation_text=f'Expected volcano peak for {xc.name}'
                     )
 
             except: traceback.print_exc()

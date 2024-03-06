@@ -77,7 +77,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         #marker_arg = dict(marker=dict(color=colour_dict_metal[metal], size=16, line=dict(width=2, color='DarkSlateGrey'))) if metal in colour_dict_metal.keys() else dict(marker=dict(size=16, line=dict(width=2, color='DarkSlateGrey')))
         for xc in functional_list:
             marker_arg = dict(marker=dict(size=16, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'DarkSlateGrey', symbol=marker_dict_functional[xc.name] if xc.name in marker_dict_functional.keys() else 'circle'))
-            try: fig.add_trace(go.Scatter(
+            try:
+                fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name}-{metal}',
                 x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac)) + OH_corr - ((pt_oh_adsorp := xc.calculate_reaction_enthalpy(Pt_OH_reac)) + OH_corr if pt_rel_bool else 0)], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
@@ -85,17 +86,25 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                     dG_OOH=(ooh_adsorp := xc.calculate_reaction_enthalpy(ooh_reac)) + OOH_corr,
                     dG_OH=oh_adsorp + OH_corr,
                     dG_O=2*(oh_adsorp + OH_corr) # + 0.05# oh_adsorp*2 + 0.05 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
-                )
-                  -(overpotential(
+                    )
+                    -(overpotential(
                     dG_OOH=(pt_ooh_adsorp := xc.calculate_reaction_enthalpy(Pt_OOH_reac)) + OOH_corr,
                     dG_OH=pt_oh_adsorp + OH_corr,
                     dG_O=2*(pt_oh_adsorp + OH_corr)# + 0.05# oh_adsorp*2 + 0.05 # 0.05 is dZPE - TdS from 10.1021/acssuschemeng.8b04173
-                ) if pt_rel_bool else 0)],
+                    ) if pt_rel_bool else 0)],
                 hovertemplate=f'functional: {xc.name}' + '<br>' + f'metal: {metal}' + '<br>' + f'OH adsorption: {str(oh_reac)}' + '<br>' + f'OOH adsorption: {str(ooh_reac)}' + '<br>' + f'O adsorption: 2*E_OH ' + '<br> G_OH: %{x:.3f} eV' + '<br> Limiting Potential: %{y:.3f} eV',
                 legendgroup=metal,
                 legendgrouptitle_text=metal,
                 **marker_arg
-            ))
+                ))
+
+                if metal == 'Pt':
+                    fig.add_vline(
+                        x=oh_adsorp + 0.11,
+                        line_dash='dash',
+                        annotation_text='Expected volcano peak'
+                    )
+
             except: traceback.print_exc()
 
             if xc.has_BEE:
@@ -148,8 +157,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
 
     fig.update_layout(
         title='ORR',
-        xaxis_title='$\Delta G_{*OH}$' + ('$-\Delta G_{Pt*OH}$' if pt_rel_bool else ''),# in reference to Pt_{111} adsorption',
-        yaxis_title='Limiting potential' + ('- Platiniums Limiting' if pt_rel_bool else ''),
+        xaxis_title='$\Delta G_{*OH}$' if pt_rel_bool else '$\Delta G_{*OH}-\Delta G_{Pt*OH}$',# in reference to Pt_{111} adsorption',
+        yaxis_title='Limiting potential' + (' - Platinum\'s Limiting' if pt_rel_bool else ''),
 
         updatemenus = [
             dict(

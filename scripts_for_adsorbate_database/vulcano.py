@@ -79,7 +79,8 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
         #marker_arg = dict(marker=dict(color=colour_dict_metal[metal], size=16, line=dict(width=2, color='DarkSlateGrey'))) if metal in colour_dict_metal.keys() else dict(marker=dict(size=16, line=dict(width=2, color='DarkSlateGrey')))
         for xc in functional_list:
             marker_arg = dict(marker=dict(size=16, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'DarkSlateGrey', symbol=marker_dict_functional[xc.name] if xc.name in marker_dict_functional.keys() else 'circle'))
-            try: fig.add_trace(go.Scatter(
+            try:
+                fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name}-{metal}',
                 x=[(oh_adsorp := xc.calculate_reaction_enthalpy(oh_reac)) + OH_corr - ((pt_oh_adsorp := xc.calculate_reaction_enthalpy(Pt_OH_reac)) + OH_corr if pt_rel_bool else 0)], # + 0.35 is dZPE - TdS from 10.1021/jp047349j, - 0.3 is water stability correction 10.1021/cs300227s
@@ -96,7 +97,15 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 legendgroup=metal,
                 legendgrouptitle_text=metal,
                 **marker_arg
-            ))
+                ))
+
+                if metal == 'Pt' and (not pt_rel_bool or xc.name == 'BEEF-vdW'):
+                    fig.add_vline(
+                        x=(0 if pt_rel_bool else oh_adsorp) + 0.11,
+                        line_dash='dash',
+                        annotation_text=f'Expected volcano peak' + (f'for {xc.name}' if not pt_rel_bool else '')
+                    )
+
             except: traceback.print_exc()
 
             if xc.name in ['BEEF-vdW', "{'name':'BEEF-vdW','backend':'libvdwxc'}"]:

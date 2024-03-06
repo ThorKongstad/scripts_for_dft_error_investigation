@@ -98,11 +98,11 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 **marker_arg
                 ))
 
-                if metal == 'Pt':
+                if metal == 'Pt' and (not pt_rel_bool or xc.name == 'BEEF-vdW'):
                     fig.add_vline(
                         x=(0 if pt_rel_bool else oh_adsorp) + 0.11,
                         line_dash='dash',
-                        annotation_text=f'Expected volcano peak for {xc.name}'
+                        annotation_text=f'Expected volcano peak' + (f'for {xc.name}' if not pt_rel_bool else '')
                     )
 
             except: traceback.print_exc()
@@ -157,7 +157,7 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
 
     fig.update_layout(
         title='ORR',
-        xaxis_title='$\Delta G_{*OH}$' if pt_rel_bool else '$\Delta G_{*OH}-\Delta G_{Pt*OH}$',# in reference to Pt_{111} adsorption',
+        xaxis_title='$\Delta G_{*OH}$' if not pt_rel_bool else '$\Delta G_{*OH}-\Delta G_{Pt*OH}$',# in reference to Pt_{111} adsorption',
         yaxis_title='Limiting potential' + (' - Platinum\'s Limiting' if pt_rel_bool else ''),
 
         updatemenus = [
@@ -206,6 +206,11 @@ def vulcano_plotly(functional_list: Sequence[Functional], oh_reactions: Sequence
                 yanchor="top"
             )
         ]
+    )
+
+    fig.update_yaxes(
+        scaleanchor="x",
+        scaleratio=1
     )
 
     folder_exist('reaction_plots')

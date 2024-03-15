@@ -98,7 +98,7 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
 
     largest_err_axis = {'axis': False, 'err': 0}
     fig = make_subplots(rows=len(oh_reactions), cols=2)
-    for i, oh_reac, ooh_reac in enumerate(zip(oh_reactions, ooh_reactions, )):
+    for i, oh_reac, ooh_reac in enumerate(*zip(oh_reactions, ooh_reactions, )):
         for j, reac in enumerate((oh_reac, ooh_reac)):
             sub_fig = single_plot(functional_list, reac)
             fig.add_trace(sub_fig.data, col=j + 1, row=i + 1)

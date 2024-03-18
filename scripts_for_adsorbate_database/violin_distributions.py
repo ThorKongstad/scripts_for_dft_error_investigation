@@ -104,11 +104,11 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
             fig.add_traces(sub_fig.data, cols=j + 1, rows=i + 1)
             fig.update_xaxes(title_text='eV', col=j + 1, row=i + 1)
             fig.update_yaxes(visible=False, col=j + 1, row=i + 1)
-            fig.layout.annotations[i+j].update(text=str(reac))
+            fig.layout.annotations[2*i+j].update(text=str(reac))
 
             try:
                 if largest_err_axis['err'] < (err := [tra['error_x']['value'] for tra in sub_fig.data if hasattr(tra, 'error_x')][0]):
-                    largest_err_axis = {'axis': f'x{i+1+j}', 'err': err}
+                    largest_err_axis = {'axis': f'x{2*i+j}', 'err': err}
             except: pass
 
     if largest_err_axis['axis']:

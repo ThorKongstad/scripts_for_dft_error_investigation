@@ -93,7 +93,7 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
                     ))
                     fig.update_traces(selector=dict(name=f'{xc.name} {metal}'),
                                       error_y=dict(type='constant', value=0, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=False),
-                                      error_x=dict(type='constant', value=err, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=False),)
+                                      error_x=dict(type='constant', value=err, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True),)
                     fig.data = fig.data[-1:] + fig.data[0:-1]
                 except: traceback.print_exc()
         return fig

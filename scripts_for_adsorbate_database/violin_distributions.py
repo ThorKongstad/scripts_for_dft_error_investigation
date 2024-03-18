@@ -123,7 +123,7 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
 
     folder_exist('reaction_plots')
     if png_bool: fig.write_image(save_name + '.png')
-    fig.write_html(save_name + '.html', include_mathjax='cdn')
+    fig.write_html('reaction_plots/'+save_name + '.html', include_mathjax='cdn')
 
 
 

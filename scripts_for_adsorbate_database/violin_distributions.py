@@ -79,9 +79,7 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
                       #  legendgroup=metal,
                      #   legendgrouptitle_text=metal,
                     #))
-                    ens_marker_arg = dict(marker=dict(size=16, color=colour_dict_metal[
-                        metal] if metal in colour_dict_metal.keys() else 'DarkSlateGrey', symbol=marker_dict_functional[
-                        xc.name] if xc.name in marker_dict_functional.keys() else 'circle', opacity=0.5))
+                    ens_marker_arg = dict(marker=dict(size=16, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'DarkSlateGrey', symbol=marker_dict_functional[xc.name] if xc.name in marker_dict_functional.keys() else 'circle', opacity=0.5))
                     fig.add_trace(go.Violin(
                         name=f'BEE for {metal} {xc.name} violin',
                         x=(ens_x_cloud := xc.calculate_BEE_reaction_enthalpy(reaction).tolist()),
@@ -110,9 +108,9 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
             fig.layout.annotations[2*i+j].update(text=str(reac))
 
             try:
-                if largest_err_axis['err'] < (err := [tra['error_x']['value'] for tra in sub_fig.data if hasattr(tra, 'error_x')][0]):
+                if largest_err_axis['err'] < (err := [tra['error_x']['value'] for tra in sub_fig.data if hasattr(tra, 'error_x') and tra.error_x is not None][0]):
                     largest_err_axis = {'axis': f'x{(2*i+j)+1}', 'err': err}
-            except: pass
+            except: pass # traceback.print_exc()
 
     if largest_err_axis['axis']:
         for i in range(len(oh_reactions)):

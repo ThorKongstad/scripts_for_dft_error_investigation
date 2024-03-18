@@ -60,8 +60,8 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name} {metal}',
-                y=0,
-                x=xc.calculate_reaction_enthalpy(reaction),
+                y=[0],
+                x=[xc.calculate_reaction_enthalpy(reaction)],
                 hovertemplate='E_dft =  %{x:.3f} eV',
                 legendgroup=metal,
                 legendgrouptitle_text=metal,

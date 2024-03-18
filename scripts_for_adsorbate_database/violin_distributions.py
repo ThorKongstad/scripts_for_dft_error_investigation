@@ -102,7 +102,7 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
         for j, reac in enumerate((oh_reac, ooh_reac)):
             sub_fig = single_plot(functional_list, reac)
             fig.add_traces(sub_fig.data, cols=j + 1, rows=i + 1)
-            fig.update_xaxes(xaxis_title='eV', col=j + 1, row=i + 1)
+            fig.update_xaxes(title_text='eV', col=j + 1, row=i + 1)
             fig.update_yaxes(visible=False, col=j + 1, row=i + 1)
             fig.layout.annotations[i+j].update(text=str(reac))
 

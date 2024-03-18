@@ -56,7 +56,7 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
         fig = go.Figure()
         for xc in functional_list:
             line_arg = dict(line=dict(color=colour_dict_functional[xc.name], )) if xc.name in colour_dict_functional.keys() else dict(line=dict(color='DarkSlateGrey'))
-            marker_arg = dict(marker=dict(size=16, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'DarkSlateGrey', symbol=marker_dict_functional[xc.name] if xc.name in marker_dict_functional.keys() else 'circle'))
+            marker_arg = dict(marker=dict(size=16, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'DarkSlateGrey', symbol=marker_dict_functional[xc.name] if xc.name in marker_dict_functional.keys() else 'circle',line=dict(width=2, color='DarkSlateGrey')))
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name} {metal}',
@@ -79,6 +79,7 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
                       #  legendgroup=metal,
                      #   legendgrouptitle_text=metal,
                     #))
+                    marker_arg.update({'opacity': 0.5})
                     fig.add_trace(go.Violin(
                         name=f'BEE for {metal} {xc.name} violin',
                         x=(ens_x_cloud := xc.calculate_BEE_reaction_enthalpy(reaction).tolist()),

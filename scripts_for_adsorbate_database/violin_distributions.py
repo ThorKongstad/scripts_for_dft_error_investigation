@@ -108,13 +108,13 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
 
             try:
                 if largest_err_axis['err'] < (err := [tra['error_x']['value'] for tra in sub_fig.data if hasattr(tra, 'error_x')][0]):
-                    largest_err_axis = {'axis': f'x{2*i+j}', 'err': err}
+                    largest_err_axis = {'axis': f'x{(2*i+j)+1}', 'err': err}
             except: pass
 
     if largest_err_axis['axis']:
         for i in range(len(oh_reactions)):
             for j in range(2):
-                if largest_err_axis['axis'] == f'x{i+1+j}': continue
+                if largest_err_axis['axis'] == f'x{(2*i+j)+1}': continue
                 fig.update_xaxes(
                     scaleanchor=largest_err_axis['axis'],
                     scaleratio=1,

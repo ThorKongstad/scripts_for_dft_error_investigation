@@ -62,7 +62,7 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
                 name=f'{xc.name} {metal}',
                 y=[0],
                 x=[xc.calculate_reaction_enthalpy(reaction)],
-                hovertemplate='E_dft =  %{x:.3f} eV',
+                hovertemplate=f'{xc.name}'+'<br>'+'<br>'.join([f'   {name}: {amount} * {getattr(xc,typ)[name]:.3f} eV' for typ, name, amount in reac.reactants + reac.products])+'<br>'+'E_dft =  %{x:.3f} eV',
                 legendgroup=metal,
                 legendgrouptitle_text=metal,
                 **marker_arg
@@ -85,13 +85,15 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
                         x=(ens_x_cloud := xc.calculate_BEE_reaction_enthalpy(reaction).tolist()),
                         orientation='h',
                         points='all',
-                        hovertemplate=f'E_dft = {mean(ens_x_cloud)} +- {(err := sd(ens_x_cloud))}',
+                        hovertemplate=f'{xc.name}'+'<br>'+'E_dft = %{x:.3f} eV',
                         **ens_marker_arg,
                         **line_arg
                     ))
                     fig.update_traces(selector=dict(name=f'{xc.name} {metal}'),
                                       error_y=dict(type='constant', value=0, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=False),
-                                      error_x=dict(type='constant', value=err, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True),)
+                                      error_x=dict(type='constant', value=(err := sd(ens_x_cloud)), color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'Grey', thickness=1.5, width=3, visible=True),
+                                      hovertemplate=f'{xc.name}' + '<br>' + '<br>'.join([f'   {name}: {amount} * {getattr(xc, typ)[name]:.3f} +- {sd(getattr(xc, typ + "_bee")[name]):.3f} eV' for typ, name, amount in reac.reactants + reac.products]) + '<br>' + 'E_dft =  %{x:.3f} +- ' + f'{err:.3f} eV',
+                                      )
                     fig.data = fig.data[-1:] + fig.data[0:-1]
                 except: traceback.print_exc()
         return fig
@@ -109,6 +111,7 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
 
             try:
                 if largest_err_axis['err'] < (err := [tra['error_x']['value'] for tra in sub_fig.data if hasattr(tra, 'error_x') and tra['error_x']['value'] is not None][0]):
+                    fig.layout.annotations[2 * i + j].update(text=str(reac) + '<br>' + f'standard deviations: {err}')
                     largest_err_axis = {'axis': f'x{(2*i+j)+1}', 'err': err}
             except: pass # traceback.print_exc()
 

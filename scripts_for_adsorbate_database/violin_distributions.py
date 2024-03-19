@@ -111,8 +111,8 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
 
             try:
                 if largest_err_axis['err'] < (err := [tra['error_x']['value'] for tra in sub_fig.data if hasattr(tra, 'error_x') and tra['error_x']['value'] is not None][0]):
-                    fig.layout.annotations[2 * i + j].update(text=str(reac) + '<br>' + f'standard deviations: {err}')
                     largest_err_axis = {'axis': f'x{(2*i+j)+1}', 'err': err}
+                fig.layout.annotations[2 * i + j].update(text=str(reac) + '<br>' + f'standard deviations: {err}')
             except: pass # traceback.print_exc()
 
     if largest_err_axis['axis']:

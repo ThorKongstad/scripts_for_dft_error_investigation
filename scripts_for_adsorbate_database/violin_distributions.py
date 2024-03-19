@@ -63,8 +63,8 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
                 y=[0],
                 x=[xc.calculate_reaction_enthalpy(reaction)],
                 hovertemplate=f'{xc.name}'+'<br>'+'<br>'.join([f'   {name}: {amount} * {getattr(xc,typ)[name]:.3f} eV' for typ, name, amount in reac.reactants + reac.products])+'<br>'+'E_dft =  %{x:.3f} eV',
-                legendgroup=metal,
-                legendgrouptitle_text=metal,
+                legendgroup=xc.name,
+                legendgrouptitle_text=xc.name,
                 **marker_arg
                 ))
             except: traceback.print_exc()
@@ -86,6 +86,8 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
                         orientation='h',
                         points='all',
                         hovertemplate=f'{xc.name}'+'<br>'+'E_dft = %{x:.3f} eV',
+                        legendgroup=xc.name,
+                        legendgrouptitle_text=xc.name,
                         **ens_marker_arg,
                         **line_arg
                     ))

@@ -56,13 +56,13 @@ def one_dim_violin(functional_list: Sequence[Functional], oh_reactions: Sequence
         fig = go.Figure()
         for xc in functional_list:
             line_arg = dict(line=dict(color=colour_dict_functional[xc.name], )) if xc.name in colour_dict_functional.keys() else dict(line=dict(color='DarkSlateGrey'))
-            marker_arg = dict(marker=dict(size=16, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'DarkSlateGrey', symbol=marker_dict_functional[xc.name] if xc.name in marker_dict_functional.keys() else 'circle',line=dict(width=2, color='DarkSlateGrey')))
+            marker_arg = dict(marker=dict(size=16, color=colour_dict_metal[metal] if metal in colour_dict_metal.keys() else 'DarkSlateGrey', symbol=marker_dict_functional[xc.name] if xc.name in marker_dict_functional.keys() else 'circle', line=dict(width=2, color='DarkSlateGrey')))
             try: fig.add_trace(go.Scatter(
                 mode='markers',
                 name=f'{xc.name} {metal}',
                 y=[0],
                 x=[xc.calculate_reaction_enthalpy(reaction)],
-                hovertemplate=f'{xc.name}'+'<br>'+'<br>'.join([f'   {name}: {amount} * {getattr(xc,typ)[name]:.3f} eV' for typ, name, amount in reac.reactants + reac.products])+'<br>'+'E_dft =  %{x:.3f} eV',
+                hovertemplate=f'{xc.name}'+'<br>'+'<br>'.join([f'   {name}: {amount} * {getattr(xc, typ)[name]:.3f} eV' for typ, name, amount in reac.reactants + reac.products])+'<br>'+'E_dft =  %{x:.3f} eV',
                 legendgroup=xc.name,
                 legendgrouptitle_text=xc.name,
                 **marker_arg
@@ -158,7 +158,7 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
                 oh_ad_h2_per_ox, ooh_ad_h2_per_ox,
                 oh_ad_h2_ox, ooh_ad_h2_ox,
                 oh_ad_metal_ref, ooh_ad_metal_ref
-                )
+                 )
 
     for reac in all_reaction:
         for compo in reac.reactants + reac.products:
@@ -173,12 +173,16 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
     reactions_groups = (
         ('violins_water_ref', oh_ad_h2_water, ooh_ad_h2_water),
         ('violins_per_oxide_ref', oh_ad_h2_per_ox, ooh_ad_h2_per_ox),
-        ('violins_oxigen_reg', oh_ad_h2_ox, ooh_ad_h2_ox),
+        ('violins_oxigen_ref', oh_ad_h2_ox, ooh_ad_h2_ox),
         ('violins_metal_ref', oh_ad_metal_ref, ooh_ad_metal_ref)
     )
 
     for name, oh_reacs, ooh_reacs in reactions_groups:
         one_dim_violin(functional_list, oh_reacs, ooh_reacs, name)
+
+    # reference comparisons
+    one_dim_violin(functional_list, list([reac for reac in oh_ad_h2_water if 'Pt' not in str(reac)]), oh_ad_h2_water, 'violins_OH_ref_compare')
+    one_dim_violin(functional_list, list([reac for reac in ooh_ad_h2_water if 'Pt' not in str(reac)]), ooh_ad_h2_water, 'violins_OOH_ref_compare')
 
 
 if __name__ == '__main__':

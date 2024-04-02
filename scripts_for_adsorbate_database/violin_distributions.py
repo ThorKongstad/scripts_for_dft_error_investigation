@@ -181,8 +181,8 @@ def main(slab_db_dir: list[str], adsorbate_db_dir: list[str], mol_db_dir: list[s
         one_dim_violin(functional_list, oh_reacs, ooh_reacs, name)
 
     # reference comparisons
-    one_dim_violin(functional_list, list([reac for reac in oh_ad_h2_water if 'Pt' not in str(reac)]), oh_ad_h2_water, 'violins_OH_ref_compare')
-    one_dim_violin(functional_list, list([reac for reac in ooh_ad_h2_water if 'Pt' not in str(reac)]), ooh_ad_h2_water, 'violins_OOH_ref_compare')
+    one_dim_violin(functional_list, list([reac for reac in oh_ad_h2_water if 'Pt' not in str(reac)]), oh_ad_metal_ref, 'violins_OH_ref_compare')
+    one_dim_violin(functional_list, list([reac for reac in ooh_ad_h2_water if 'Pt' not in str(reac)]), ooh_ad_metal_ref, 'violins_OOH_ref_compare')
 
 
 if __name__ == '__main__':

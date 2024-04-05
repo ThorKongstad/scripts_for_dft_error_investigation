@@ -13,7 +13,7 @@ from ase.optimize import QuasiNewton
 from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
 from typing import NoReturn, Sequence, Optional
-from ase.parallel import parprint, world
+from ase.parallel import parprint, world, barrier
 from ase.dft.bee import BEEFEnsemble
 import time
 
@@ -46,7 +46,7 @@ def weighted_sd(dat: Sequence[float], coef: Sequence[float], mean: float) -> flo
     # https://www.itl.nist.gov/div898/software/dataplot/refman2/ch2/weightsd.pdf
     non_zero_coefs = len([co for co in coef if co != 0])
     return np.sqrt(
-        sum(co_i * (dat_i - mean)**2 for co_i, dat_i in zip(coef,dat)) /
+        sum(co_i * (dat_i - mean)**2 for co_i, dat_i in zip(coef, dat)) /
         (((non_zero_coefs-1)*sum(coef))/non_zero_coefs)
     )
 
@@ -67,6 +67,7 @@ def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = Non
     else: images = map(read, structures)
 
     for nr, image in enumerate(images):
+        barrier()
         calc = GPAW(mode=PW(500),
                     kpts=(4, 4, 1),
                     xc='BEEF-vdW',

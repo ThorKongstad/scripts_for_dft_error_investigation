@@ -1,6 +1,6 @@
-#partition=katla_medium
-#nprocshared=24
-#mem=2300MB
+#partition=katla_verylong
+#nprocshared=48
+#mem=2000MB
 #constrain='[v4|v5]'
 import argparse
 import os
@@ -46,7 +46,7 @@ def weighted_sd(dat: Sequence[float], coef: Sequence[float], mean: float) -> flo
     # https://www.itl.nist.gov/div898/software/dataplot/refman2/ch2/weightsd.pdf
     non_zero_coefs = len([co for co in coef if co != 0])
     return np.sqrt(
-        sum(co_i * (dat_i - mean)**2 for co_i,dat_i in zip(coef,dat)) /
+        sum(co_i * (dat_i - mean)**2 for co_i, dat_i in zip(coef,dat)) /
         (((non_zero_coefs-1)*sum(coef))/non_zero_coefs)
     )
 
@@ -57,8 +57,7 @@ def update_db(db_dir: str, db_update_args: dict):
         db_obj.update(**db_update_args)
 
 
-def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = None, direc: Optional[str] = None):
-    if direc is None: direc = '/groups/kemi/thorkong/errors_investigation/transistion_calc/'
+def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = None, direc: Optional[str] = '.'):
     folder = ends_with(direc, '/') + sanitize(calc_name)
     if world.rank == 0: folder_exist(os.path.basename(folder), path=os.path.dirname(folder))
 
@@ -101,7 +100,7 @@ if __name__ == '__main__':
     parser.add_argument('files', nargs='+')
     parser.add_argument('--db_name', '-n', type=str)
     #parser.add_argument('-opt', '--optimise', action='store_true')
-    parser.add_argument('-dir','--directory',type=str)
+    parser.add_argument('-dir', '--directory', type=str, default='.')
     args = parser.parse_args()
 
     main(args.calculation_name, args.files, args.db_name, args.directory)

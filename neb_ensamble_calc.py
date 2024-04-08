@@ -90,9 +90,14 @@ def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = Non
         ensem_sd = sd(ensem_en_li, ensem_mean)
 
         if world.rank == 0:
-            with db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db') as db_obj:
-                data_dict = {'ensemble_en': ensem_en_li} #,'ensemble_coef':ensem_coef}
-                db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
+            data_dict = {'ensemble_en': ensem_en_li}
+            db_obj = db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db')
+            db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
+
+            # CONTEXT MANAGER CURRENTLY MAKING TROUBLE.
+#            with db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db') as db_obj:
+#                data_dict = {'ensemble_en': ensem_en_li}
+#                db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
 
 
 if __name__ == '__main__':

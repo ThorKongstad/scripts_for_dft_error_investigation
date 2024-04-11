@@ -4,6 +4,8 @@
 #constrain='[v4|v5]'
 import argparse
 import os
+import signal
+from contextlib import contextmanager
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 from sqlite3 import OperationalError
 import ase.db as db
@@ -16,6 +18,20 @@ from typing import NoReturn, Sequence, Optional
 from ase.parallel import parprint, world, barrier
 from ase.dft.bee import BEEFEnsemble
 import time
+
+
+class TimeoutException(Exception): pass
+
+
+@contextmanager
+def time_limit(seconds: int):
+    def signal_handler(signum, frame):
+        raise TimeoutException()
+
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(seconds)
+    try: yield
+    finally: signal.alarm(0)
 
 
 @retry(retry=retry_if_exception_type(FileExistsError), stop=stop_after_attempt(5), wait=wait_fixed(2))
@@ -90,9 +106,16 @@ def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = Non
         ensem_sd = sd(ensem_en_li, ensem_mean)
 
         if world.rank == 0:
-            data_dict = {'ensemble_en': ensem_en_li}
-            db_obj = db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db')
-            db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
+            try:
+                with time_limit(600):
+                    with db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db') as db_obj:
+                        data_dict = {'ensemble_en': ensem_en_li}
+                        db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
+            except TimeoutException: pass
+
+#            data_dict = {'ensemble_en': ensem_en_li}
+#            db_obj = db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db')
+#            db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
 
             # CONTEXT MANAGER CURRENTLY MAKING TROUBLE.
 #            with db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db') as db_obj:

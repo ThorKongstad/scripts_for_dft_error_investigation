@@ -105,13 +105,18 @@ def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = Non
         ensem_mean = mean(ensem_en_li)
         ensem_sd = sd(ensem_en_li, ensem_mean)
 
-        if world.rank == 0:
-            try:
-                with time_limit(600):
-                    with db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db') as db_obj:
-                        data_dict = {'ensemble_en': ensem_en_li}
-                        db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
-            except TimeoutException: pass
+
+        with db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db') as db_obj:
+            data_dict = {'ensemble_en': ensem_en_li}
+            db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
+
+#        if world.rank == 0:
+#            try:
+#                with time_limit(600):
+#                    with db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db') as db_obj:
+#                        data_dict = {'ensemble_en': ensem_en_li}
+#                        db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
+#            except TimeoutException: pass
 
 #            data_dict = {'ensemble_en': ensem_en_li}
 #            db_obj = db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db')

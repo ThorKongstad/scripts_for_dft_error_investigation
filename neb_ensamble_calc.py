@@ -6,6 +6,8 @@ import argparse
 import os
 import signal
 from contextlib import contextmanager
+
+from ase import Atoms
 from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 from sqlite3 import OperationalError
 import ase.db as db
@@ -73,42 +75,35 @@ def update_db(db_dir: str, db_update_args: dict):
         db_obj.update(**db_update_args)
 
 
-def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = None, direc: Optional[str] = '.'):
-    folder = ends_with(direc, '/') + sanitize(calc_name)
-    if world.rank == 0: folder_exist(os.path.basename(folder), path=os.path.dirname(folder))
-
+def single_point(image: Atoms, folder: str, nr:int, calc_name: str, db_name: Optional[str] = None):
     grid_spacing = 0.16
+    calc = GPAW(mode=PW(500),
+                kpts=(4, 4, 1),
+                xc='BEEF-vdW',
+                basis='dzp',
+                txt=f'{folder}/BEE_image-{nr}.txt',
+                gpts=h2gpts(grid_spacing, image.get_cell(), idiv=4),
+                parallel={'augment_grids': True, 'sl_auto': True},
+                convergence={'eigenstates': 0.000001},
+                eigensolver=Davidson(3),
+                # hund=smile == 'O=O',
+                # **setup_dic
+                )
 
-    if len(structures) == 1: images = read(structures[0], index=':')
-    else: images = map(read, structures)
+    image.set_calculator(calc)
+    image.get_potential_energy()
+    image.get_forces()
+    ens = BEEFEnsemble(image)
+    ensem_en_li = ens.get_ensemble_energies()
+    ensem_mean = mean(ensem_en_li)
+    ensem_sd = sd(ensem_en_li, ensem_mean)
 
-    for nr, image in enumerate(images):
-        barrier()
-        calc = GPAW(mode=PW(500),
-                    kpts=(4, 4, 1),
-                    xc='BEEF-vdW',
-                    basis='dzp',
-                    txt=f'{folder}/BEE_image-{nr}.txt',
-                    gpts=h2gpts(grid_spacing, image.get_cell(), idiv=4),
-                    parallel={'augment_grids': True, 'sl_auto': True},
-                    convergence={'eigenstates': 0.000001},
-                    eigensolver=Davidson(3),
-                    #hund=smile == 'O=O',
-                    #**setup_dic
-                    )
+    with db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db') as db_obj:
+        data_dict = {'ensemble_en': ensem_en_li}
+        db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
 
-        image.set_calculator(calc)
-        image.get_potential_energy()
-        image.get_forces()
-        ens = BEEFEnsemble(image)
-        ensem_en_li = ens.get_ensemble_energies()
-        ensem_mean = mean(ensem_en_li)
-        ensem_sd = sd(ensem_en_li, ensem_mean)
+    del image, ens
 
-
-        with db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db') as db_obj:
-            data_dict = {'ensemble_en': ensem_en_li}
-            db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
 
 #        if world.rank == 0:
 #            try:
@@ -122,10 +117,22 @@ def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = Non
 #            db_obj = db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db')
 #            db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
 
-            # CONTEXT MANAGER CURRENTLY MAKING TROUBLE.
+# CONTEXT MANAGER CURRENTLY MAKING TROUBLE.
 #            with db.connect(f'{folder}/{sanitize(db_name if db_name else calc_name)}.db') as db_obj:
 #                data_dict = {'ensemble_en': ensem_en_li}
 #                db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
+
+
+def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = None, direc: Optional[str] = '.'):
+    folder = ends_with(direc, '/') + sanitize(calc_name)
+    if world.rank == 0: folder_exist(os.path.basename(folder), path=os.path.dirname(folder))
+
+    if len(structures) == 1: images = read(structures[0], index=':')
+    else: images = map(read, structures)
+
+    for nr, image in enumerate(images):
+        barrier()
+        single_point(image, folder, nr, calc_name, db_name)
 
 
 if __name__ == '__main__':

@@ -123,14 +123,14 @@ def single_point(image: Atoms, folder: str, nr:int, calc_name: str, db_name: Opt
 #                db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
 
 
-def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = None, direc: Optional[str] = '.'):
+def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = None, direc: Optional[str] = '.', start_from: int = 0):
     folder = ends_with(direc, '/') + sanitize(calc_name)
     if world.rank == 0: folder_exist(os.path.basename(folder), path=os.path.dirname(folder))
 
     if len(structures) == 1: images = read(structures[0], index=':')
-    else: images = map(read, structures)
+    else: images = map(read, structures[start_from:])
 
-    for nr, image in enumerate(images):
+    for nr, image in enumerate(images, start=start_from):
         barrier()
         single_point(image, folder, nr, calc_name, db_name)
 
@@ -142,6 +142,7 @@ if __name__ == '__main__':
     parser.add_argument('--db_name', '-n', type=str)
     #parser.add_argument('-opt', '--optimise', action='store_true')
     parser.add_argument('-dir', '--directory', type=str, default='.')
+    parser.add_argument('-from', '--startFrom', type=int, default=0)
     args = parser.parse_args()
 
-    main(args.calculation_name, args.files, args.db_name, args.directory)
+    main(args.calculation_name, args.files, args.db_name, args.directory, start_from=args.startFrom)

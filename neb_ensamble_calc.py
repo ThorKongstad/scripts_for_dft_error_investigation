@@ -127,7 +127,7 @@ def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = Non
     folder = ends_with(direc, '/') + sanitize(calc_name)
     if world.rank == 0: folder_exist(os.path.basename(folder), path=os.path.dirname(folder))
 
-    if len(structures) == 1: images = read(structures[0], index=':')
+    if len(structures) == 1: images = read(structures[0], index=f'{start_from}:')
     else: images = map(read, structures[start_from:])
 
     for nr, image in enumerate(images, start=start_from):

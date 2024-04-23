@@ -104,10 +104,9 @@ def reaction_plotly(reaction_steps: Sequence[reaction_step], plot_name: str):
         line=dict(
             color='black',
         ),
-        hovertemplate=[r'DE in relation to initial state:  %{x:.3}<br>'
-                       + f'Standard deviation from initial state: {sd(reac_step.ensamble_Es - reaction_steps[0].ensamble_Es)}<br>'
-                       + f'Standard deviation from transition state: {sd(reac_step.ensamble_Es - reaction_steps[transition_index].ensamble_Es)}<br>'
-                       + f'Standard deviation from final state: {sd(reac_step.ensamble_Es - reaction_steps[-1].ensamble_Es)}<br>'
+        hovertemplate=[r'DE from initial state:  %{y:.3} +- '+f'{sd(reac_step.ensamble_Es - reaction_steps[0].ensamble_Es):.3} eV<br>'
+                       + f'DE from transition state:  {(reac_step.dft_E - reaction_steps[transition_index].dft_E):.3} +- {sd(reac_step.ensamble_Es - reaction_steps[transition_index].ensamble_Es):.3} eV<br>'
+                       + f'DE from transition state:  {(reac_step.dft_E - reaction_steps[-1].dft_E):.3} +- {sd(reac_step.ensamble_Es - reaction_steps[-1].ensamble_Es):.3} eV<br>'
                     for reac_step in reaction_steps]
     ))
 

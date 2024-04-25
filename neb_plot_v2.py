@@ -112,7 +112,7 @@ def reaction_plotly(reaction_steps: Sequence[reaction_step], plot_name: str):
 
     fig.update_layout(
         xaxis_title='Distance between images',
-        yaxis_title=r'$\Delta$ E in relation to the inital state (Ev)',
+        yaxis_title=r'$\Delta E in relation to the initial state (eV)$',
 
     )
 
@@ -129,7 +129,7 @@ def main(image_db: str, plot_name: str):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()  
     parser.add_argument('image_db', type=str)
     parser.add_argument('save_name', type=str)
     args = parser.parse_args()

@@ -112,7 +112,7 @@ def reaction_plotly(reaction_steps: Sequence[reaction_step], plot_name: str):
 
     fig.update_layout(
         xaxis_title='Distance between images',
-        yaxis_title=r'$\Delta E in relation to the initial state (eV)$',
+        yaxis_title=r'$\Delta \text{E in relation to the initial state (eV)}$',
 
     )
 

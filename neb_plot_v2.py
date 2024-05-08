@@ -64,7 +64,10 @@ def reaction_plotly(reaction_steps: Sequence[reaction_step], plot_name: str):
     transition_index = reaction_steps.index(max(reaction_steps, key=lambda reac: reac.dft_E - reaction_steps[0].dft_E))
     fig = go.Figure()
 
-    image_dis = [dis_atoms(reac_step.step_row, reaction_steps[0].step_row) for reac_step in reaction_steps]
+    #image_dis = [dis_atoms(reac_step.step_row, reaction_steps[0].step_row) for reac_step in reaction_steps]
+
+    distance_moved = 0
+    image_dis = [(distance_moved := distance_moved + dis_atoms(reac_step.step_row, reaction_steps[i-1 if i != 0 else 0].step_row)) for i, reac_step in enumerate(reaction_steps)]
 
     fig.add_trace(go.Scatter(
         name='Stderr in relation to initial state',

@@ -9,6 +9,7 @@ from typing import NoReturn, Sequence, Optional, Tuple
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
+import tikzplotly
 
 
 @dataclass
@@ -60,7 +61,7 @@ def mean(values: Sequence[float]) -> float: return sum(values) / len(values)
 
 
 
-def reaction_plotly(reaction_steps: Sequence[reaction_step], plot_name: str):
+def reaction_plotly(reaction_steps: Sequence[reaction_step], plot_name: str, latex: bool = False):
     transition_index = reaction_steps.index(max(reaction_steps, key=lambda reac: reac.dft_E - reaction_steps[0].dft_E))
     fig = go.Figure()
 
@@ -123,18 +124,23 @@ def reaction_plotly(reaction_steps: Sequence[reaction_step], plot_name: str):
     save_name = f'reaction_plots/{plot_name}'
     fig.write_html(save_name + '.html', include_mathjax='cdn')
 
+    if latex:
+        try: tikzplotly.save(save_name + '.tex', fig)
+        except: pass
 
-def main(image_db: str, plot_name: str):
+
+def main(image_db: str, plot_name: str, latex: bool = False):
     with db.connect(image_db) as neb_obj:
         neb_images = [reaction_step(i, row) for i, row in enumerate(neb_obj.select())]
 
-    reaction_plotly(neb_images, plot_name)
+    reaction_plotly(neb_images, plot_name, latex=latex)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()  
     parser.add_argument('image_db', type=str)
     parser.add_argument('save_name', type=str)
+    parser.add_argument('-tex', '--latex', action='store_true', default=False)
     args = parser.parse_args()
 
-    main(image_db=args.image_db, plot_name=args.save_name)
+    main(image_db=args.image_db, plot_name=args.save_name, latex=args.latex)

@@ -75,8 +75,14 @@ def update_db(db_dir: str, db_update_args: dict):
         db_obj.update(**db_update_args)
 
 
-def single_point(image: Atoms, folder: str, nr:int, calc_name: str, db_name: Optional[str] = None):
+def single_point(image: Atoms, folder: str, nr:int, calc_name: str, db_name: Optional[str] = None, spinpol: bool = False):
     grid_spacing = 0.16
+
+    if spinpol:
+        mag_value = 1
+        mag_indicies = [atom.index for atom in image if atom.symbols in ['Ni', 'Co', 'Fe']]
+        image.set_initial_magnetic_moments([mag_value if atom.index in mag_indicies else 0 for atom in image])
+
     calc = GPAW(mode=PW(500),
                 kpts=(4, 4, 1),
                 xc='BEEF-vdW',
@@ -86,6 +92,7 @@ def single_point(image: Atoms, folder: str, nr:int, calc_name: str, db_name: Opt
                 parallel={'augment_grids': True, 'sl_auto': True},
                 convergence={'eigenstates': 0.000001},
                 eigensolver=Davidson(3),
+                spinpol=spinpol
                 # hund=smile == 'O=O',
                 # **setup_dic
                 )
@@ -123,7 +130,7 @@ def single_point(image: Atoms, folder: str, nr:int, calc_name: str, db_name: Opt
 #                db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
 
 
-def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = None, direc: Optional[str] = '.', start_from: int = 0):
+def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = None, direc: Optional[str] = '.', start_from: int = 0, spinpol: bool = False):
     folder = ends_with(direc, '/') + sanitize(calc_name)
     if world.rank == 0: folder_exist(os.path.basename(folder), path=os.path.dirname(folder))
 
@@ -132,7 +139,7 @@ def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = Non
 
     for nr, image in enumerate(images, start=start_from):
         barrier()
-        single_point(image, folder, nr, calc_name, db_name)
+        single_point(image, folder, nr, calc_name, db_name, spinpol=spinpol)
 
 
 if __name__ == '__main__':
@@ -143,6 +150,7 @@ if __name__ == '__main__':
     #parser.add_argument('-opt', '--optimise', action='store_true')
     parser.add_argument('-dir', '--directory', type=str, default='.')
     parser.add_argument('-from', '--startFrom', type=int, default=0)
+    parser.add_argument('--spin', action='store_true', default=None)
     args = parser.parse_args()
 
-    main(args.calculation_name, args.files, args.db_name, args.directory, start_from=args.startFrom)
+    main(args.calculation_name, args.files, args.db_name, args.directory, start_from=args.startFrom, spinpol=args.spin)

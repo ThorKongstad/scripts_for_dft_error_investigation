@@ -48,7 +48,7 @@ def single_point(image: Atoms, folder: str, name_tag: str, db_name: Optional[str
 
     if spinpol:
         mag_value = 1
-        mag_indicies = [atom.index for atom in image if atom.symbols in ['Ni', 'Co', 'Fe']]
+        mag_indicies = [atom.index for atom in image if atom.symbol in ['Ni', 'Co', 'Fe']]
         image.set_initial_magnetic_moments([mag_value if atom.index in mag_indicies else 0 for atom in image])
 
     calc = GPAW(mode=PW(500),

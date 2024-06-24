@@ -37,7 +37,7 @@ def main(neb_image_1: str, slab_for_1: str, neb_image_2: str, slab_for_2: str):
     neb_2_pd = build_pd(neb_2_adr[0], select_key=(neb_2_adr[1] if len(neb_2_adr) > 1 else None))
     slab_2_pd = build_pd(slab_2_adr[0], select_key=(slab_2_adr[1] if len(slab_2_adr) > 1 else None))
 
-    energy_diff = neb_2_pd.iloc[0].loc['energy'] + slab_1_pd.iloc[0].loc['energy'] - neb_1_pd.iloc[0].loc['energy'] + slab_2_pd.iloc[0].loc['energy']
+    energy_diff = neb_2_pd.iloc[0].loc['energy'] + slab_1_pd.iloc[0].loc['energy'] - neb_1_pd.iloc[0].loc['energy'] - slab_2_pd.iloc[0].loc['energy']
 
     neb_1_ens = bytes_to_object(neb_1_pd.iloc[0].loc['_data']).get('ensemble_en')
     slab_1_ens = bytes_to_object(slab_1_pd.iloc[0].loc['_data']).get('ensemble_en')
@@ -46,7 +46,7 @@ def main(neb_image_1: str, slab_for_1: str, neb_image_2: str, slab_for_2: str):
 
     energy_ensemble = [n_2 + s_2 - n_1 - s_1 for n_1, s_1, n_2, s_2 in zip(neb_1_ens, slab_1_ens, neb_2_ens, slab_2_ens)]
 
-    print(f'energy difference between image 1 and the reference 2 is: {energy_diff:.3f} +- {sd(energy_ensemble, mean_value=mean(energy_ensemble)):.3f}')
+    print(f'energy difference between image 1 and the reference 2 is: {energy_diff:.3f} +- {sd(energy_ensemble, mean_value=mean(energy_ensemble)):.3f} eV')
 
 
 if __name__ == '__main__':

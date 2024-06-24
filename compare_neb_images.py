@@ -32,10 +32,10 @@ def main(neb_image_1: str, slab_for_1: str, neb_image_2: str, slab_for_2: str):
     neb_2_adr = neb_image_2.split('@')
     slab_2_adr = slab_for_2.split('@')
 
-    neb_1_pd = build_pd(neb_1_adr[0], select_key=(neb_1_adr[1] if len(neb_1_adr) > 1 else None))
-    slab_1_pd = build_pd(slab_1_adr[0], select_key=(slab_1_adr[1] if len(slab_1_adr) > 1 else None))
-    neb_2_pd = build_pd(neb_2_adr[0], select_key=(neb_2_adr[1] if len(neb_2_adr) > 1 else None))
-    slab_2_pd = build_pd(slab_2_adr[0], select_key=(slab_2_adr[1] if len(slab_2_adr) > 1 else None))
+    neb_1_pd = build_pd(neb_1_adr[0], select_key=(f'id={neb_1_adr[1]}' if len(neb_1_adr) > 1 else None))
+    slab_1_pd = build_pd(slab_1_adr[0], select_key=(f'id={slab_1_adr[1]}' if len(slab_1_adr) > 1 else None))
+    neb_2_pd = build_pd(neb_2_adr[0], select_key=(f'id={neb_2_adr[1]}' if len(neb_2_adr) > 1 else None))
+    slab_2_pd = build_pd(slab_2_adr[0], select_key=(f'id={slab_2_adr[1]}' if len(slab_2_adr) > 1 else None))
 
     energy_diff = neb_2_pd.iloc[0].loc['energy'] + slab_1_pd.iloc[0].loc['energy'] - neb_1_pd.iloc[0].loc['energy'] - slab_2_pd.iloc[0].loc['energy']
 

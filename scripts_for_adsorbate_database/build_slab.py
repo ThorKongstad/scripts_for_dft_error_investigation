@@ -42,7 +42,7 @@ def main(metal: str, facet: Tuple[str, str], orthogonal: Optional[bool] = None, 
         slab.set_constraint(FixAtoms(indices=[atom.index for atom in slab if atom.tag in constrain]))
 
     if view_bool: view(slab)
-    else: write(f'{metal}_{facet}_s{"".join(map(str, size))}.traj', slab)
+    else: write(f'{metal}_{"".join(facet)}_s{"".join(map(str, size))}.traj', slab)
 
 
 if __name__ == '__main__':

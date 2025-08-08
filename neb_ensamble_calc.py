@@ -13,7 +13,7 @@ from sqlite3 import OperationalError
 import ase.db as db
 import numpy as np
 from ase.io import read
-from ase.optimize import QuasiNewton
+from ase.optimize import QuasiNewton #, FIRE
 from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
 from typing import NoReturn, Sequence, Optional
@@ -75,7 +75,7 @@ def update_db(db_dir: str, db_update_args: dict):
         db_obj.update(**db_update_args)
 
 
-def single_point(image: Atoms, folder: str, nr:int, calc_name: str, db_name: Optional[str] = None, spinpol: bool = False):
+def single_point(image: Atoms, folder: str, nr:int, calc_name: str, db_name: Optional[str] = None, spinpol: bool = False, relax: bool = False):
     grid_spacing = 0.16
 
     if spinpol:
@@ -98,8 +98,12 @@ def single_point(image: Atoms, folder: str, nr:int, calc_name: str, db_name: Opt
                 )
 
     image.set_calculator(calc)
-    image.get_potential_energy()
-    image.get_forces()
+    if relax:
+        dyn = QuasiNewton(image, trajectory=None)
+        dyn.run(fmax=0.03)
+    else:
+        image.get_potential_energy()
+        image.get_forces()
     ens = BEEFEnsemble(image)
     ensem_en_li = ens.get_ensemble_energies()
     ensem_mean = mean(ensem_en_li)
@@ -130,7 +134,7 @@ def single_point(image: Atoms, folder: str, nr:int, calc_name: str, db_name: Opt
 #                db_obj.write(image, name=f'image_{nr}', ensem_mean=ensem_mean, ensem_sd=ensem_sd, data=data_dict)
 
 
-def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = None, direc: Optional[str] = '.', start_from: int = 0, spinpol: bool = False):
+def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = None, direc: Optional[str] = '.', start_from: int = 0, spinpol: bool = False, relax: bool = False):
     folder = ends_with(direc, '/') + sanitize(calc_name)
     if world.rank == 0: folder_exist(os.path.basename(folder), path=os.path.dirname(folder))
 
@@ -139,7 +143,7 @@ def main(calc_name: str, structures: Sequence[str], db_name: Optional[str] = Non
 
     for nr, image in enumerate(images, start=start_from):
         barrier()
-        single_point(image, folder, nr, calc_name, db_name, spinpol=spinpol)
+        single_point(image, folder, nr, calc_name, db_name, spinpol=spinpol, relax=relax)
 
 
 if __name__ == '__main__':
@@ -147,10 +151,10 @@ if __name__ == '__main__':
     parser.add_argument('calculation_name', type=str)
     parser.add_argument('files', nargs='+')
     parser.add_argument('--db_name', '-n', type=str)
-    #parser.add_argument('-opt', '--optimise', action='store_true')
+    parser.add_argument('-opt', '--optimise', action='store_true', default=False)
     parser.add_argument('-dir', '--directory', type=str, default='.')
     parser.add_argument('-from', '--startFrom', type=int, default=0)
     parser.add_argument('--spin', action='store_true', default=None)
     args = parser.parse_args()
 
-    main(args.calculation_name, args.files, args.db_name, args.directory, start_from=args.startFrom, spinpol=args.spin)
+    main(args.calculation_name, args.files, args.db_name, args.directory, start_from=args.startFrom, spinpol=args.spin, relax=args.optimise)

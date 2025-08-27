@@ -16,6 +16,7 @@ import ase.db as db
 from ase.constraints import FixAtoms
 from ase.parallel import parprint, world, barrier
 from ase.vibrations import Vibrations
+from ase.thermochemistry import HarmonicThermo
 from gpaw import GPAW, PW, Davidson
 from gpaw.utilities import h2gpts
 
@@ -69,6 +70,8 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     vib = Vibrations(atoms, name=f'{functional_folder}/{file_name.replace(".txt", "")}')
     vib.run()
 
+    thermo = HarmonicThermo(vib.get_energies(), atoms.get_potential_energy(), ignore_imag_modes=True)
+
     if world.rank == 0:
         vib.summary(log=f'{functional_folder}/{file_name.replace("vib","vib_en")}')
 
@@ -76,7 +79,7 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
             energy_string = fil.read()
 
         # saving vib data
-        update_db(db_dir, dict(id=db_id, vibration=True, vib_en=energy_string))
+        update_db(db_dir, dict(id=db_id, vibration=True, vib_en=energy_string, enthalpy=thermo.get_internal_energy(300), entropy=thermo.get_entropy(300), free_E=thermo.get_helmholtz_energy(300)))
 
 
 if __name__ == '__main__':

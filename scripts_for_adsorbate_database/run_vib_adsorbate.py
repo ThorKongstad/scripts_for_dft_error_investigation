@@ -11,6 +11,7 @@ import pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent))
 from scripts_for_adsorbate_database import sanitize, folder_exist, update_db
 
+import numpy as np
 from ase import Atoms
 import ase.db as db
 from ase.constraints import FixAtoms
@@ -64,10 +65,15 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     for i, at in enumerate(atoms):
         if at.symbol == metal_symbol: metal_at.append(i)
         else: not_metal_at.append(i)
-    atoms.set_constraint(FixAtoms(metal_at))
+    metal_z_pos = (pos[2] for pos in atoms[metal_at].get_positions())
+    avg_metal_z_pos = np.mean(metal_z_pos)
+    atoms_for_vib = list(filter(lambda i: atoms[i].position[2] > avg_metal_z_pos, list(range(len(atoms)))))
+    locked_metals = list(filter(lambda i: atoms[i].position[2] < avg_metal_z_pos, list(range(len(atoms)))))
+
+    atoms.set_constraint(FixAtoms(locked_metals))
     atoms.get_forces() # fix incase it cant read forces, need to figure out a test for it. possible try TypeError or if self._cache['forces'] == None
 
-    vib = Vibrations(atoms, name=f'{functional_folder}/{file_name.replace(".txt", "")}')
+    vib = Vibrations(atoms, indices=atoms_for_vib, name=f'{functional_folder}/{file_name.replace(".txt", "")}')
     vib.run()
 
     thermo = HarmonicThermo(vib.get_energies(), atoms.get_potential_energy(), ignore_imag_modes=True)

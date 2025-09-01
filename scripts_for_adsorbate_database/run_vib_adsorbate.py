@@ -65,7 +65,7 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
     for i, at in enumerate(atoms):
         if at.symbol == metal_symbol: metal_at.append(i)
         else: not_metal_at.append(i)
-    metal_z_pos = (pos[2] for pos in atoms[metal_at].get_positions())
+    metal_z_pos = list(pos[2] for pos in atoms[metal_at].get_positions())
     avg_metal_z_pos = np.mean(metal_z_pos)
     atoms_for_vib = list(filter(lambda i: atoms[i].position[2] > avg_metal_z_pos, list(range(len(atoms)))))
     locked_metals = list(filter(lambda i: atoms[i].position[2] < avg_metal_z_pos, list(range(len(atoms)))))

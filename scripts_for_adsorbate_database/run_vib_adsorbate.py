@@ -85,7 +85,7 @@ def main(db_id:int, db_dir: str = 'molreact.db'):
             energy_string = fil.read()
 
         # saving vib data
-        update_db(db_dir, dict(id=db_id, vibration=True, vib_en=energy_string, enthalpy=thermo.get_internal_energy(300), entropy=thermo.get_entropy(300), free_E=thermo.get_helmholtz_energy(300)))
+        update_db(db_dir, dict(id=db_id, vibration=True, zpe=thermo.get_ZPE_correction(), vib_en=energy_string, enthalpy=thermo.get_internal_energy(300), entropy=thermo.get_entropy(300), free_E=thermo.get_helmholtz_energy(300)))
 
 
 if __name__ == '__main__':
